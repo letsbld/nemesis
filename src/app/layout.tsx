@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Poppins } from 'next/font/google';
-import { Toaster } from 'react-hot-toast';
 import './globals.css';
 import { SideNavBar } from '@/components/dashboard/SideNavBar';
 
@@ -26,7 +25,6 @@ export default function RootLayout({
         <html lang="en">
             <body className={`${poppins.variable} antialiased`}>
                 <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
-                    <Toaster />
                     <div className="w-full flex-none md:w-64">
                         <SideNavBar />
                     </div>
