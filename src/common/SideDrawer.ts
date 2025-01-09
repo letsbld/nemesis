@@ -1,48 +1,50 @@
-'use client';
-
-import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Sheet,
-    SheetTrigger,
     SheetClose,
     SheetContent,
-    SheetHeader,
-    SheetFooter,
-    SheetTitle,
     SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
 } from '@/components/ui/sheet';
 
-interface SideDrawerProps {
-    isOpen: boolean;
-    onClose: () => void;
-    title: string;
-    description?: string;
-    children: React.ReactNode;
-    width?: string;
-}
-
-const SideDrawer: React.FC<SideDrawerProps> = ({
-    isOpen,
-    onClose,
-    title,
-    description,
-    children,
-    width = '30%',
-}) => {
+export function SheetDemo() {
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent side="right" className="w-full sm:w-auto" style={{ width }}>
+        <Sheet>
+            <Sheet.Trigger asChild>
+                {/* Changed SheetTrigger to Sheet.Trigger */}
+                <Button variant="outline">Open</Button>
+            </Sheet.Trigger>
+            <SheetContent>
                 <SheetHeader>
-                    <SheetTitle>{title}</SheetTitle>
-                    {description && <SheetDescription>{description}</SheetDescription>}
+                    <SheetTitle>Edit profile</SheetTitle>
+                    <SheetDescription>
+                        Make changes to your profile here. Click save when you're done.
+                    </SheetDescription>
                 </SheetHeader>
-                <div className="p-4">{children}</div>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                            Name
+                        </Label>
+                        <Input id="name" value="Pedro Duarte" className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="username" className="text-right">
+                            Username
+                        </Label>
+                        <Input id="username" value="@peduarte" className="col-span-3" />
+                    </div>
+                </div>
                 <SheetFooter>
-                    <button onClick={onClose}>Close</button>
+                    <SheetClose asChild>
+                        <Button type="submit">Save changes</Button>
+                    </SheetClose>
                 </SheetFooter>
             </SheetContent>
         </Sheet>
     );
-};
-
-export default SideDrawer;
+}
