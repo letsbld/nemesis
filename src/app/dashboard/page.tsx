@@ -26,7 +26,7 @@ const DashboardPage = () => {
                 handleClose={handleDrawerClose}
                 heading="Side Drawer"
                 description="This is a side drawer."
-                component={<div>Drawer Content</div>}
+                component={<div>Drawer Content Right Side</div>}
                 side="right"
             />
         </div>
