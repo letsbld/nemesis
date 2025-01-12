@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import SideDrawer from '@/common/SideDrawer';
-import CustomButton from '@/components/ui/button';
+import CustomButton from '@/components/ui/customButton';
 
 const DashboardPage = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);

@@ -7,7 +7,7 @@ import {
     SheetTitle,
     SheetDescription,
 } from '@/components/ui/sheet';
-import CustomButton from '@/components/ui/button';
+import CustomButton from '@/components/ui/customButton';
 
 interface SideDrawerProps {
     isOpen: boolean;
