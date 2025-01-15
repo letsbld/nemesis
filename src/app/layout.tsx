@@ -23,6 +23,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
+            <meta name="apple-mobile-web-app-title" content="DLP" />
             <body className={`${poppins.variable} antialiased`}>
                 <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
                     <div className="w-full flex-none md:w-64">
