@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import './globals.css';
 import { SideNavBar } from '@/components/dashboard/SideNavBar';
 
+
 const poppins = Poppins({
     weight: ['400', '700'],
     variable: '--font-poppins',
