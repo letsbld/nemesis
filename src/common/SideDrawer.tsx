@@ -36,11 +36,17 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
                     {description && <SheetDescription>{description}</SheetDescription>}
                 </SheetHeader>
                 <div className="p-4">{component}</div>
-                <SheetFooter>
+                <SheetFooter className="flex !justify-center bottom-0 absolute left-0 w-full p-4">
                     <CustomButton
-                        name="Close"
+                        name="Cancel"
                         btnType="button"
                         style="bg-red-500 text-white"
+                        onClick={handleClose}
+                    />
+                    <CustomButton
+                        name="Save"
+                        btnType="button"
+                        style="bg-blue-500 text-white"
                         onClick={handleClose}
                     />
                 </SheetFooter>
