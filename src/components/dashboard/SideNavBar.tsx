@@ -9,6 +9,12 @@ import {
     SidebarProvider,
 } from '../ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import { useState } from 'react';
+
+interface CollapsibleItemProps {
+    title: string;
+    links: { href: string; label: string }[];
+}
 
 export const SideNavBar = () => {
     return (
@@ -33,101 +39,69 @@ const NavBarContent = () => {
                             Dashboard
                         </Link>
                     </li>
-                    <Collapsible defaultOpen className="group/collapsible">
-                        <SidebarMenuItem>
-                            <CollapsibleTrigger asChild>
-                                <SidebarMenuButton>Device</SidebarMenuButton>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <SidebarMenuSub>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/device/settings" className="hover:underline">
-                                            Device Settings
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/device/logs" className="hover:underline">
-                                            Device Logs
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/device/report" className="hover:underline">
-                                            Device Report
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/device/profile" className="hover:underline">
-                                            Device Profile
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                </SidebarMenuSub>
-                            </CollapsibleContent>
-                        </SidebarMenuItem>
-                    </Collapsible>
-                    <Collapsible defaultOpen className="group/collapsible">
-                        <SidebarMenuItem>
-                            <CollapsibleTrigger asChild>
-                                <SidebarMenuButton>User</SidebarMenuButton>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <SidebarMenuSub>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/user/settings" className="hover:underline">
-                                            User Settings
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/user/logs" className="hover:underline">
-                                            User Logs
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/user/report" className="hover:underline">
-                                            User Report
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/user/profile" className="hover:underline">
-                                            User Profile
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                </SidebarMenuSub>
-                            </CollapsibleContent>
-                        </SidebarMenuItem>
-                    </Collapsible>
-                    <Collapsible defaultOpen className="group/collapsible">
-                        <SidebarMenuItem>
-                            <CollapsibleTrigger asChild>
-                                <SidebarMenuButton>Insights</SidebarMenuButton>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <SidebarMenuSub>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/insights/settings" className="hover:underline">
-                                            Insights Settings
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/insights/logs" className="hover:underline">
-                                            Insights Logs
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/insights/report" className="hover:underline">
-                                            Insights Report
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                    <SidebarMenuSubItem>
-                                        <Link href="/insights/profile" className="hover:underline">
-                                            Insights Profile
-                                        </Link>
-                                    </SidebarMenuSubItem>
-                                </SidebarMenuSub>
-                            </CollapsibleContent>
-                        </SidebarMenuItem>
-                    </Collapsible>
+                    <CollapsibleItem
+                        title="Device"
+                        links={[
+                            { href: '/device/settings', label: 'Device Settings' },
+                            { href: '/device/logs', label: 'Device Logs' },
+                            { href: '/device/report', label: 'Device Report' },
+                            { href: '/device/profile', label: 'Device Profile' },
+                        ]}
+                    />
+                    <CollapsibleItem
+                        title="User"
+                        links={[
+                            { href: '/user/settings', label: 'User Settings' },
+                            { href: '/user/logs', label: 'User Logs' },
+                            { href: '/user/report', label: 'User Report' },
+                            { href: '/user/profile', label: 'User Profile' },
+                        ]}
+                    />
+                    <CollapsibleItem
+                        title="Insights"
+                        links={[
+                            { href: '/insights/settings', label: 'Insights Settings' },
+                            { href: '/insights/logs', label: 'Insights Logs' },
+                            { href: '/insights/report', label: 'Insights Report' },
+                            { href: '/insights/profile', label: 'Insights Profile' },
+                        ]}
+                    />
                 </ul>
             </SidebarMenu>
         </nav>
+    );
+};
+
+const CollapsibleItem: React.FC<CollapsibleItemProps> = ({ title, links }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Collapsible defaultOpen className="group/collapsible" onOpenChange={setIsOpen}>
+            <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                    <SidebarMenuButton onClick={() => setIsOpen(!isOpen)}>
+                        {title}
+                        <span
+                            className={`ml-2 transform transition-transform ${
+                                isOpen ? 'rotate-180' : 'rotate-0'
+                            }`}
+                        >
+                            ▼
+                        </span>
+                    </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {links.map((link) => (
+                            <SidebarMenuSubItem key={link.href}>
+                                <Link href={link.href} className="hover:underline">
+                                    {link.label}
+                                </Link>
+                            </SidebarMenuSubItem>
+                        ))}
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+            </SidebarMenuItem>
+        </Collapsible>
     );
 };
