@@ -76,7 +76,7 @@ const CollapsibleItem: React.FC<CollapsibleItemProps> = ({ title, links }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Collapsible defaultOpen className="group/collapsible" onOpenChange={setIsOpen}>
+        <Collapsible defaultOpen={false} className="group/collapsible" onOpenChange={setIsOpen}>
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton onClick={() => setIsOpen(!isOpen)}>
