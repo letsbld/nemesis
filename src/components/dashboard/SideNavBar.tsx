@@ -79,14 +79,17 @@ const CollapsibleItem: React.FC<CollapsibleItemProps> = ({ title, links }) => {
         <Collapsible defaultOpen={false} className="group/collapsible" onOpenChange={setIsOpen}>
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                    <SidebarMenuButton onClick={() => setIsOpen(!isOpen)}>
+                    <SidebarMenuButton
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="flex justify-between w-full"
+                    >
                         {title}
                         <span
                             className={`ml-2 transform transition-transform ${
-                                isOpen ? 'rotate-180' : 'rotate-0'
+                                isOpen ? 'rotate-90' : 'rotate-0'
                             }`}
                         >
-                            ▼
+                            ▶
                         </span>
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
