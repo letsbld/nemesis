@@ -1,6 +1,7 @@
 import { UserRepository } from '../repositories/user.repository';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dto/user.dto';
 import { User } from '../entities/User.entity';
+import bcrypt from 'bcrypt';
 
 export class UserService {
     private userRepository: UserRepository;
@@ -10,7 +11,27 @@ export class UserService {
     }
 
     async createUser(userData: CreateUserDto): Promise<UserResponseDto> {
-        const user = await this.userRepository.create(userData);
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(userData.password, 12);
+        const userDataWithHashedPassword = {
+            ...userData,
+            password: hashedPassword,
+        };
+
+        const user = await this.userRepository.create(userDataWithHashedPassword);
+        return this.mapToResponseDto(user);
+    }
+
+    async validateUserPassword(
+        username: string,
+        password: string
+    ): Promise<UserResponseDto | null> {
+        const user = await this.userRepository.findByUsername(username);
+        if (!user) return null;
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) return null;
+
         return this.mapToResponseDto(user);
     }
 

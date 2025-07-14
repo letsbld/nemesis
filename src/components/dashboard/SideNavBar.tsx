@@ -44,81 +44,148 @@ const NavBarContent = () => {
                 // Type guard to check if user has admin role
                 const isAdmin =
                     session?.user && 'role' in session.user && session.user.role === 'admin';
+                
+                const isUser =
+                    session?.user && 'role' in session.user && session.user.role === 'user';
 
-                // Show login prompt if not authenticated or not admin
-                if (!session || !isAdmin) {
+                // Show login prompt if not authenticated
+                if (!session || (!isAdmin && !isUser)) {
                     return (
                         <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
                             <div className="p-4 text-2xl font-bold">DLP Dashboard</div>
                             <div className="p-4">
-                                <p className="text-gray-400 mb-4">Admin access required</p>
+                                <p className="text-gray-400 mb-4">Please sign in to continue</p>
                                 <Link
-                                    href="/auth/google/login"
+                                    href="/auth/login"
                                     className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white inline-block"
                                 >
-                                    Login as Admin
+                                    Sign In
                                 </Link>
                             </div>
                         </nav>
                     );
                 }
 
-                // Show full navigation for authenticated admin users
-                return (
-                    <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
-                        <Link href="/" className="p-4 text-2xl font-bold hover:underline">
-                            DLP Dashboard
-                        </Link>
-                        <div className="px-4 pb-2 text-sm text-gray-400">
-                            Welcome, {session.user?.name || session.user?.email || 'Admin'}
-                        </div>
-                        <SidebarMenu className="flex-1">
-                            <ul className="flex flex-col p-4">
-                                <li className="mb-2">
-                                    <Link href="/dashboard" className="hover:underline">
-                                        Dashboard
-                                    </Link>
-                                </li>
-                                <CollapsibleItem
-                                    title="Device"
-                                    links={[
-                                        { href: '/device/settings', label: 'Device Settings' },
-                                        { href: '/device/logs', label: 'Device Logs' },
-                                        { href: '/device/report', label: 'Device Report' },
-                                        { href: '/device/profile', label: 'Device Profile' },
-                                    ]}
-                                />
-                                <CollapsibleItem
-                                    title="User Management"
-                                    links={[
-                                        { href: '/user', label: 'Users' },
-                                        { href: '/user/group', label: 'User Groups' },
-                                        { href: '/user/settings', label: 'User Settings' },
-                                    ]}
-                                />
-                                <CollapsibleItem
-                                    title="Insights"
-                                    links={[
-                                        { href: '/insights/settings', label: 'Insights Settings' },
-                                        { href: '/insights/logs', label: 'Insights Logs' },
-                                        { href: '/insights/report', label: 'Insights Report' },
-                                        { href: '/insights/profile', label: 'Insights Profile' },
-                                    ]}
-                                />
-                            </ul>
-                        </SidebarMenu>
+                // Show admin navigation
+                if (isAdmin) {
+                    return (
+                        <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
+                            <Link href="/" className="p-4 text-2xl font-bold hover:underline">
+                                DLP Dashboard
+                            </Link>
+                            <div className="px-4 pb-2 text-sm text-gray-400">
+                                Admin: {session.user?.name || session.user?.email || 'Admin'}
+                            </div>
+                            <SidebarMenu className="flex-1">
+                                <ul className="flex flex-col p-4">
+                                    <li className="mb-2">
+                                        <Link href="/dashboard" className="hover:underline">
+                                            Dashboard
+                                        </Link>
+                                    </li>
+                                    <CollapsibleItem
+                                        title="Device"
+                                        links={[
+                                            { href: '/device/settings', label: 'Device Settings' },
+                                            { href: '/device/logs', label: 'Device Logs' },
+                                            { href: '/device/report', label: 'Device Report' },
+                                            { href: '/device/profile', label: 'Device Profile' },
+                                        ]}
+                                    />
+                                    <CollapsibleItem
+                                        title="User Management"
+                                        links={[
+                                            { href: '/user', label: 'Users' },
+                                            { href: '/user/group', label: 'User Groups' },
+                                            { href: '/user/settings', label: 'User Settings' },
+                                        ]}
+                                    />
+                                    <CollapsibleItem
+                                        title="Insights"
+                                        links={[
+                                            {
+                                                href: '/insights/settings',
+                                                label: 'Insights Settings',
+                                            },
+                                            { href: '/insights/logs', label: 'Insights Logs' },
+                                            { href: '/insights/report', label: 'Insights Report' },
+                                            {
+                                                href: '/insights/profile',
+                                                label: 'Insights Profile',
+                                            },
+                                        ]}
+                                    />
+                                </ul>
+                            </SidebarMenu>
 
-                        {/* Logout section at the bottom */}
-                        <div className="p-4 border-t border-gray-700">
-                            <CustomButton
-                                name="Logout"
-                                onClick={() => signOut({ callbackUrl: '/auth/google/login' })}
-                                btnType="button"
-                                style="w-full bg-red-600 hover:bg-red-700 text-white"
-                            />
-                        </div>
-                    </nav>
-                );
+                            {/* Logout section at the bottom */}
+                            <div className="p-4 border-t border-gray-700">
+                                <CustomButton
+                                    name="Logout"
+                                    onClick={() => signOut({ callbackUrl: '/auth/admin/login' })}
+                                    btnType="button"
+                                    style="w-full bg-red-600 hover:bg-red-700 text-white"
+                                />
+                            </div>
+                        </nav>
+                    );
+                }
+
+                // Show user navigation
+                if (isUser) {
+                    return (
+                        <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
+                            <Link href="/home" className="p-4 text-2xl font-bold hover:underline">
+                                DLP Dashboard
+                            </Link>
+                            <div className="px-4 pb-2 text-sm text-gray-400">
+                                Welcome, {session.user?.name || session.user?.email || 'User'}
+                            </div>
+                            <SidebarMenu className="flex-1">
+                                <ul className="flex flex-col p-4">
+                                    <li className="mb-2">
+                                        <Link href="/home" className="hover:underline">
+                                            Home
+                                        </Link>
+                                    </li>
+                                    <li className="mb-2">
+                                        <Link href="/user/profile" className="hover:underline">
+                                            My Profile
+                                        </Link>
+                                    </li>
+                                    <li className="mb-2">
+                                        <Link href="/user/logs" className="hover:underline">
+                                            Activity Logs
+                                        </Link>
+                                    </li>
+                                    <li className="mb-2">
+                                        <Link href="/user/report" className="hover:underline">
+                                            Applications
+                                        </Link>
+                                    </li>
+                                    <li className="mb-2">
+                                        <Link href="/user/settings" className="hover:underline">
+                                            Settings
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </SidebarMenu>
+
+                            {/* Logout section at the bottom */}
+                            <div className="p-4 border-t border-gray-700">
+                                <CustomButton
+                                    name="Logout"
+                                    onClick={() => signOut({ callbackUrl: '/auth/user/login' })}
+                                    btnType="button"
+                                    style="w-full bg-red-600 hover:bg-red-700 text-white"
+                                />
+                            </div>
+                        </nav>
+                    );
+                }
+
+                // Fallback - should not reach here
+                return null;
             }}
         </SessionWrapper>
     );
