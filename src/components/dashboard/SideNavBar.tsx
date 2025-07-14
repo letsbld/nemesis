@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 import {
     SidebarMenu,
     SidebarMenuItem,
@@ -10,6 +11,7 @@ import {
 } from '../ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import { useState } from 'react';
+import CustomButton from '../ui/customButton';
 
 interface CollapsibleItemProps {
     title: string;
@@ -25,14 +27,49 @@ export const SideNavBar = () => {
 };
 
 const NavBarContent = () => {
+    const { data: session, status } = useSession();
+
+    // Show loading state while checking authentication
+    if (status === 'loading') {
+        return (
+            <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
+                <div className="p-4 text-2xl font-bold">DLP Dashboard</div>
+                <div className="p-4 text-gray-400">Loading...</div>
+            </nav>
+        );
+    }
+
+    // Type guard to check if user has admin role
+    const isAdmin = session?.user && 'role' in session.user && session.user.role === 'admin';
+
+    // Show login prompt if not authenticated or not admin
+    if (!session || !isAdmin) {
+        return (
+            <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
+                <div className="p-4 text-2xl font-bold">DLP Dashboard</div>
+                <div className="p-4">
+                    <p className="text-gray-400 mb-4">Admin access required</p>
+                    <Link
+                        href="/auth/google/login"
+                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white inline-block"
+                    >
+                        Login as Admin
+                    </Link>
+                </div>
+            </nav>
+        );
+    }
+
+    // Show full navigation for authenticated admin users
     return (
         <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
             <Link href="/" className="p-4 text-2xl font-bold hover:underline">
-                {' '}
-                {/* Wrap with Link */}
                 DLP Dashboard
-            </Link>{' '}
-            <SidebarMenu>
+            </Link>
+            <div className="px-4 pb-2 text-sm text-gray-400">
+                Welcome, {session.user?.name || session.user?.email || 'Admin'}
+            </div>
+            <SidebarMenu className="flex-1">
                 <ul className="flex flex-col p-4">
                     <li className="mb-2">
                         <Link href="/dashboard" className="hover:underline">
@@ -51,10 +88,12 @@ const NavBarContent = () => {
                     <CollapsibleItem
                         title="User"
                         links={[
+                            { href: '/user', label: 'User' },
+                            { href: '/user/group', label: 'User Group' },
                             { href: '/user/settings', label: 'User Settings' },
-                            { href: '/user/logs', label: 'User Logs' },
-                            { href: '/user/report', label: 'User Report' },
-                            { href: '/user/profile', label: 'User Profile' },
+                            // { href: '/user/logs', label: 'User Logs' },
+                            // { href: '/user/report', label: 'User Report' },
+                            // { href: '/user/profile', label: 'User Profile' },
                         ]}
                     />
                     <CollapsibleItem
@@ -68,6 +107,16 @@ const NavBarContent = () => {
                     />
                 </ul>
             </SidebarMenu>
+
+            {/* Logout section at the bottom */}
+            <div className="p-4 border-t border-gray-700">
+                <CustomButton
+                    name="Logout"
+                    onClick={() => signOut({ callbackUrl: '/auth/google/login' })}
+                    btnType="button"
+                    style="w-full bg-red-600 hover:bg-red-700 text-white"
+                />
+            </div>
         </nav>
     );
 };
