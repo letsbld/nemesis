@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserGroupService } from '@/backend/domains/user-group/services/user-group.service';
+import { verifyAdminAuth } from '@/backend/lib/auth-helpers';
 
-// TODO: Add proper admin authentication middleware
+// Admin authentication middleware implemented
 export async function GET(request: NextRequest, context: { params: Promise<{ groupId: string }> }) {
     try {
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
+
         const { groupId } = await context.params;
         const userGroupService = new UserGroupService();
         const group = await userGroupService.getUserGroupById(groupId);
@@ -21,6 +31,15 @@ export async function GET(request: NextRequest, context: { params: Promise<{ gro
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ groupId: string }> }) {
     try {
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
+
         const { groupId } = await context.params;
         const groupData = await request.json();
 
@@ -43,6 +62,15 @@ export async function DELETE(
     context: { params: Promise<{ groupId: string }> }
 ) {
     try {
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
+
         const { groupId } = await context.params;
         const userGroupService = new UserGroupService();
         const success = await userGroupService.deleteUserGroup(groupId);

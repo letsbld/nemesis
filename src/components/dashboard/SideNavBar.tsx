@@ -154,11 +154,6 @@ const NavBarContent = () => {
                                         </Link>
                                     </li>
                                     <li className="mb-2">
-                                        <Link href="/user/logs" className="hover:underline">
-                                            Activity Logs
-                                        </Link>
-                                    </li>
-                                    <li className="mb-2">
                                         <Link href="/user/report" className="hover:underline">
                                             Applications
                                         </Link>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { UserData, GroupUserData, AddUsersToGroupData } from '@/types/admin.types';
 
 interface UserGroupMembershipProps {
@@ -69,14 +70,14 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
                 await fetchGroupUsers(); // Refresh the group users list
                 setSelectedUserIds([]);
                 setShowAddUsersForm(false);
-                alert('Users added to group successfully!');
+                toast.success('Users added to group successfully!');
             } else {
                 const errorData = await response.json();
-                alert(`Failed to add users: ${errorData.error}`);
+                toast.error(`Failed to add users: ${errorData.error}`);
             }
         } catch (error) {
             console.error('Error adding users to group:', error);
-            alert('An error occurred while adding users to the group');
+            toast.error('An error occurred while adding users to the group');
         } finally {
             setIsAddingUsers(false);
         }
@@ -97,14 +98,14 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
 
             if (response.ok) {
                 await fetchGroupUsers(); // Refresh the group users list
-                alert('User removed from group successfully!');
+                toast.success('User removed from group successfully!');
             } else {
                 const errorData = await response.json();
-                alert(`Failed to remove user: ${errorData.error}`);
+                toast.error(`Failed to remove user: ${errorData.error}`);
             }
         } catch (error) {
             console.error('Error removing user from group:', error);
-            alert('An error occurred while removing the user from the group');
+            toast.error('An error occurred while removing the user from the group');
         }
     };
 

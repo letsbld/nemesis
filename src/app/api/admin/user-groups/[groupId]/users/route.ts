@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserGroupService } from '@/backend/domains/user-group/services/user-group.service';
+import { verifyAdminAuth } from '@/backend/lib/auth-helpers';
 
-// TODO: Add proper admin authentication middleware
+// Admin authentication middleware implemented
 export async function POST(
     request: NextRequest,
     context: { params: Promise<{ groupId: string }> }
 ) {
     try {
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
+
         const { groupId } = await context.params;
         const { userIds }: { userIds: string[] } = await request.json();
 
@@ -28,6 +38,15 @@ export async function POST(
 
 export async function GET(request: NextRequest, context: { params: Promise<{ groupId: string }> }) {
     try {
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
+
         const { groupId } = await context.params;
         const userGroupService = new UserGroupService();
         const users = await userGroupService.getUsersByGroupId(groupId);
@@ -44,6 +63,15 @@ export async function DELETE(
     context: { params: Promise<{ groupId: string }> }
 ) {
     try {
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
+
         const { groupId } = await context.params;
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');

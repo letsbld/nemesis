@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserGroupService } from '@/backend/domains/user-group';
 import { AppDataSource } from '@/backend/lib/typeorm';
+import { verifyAdminAuth } from '@/backend/lib/auth-helpers';
 
 const userGroupService = new UserGroupService();
 
 // GET /api/admin/user-groups - Get all user groups
 export async function GET() {
     try {
-        // TODO: Add proper admin authentication check
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
 
         if (!AppDataSource.isInitialized) {
             await AppDataSource.initialize();
@@ -24,7 +32,14 @@ export async function GET() {
 // POST /api/admin/user-groups - Create a new user group
 export async function POST(request: NextRequest) {
     try {
-        // TODO: Add proper admin authentication check
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
 
         if (!AppDataSource.isInitialized) {
             await AppDataSource.initialize();

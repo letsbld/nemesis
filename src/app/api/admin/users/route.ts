@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/backend/domains/user';
 import { AppDataSource } from '@/backend/lib/typeorm';
+import { verifyAdminAuth } from '@/backend/lib/auth-helpers';
 
 const userService = new UserService();
 
@@ -28,7 +29,14 @@ function validatePassword(password: string, username: string): { valid: boolean;
 // GET /api/admin/users - Get all users
 export async function GET() {
     try {
-        // TODO: Add proper admin authentication check
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
 
         if (!AppDataSource.isInitialized) {
             await AppDataSource.initialize();
@@ -45,7 +53,14 @@ export async function GET() {
 // POST /api/admin/users - Create a new user
 export async function POST(request: NextRequest) {
     try {
-        // TODO: Add proper admin authentication check
+        // Verify admin authentication
+        const authResult = await verifyAdminAuth();
+        if (!authResult.isAdmin) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Admin access required' },
+                { status: 401 }
+            );
+        }
 
         if (!AppDataSource.isInitialized) {
             await AppDataSource.initialize();

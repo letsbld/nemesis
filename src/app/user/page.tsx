@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { UserList } from '@/components/admin/UserList';
 import { CreateUserForm } from '@/components/admin/CreateUserForm';
 import { UserData, CreateUserData } from '@/types/admin.types';
@@ -100,14 +101,14 @@ const UserPage = () => {
                 const newUser = await response.json();
                 setUsers((prev) => [...prev, newUser]);
                 setShowCreateForm(false);
-                alert('User created successfully!');
+                toast.success('User created successfully!');
             } else {
                 const errorData = await response.json();
-                alert(`Error: ${errorData.error}`);
+                toast.error(`Error: ${errorData.error}`);
             }
         } catch (error) {
             console.error('Error creating user:', error);
-            alert('Failed to create user. Please try again.');
+            toast.error('Failed to create user. Please try again.');
         } finally {
             setIsCreating(false);
         }

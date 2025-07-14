@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { UserGroupList } from '@/components/admin/UserGroupList';
 import { CreateUserGroupForm } from '@/components/admin/CreateUserGroupForm';
 import { UserGroupData, CreateUserGroupData } from '@/types/admin.types';
@@ -100,14 +101,14 @@ const UserGroupPage = () => {
                 const newGroup = await response.json();
                 setGroups((prev) => [...prev, newGroup]);
                 setShowCreateForm(false);
-                alert('User group created successfully!');
+                toast.success('User group created successfully!');
             } else {
                 const errorData = await response.json();
-                alert(`Error: ${errorData.error}`);
+                toast.error(`Error: ${errorData.error}`);
             }
         } catch (error) {
             console.error('Error creating user group:', error);
-            alert('Failed to create user group. Please try again.');
+            toast.error('Failed to create user group. Please try again.');
         } finally {
             setIsCreating(false);
         }
