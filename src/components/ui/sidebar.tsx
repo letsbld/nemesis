@@ -6,6 +6,7 @@ import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useHydration } from '@/hooks/use-hydration';
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,6 +69,7 @@ const SidebarProvider = React.forwardRef<
     ref
   ) => {
     const isMobile = useIsMobile()
+    const isHydrated = useHydration();
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // This is the internal state of the sidebar.
@@ -75,19 +77,21 @@ const SidebarProvider = React.forwardRef<
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
     const setOpen = React.useCallback(
-      (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value
-        if (setOpenProp) {
-          setOpenProp(openState)
-        } else {
-          _setOpen(openState)
-        }
+        (value: boolean | ((value: boolean) => boolean)) => {
+            const openState = typeof value === 'function' ? value(open) : value;
+            if (setOpenProp) {
+                setOpenProp(openState);
+            } else {
+                _setOpen(openState);
+            }
 
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-      },
-      [setOpenProp, open]
-    )
+            // This sets the cookie to keep the sidebar state - only on client side
+            if (isHydrated && typeof document !== 'undefined') {
+                document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+            }
+        },
+        [setOpenProp, open, isHydrated]
+    );
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
@@ -98,19 +102,18 @@ const SidebarProvider = React.forwardRef<
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (
-          event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-          (event.metaKey || event.ctrlKey)
-        ) {
-          event.preventDefault()
-          toggleSidebar()
-        }
-      }
+        if (!isHydrated || typeof window === 'undefined') return;
 
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [toggleSidebar])
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                toggleSidebar();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [toggleSidebar, isHydrated]);
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
@@ -650,35 +653,30 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
+    // Fixed width to prevent hydration mismatches
+    const width = '70%';
 
-  return (
-    <div
-      ref={ref}
-      data-sidebar="menu-skeleton"
-      className={cn("rounded-md h-8 flex gap-2 px-2 items-center", className)}
-      {...props}
-    >
-      {showIcon && (
-        <Skeleton
-          className="size-4 rounded-md"
-          data-sidebar="menu-skeleton-icon"
-        />
-      )}
-      <Skeleton
-        className="h-4 flex-1 max-w-[--skeleton-width]"
-        data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-          } as React.CSSProperties
-        }
-      />
-    </div>
-  )
+    return (
+        <div
+            ref={ref}
+            data-sidebar="menu-skeleton"
+            className={cn('rounded-md h-8 flex gap-2 px-2 items-center', className)}
+            {...props}
+        >
+            {showIcon && (
+                <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />
+            )}
+            <Skeleton
+                className="h-4 flex-1 max-w-[--skeleton-width]"
+                data-sidebar="menu-skeleton-text"
+                style={
+                    {
+                        '--skeleton-width': width,
+                    } as React.CSSProperties
+                }
+            />
+        </div>
+    );
 })
 SidebarMenuSkeleton.displayName = "SidebarMenuSkeleton"
 

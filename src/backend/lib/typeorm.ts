@@ -1,15 +1,2 @@
-import 'reflect-metadata';
-import { DataSource } from 'typeorm';
-import { Admin } from '../entities/Admin';
-
-export const AppDataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    entities: [Admin],
-    synchronize: true, // Turn off in production
-    logging: false,
-});
+// Re-export database connection for backward compatibility
+export { AppDataSource } from '../shared/database/typeorm';
