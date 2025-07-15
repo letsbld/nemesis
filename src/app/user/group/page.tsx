@@ -1,140 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import { UserGroupList } from '@/components/admin/UserGroupList';
-import { CreateUserGroupForm } from '@/components/admin/CreateUserGroupForm';
-import { UserGroupData, CreateUserGroupData } from '@/types/admin.types';
 
-const UserGroupPage = () => {
-    const { data: session, status } = useSession();
+const UserGroupPageRedirect = () => {
     const router = useRouter();
-    const [groups, setGroups] = useState<UserGroupData[]>([]);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
 
-    // Check authentication and admin role
     useEffect(() => {
-        if (status === 'loading') return; // Still loading
-
-        if (!session) {
-            // Not authenticated, redirect to login
-            router.push('/auth/login');
-            return;
-        }
-
-        // Check if user is admin
-        if (session.user && 'role' in session.user) {
-            if (session.user.role !== 'admin') {
-                // Not an admin, redirect to appropriate page
-                if (session.user.role === 'user') {
-                    router.push('/home');
-                } else {
-                    router.push('/auth/login');
-                }
-                return;
-            }
-        } else {
-            // No role defined, redirect to login
-            router.push('/auth/login');
-            return;
-        }
-    }, [session, status, router]);
-
-    // Fetch groups on component mount (only after auth check)
-    useEffect(() => {
-        if (session?.user && 'role' in session.user && session.user.role === 'admin') {
-            fetchGroups();
-        }
-    }, [session]);
-
-    // Show loading state while checking authentication
-    if (status === 'loading') {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-lg">Loading...</div>
-            </div>
-        );
-    }
-
-    // Show redirecting state if not admin
-    if (!session || !session.user || !('role' in session.user) || session.user.role !== 'admin') {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-lg">Redirecting...</div>
-            </div>
-        );
-    }
-
-    const fetchGroups = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch('/api/admin/user-groups');
-            if (response.ok) {
-                const data = await response.json();
-                setGroups(data);
-            } else {
-                console.error('Failed to fetch user groups');
-            }
-        } catch (error) {
-            console.error('Error fetching user groups:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleCreateGroup = async (groupData: CreateUserGroupData) => {
-        setIsCreating(true);
-        try {
-            const response = await fetch('/api/admin/user-groups', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(groupData),
-            });
-
-            if (response.ok) {
-                const newGroup = await response.json();
-                setGroups((prev) => [...prev, newGroup]);
-                setShowCreateForm(false);
-                toast.success('User group created successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(`Error: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error creating user group:', error);
-            toast.error('Failed to create user group. Please try again.');
-        } finally {
-            setIsCreating(false);
-        }
-    };
-
-    if (showCreateForm) {
-        return (
-            <div className="min-h-screen bg-gray-50 py-8">
-                <CreateUserGroupForm
-                    onSubmit={handleCreateGroup}
-                    onCancel={() => setShowCreateForm(false)}
-                    isLoading={isCreating}
-                />
-            </div>
-        );
-    }
+        // Redirect to the new admin user-groups page
+        router.replace('/admin/user-groups');
+    }, [router]);
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <UserGroupList
-                groups={groups}
-                onCreateGroup={() => setShowCreateForm(true)}
-                isLoading={isLoading}
-            />
+        <div className="flex items-center justify-center h-screen">
+            <div className="text-lg">Redirecting to admin panel...</div>
         </div>
     );
 };
 
-export default UserGroupPage;
+export default UserGroupPageRedirect;

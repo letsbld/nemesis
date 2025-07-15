@@ -15,7 +15,7 @@ export function UserGroupList({ groups, onCreateGroup, isLoading = false }: User
     const router = useRouter();
 
     const handleManageMembers = (groupId: string) => {
-        router.push(`/user/group/${groupId}/members`);
+        router.push(`/admin/user-groups/${groupId}/members`);
     };
     return (
         <div className="p-6">

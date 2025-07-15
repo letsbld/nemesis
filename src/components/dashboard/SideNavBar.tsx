@@ -53,15 +53,14 @@ const NavBarContent = () => {
                     return (
                         <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
                             <div className="p-4 text-2xl font-bold">DLP Dashboard</div>
-                            <div className="p-4">
-                                <p className="text-gray-400 mb-4">Please sign in to continue</p>
+                            {/* <div className="p-4">
                                 <Link
                                     href="/auth/login"
                                     className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white inline-block"
                                 >
                                     Sign In
                                 </Link>
-                            </div>
+                            </div> */}
                         </nav>
                     );
                 }
@@ -70,7 +69,7 @@ const NavBarContent = () => {
                 if (isAdmin) {
                     return (
                         <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
-                            <Link href="/" className="p-4 text-2xl font-bold hover:underline">
+                            <Link href="/room" className="p-4 text-2xl font-bold hover:underline">
                                 DLP Dashboard
                             </Link>
                             <div className="px-4 pb-2 text-sm text-gray-400">
@@ -86,7 +85,7 @@ const NavBarContent = () => {
                                     <CollapsibleItem
                                         title="Device"
                                         links={[
-                                            { href: '/device/settings', label: 'Device Settings' },
+                                            { href: '/device', label: 'Device Settings' },
                                             { href: '/device/logs', label: 'Device Logs' },
                                             { href: '/device/report', label: 'Device Report' },
                                             { href: '/device/profile', label: 'Device Profile' },
@@ -95,24 +94,9 @@ const NavBarContent = () => {
                                     <CollapsibleItem
                                         title="User Management"
                                         links={[
-                                            { href: '/user', label: 'Users' },
-                                            { href: '/user/group', label: 'User Groups' },
+                                            { href: '/admin/users', label: 'Users' },
+                                            { href: '/admin/user-groups', label: 'User Groups' },
                                             { href: '/user/settings', label: 'User Settings' },
-                                        ]}
-                                    />
-                                    <CollapsibleItem
-                                        title="Insights"
-                                        links={[
-                                            {
-                                                href: '/insights/settings',
-                                                label: 'Insights Settings',
-                                            },
-                                            { href: '/insights/logs', label: 'Insights Logs' },
-                                            { href: '/insights/report', label: 'Insights Report' },
-                                            {
-                                                href: '/insights/profile',
-                                                label: 'Insights Profile',
-                                            },
                                         ]}
                                     />
                                 </ul>
@@ -135,7 +119,7 @@ const NavBarContent = () => {
                 if (isUser) {
                     return (
                         <nav className="w-64 h-screen text-white flex flex-col bg-gray-950">
-                            <Link href="/home" className="p-4 text-2xl font-bold hover:underline">
+                            <Link href="/room" className="p-4 text-2xl font-bold hover:underline">
                                 DLP Dashboard
                             </Link>
                             <div className="px-4 pb-2 text-sm text-gray-400">
