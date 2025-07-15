@@ -41,6 +41,13 @@ export class User {
     @Column({ type: 'text', nullable: true })
     description?: string;
 
+    // TOTP fields
+    @Column({ type: 'text', nullable: true })
+    totp_secret?: string;
+
+    @Column({ type: 'boolean', default: false })
+    totp_enabled: boolean;
+
     @CreateDateColumn()
     created_at: Date;
 

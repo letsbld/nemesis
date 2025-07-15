@@ -147,6 +147,11 @@ const NavBarContent = () => {
                                             Settings
                                         </Link>
                                     </li>
+                                    <li className="mb-2">
+                                        <Link href="/user/totp" className="hover:underline">
+                                            Two-Factor Auth
+                                        </Link>
+                                    </li>
                                 </ul>
                             </SidebarMenu>
 

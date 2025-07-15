@@ -11,9 +11,12 @@ export default function UserLoginPage() {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
+        totpToken: '',
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showTOTP, setShowTOTP] = useState(false);
+    const [totpRequired, setTotpRequired] = useState(false);
 
     useEffect(() => {
         if (session?.user) {
@@ -47,16 +50,33 @@ export default function UserLoginPage() {
             const result = await signIn('credentials', {
                 username: formData.username,
                 password: formData.password,
+                totpToken: formData.totpToken,
                 redirect: false,
             });
 
             if (result?.error) {
-                setError('Invalid username or password');
+                if (result.error === 'TOTP_REQUIRED') {
+                    setTotpRequired(true);
+                    setShowTOTP(true);
+                    setError('Please enter your 6-digit authenticator code');
+                } else if (result.error === 'INVALID_TOTP') {
+                    setError('Invalid authenticator code. Please try again.');
+                } else if (result.error === 'CredentialsSignin') {
+                    // Check if this is a TOTP-related error
+                    if (formData.totpToken) {
+                        setError('Invalid authenticator code. Please try again.');
+                    } else {
+                        setError('Invalid username or password');
+                    }
+                } else {
+                    setError('Invalid username or password');
+                }
             } else if (result?.ok) {
                 // Successful login, NextAuth will handle the redirect
                 router.push('/home');
             }
-        } catch {
+        } catch (error) {
+            console.error('Login error:', error);
             setError('An error occurred during login');
         } finally {
             setIsLoading(false);
@@ -128,6 +148,33 @@ export default function UserLoginPage() {
                         />
                     </div>
 
+                    {(showTOTP || totpRequired) && (
+                        <div>
+                            <label
+                                htmlFor="totpToken"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                6-Digit Authenticator Code
+                            </label>
+                            <input
+                                id="totpToken"
+                                name="totpToken"
+                                type="text"
+                                maxLength={6}
+                                pattern="[0-9]{6}"
+                                value={formData.totpToken}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="000000"
+                                disabled={isLoading}
+                                autoComplete="one-time-code"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Enter the 6-digit code from your authenticator app
+                            </p>
+                        </div>
+                    )}
+
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
                             {error}
@@ -136,7 +183,12 @@ export default function UserLoginPage() {
 
                     <button
                         type="submit"
-                        disabled={isLoading || !formData.username || !formData.password}
+                        disabled={
+                            isLoading ||
+                            !formData.username ||
+                            !formData.password ||
+                            (totpRequired && !formData.totpToken)
+                        }
                         className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                     >
                         {isLoading ? 'Signing in...' : 'Sign In'}

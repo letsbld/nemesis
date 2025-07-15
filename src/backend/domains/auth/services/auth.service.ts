@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { AppDataSource } from '../../../shared/database/typeorm';
 import { Admin } from '../entities/Admin.entity';
 import { UserService } from '../../user/services/user.service';
+import { TOTPService } from './totp.service';
 
 export const authOptions = {
     providers: [
@@ -16,6 +17,7 @@ export const authOptions = {
             credentials: {
                 username: { label: 'Username', type: 'text' },
                 password: { label: 'Password', type: 'password' },
+                totpToken: { label: 'TOTP Token', type: 'text' },
             },
             async authorize(credentials) {
                 if (!credentials?.username || !credentials?.password) {
@@ -32,17 +34,35 @@ export const authOptions = {
                     credentials.password
                 );
 
-                if (user) {
-                    return {
-                        id: user.id,
-                        email: user.company_email,
-                        name: user.display_name,
-                        username: user.username,
-                        role: 'user',
-                    };
+                if (!user) {
+                    return null;
                 }
 
-                return null;
+                // Check if TOTP is enabled for this user
+                if (user.totp_enabled && user.totp_secret) {
+                    if (!credentials.totpToken) {
+                        throw new Error('TOTP_REQUIRED');
+                    }
+
+                    const isValidTOTP = TOTPService.verifyTOTP(
+                        credentials.totpToken,
+                        user.totp_secret
+                    );
+
+                    if (!isValidTOTP) {
+                        throw new Error('INVALID_TOTP');
+                    }
+                }
+
+                return {
+                    id: user.id,
+                    email: user.company_email,
+                    name: user.display_name,
+                    username: user.username,
+                    role: 'user',
+                    totpEnabled: user.totp_enabled || false,
+                    requiresTotpSetup: !user.totp_enabled,
+                };
             },
         }),
     ],

@@ -9,6 +9,8 @@ export interface CreateUserDto {
     username: string;
     password: string;
     description?: string;
+    totp_secret?: string;
+    totp_enabled?: boolean;
 }
 
 export interface UpdateUserDto {
@@ -22,6 +24,8 @@ export interface UpdateUserDto {
     username?: string;
     password?: string;
     description?: string;
+    totp_secret?: string;
+    totp_enabled?: boolean;
 }
 
 export interface UserResponseDto {
@@ -35,6 +39,8 @@ export interface UserResponseDto {
     manager_name: string;
     username: string;
     description?: string;
+    totp_secret?: string;
+    totp_enabled: boolean;
     created_at: Date;
     updated_at: Date;
 }
