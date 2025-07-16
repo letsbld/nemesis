@@ -7,32 +7,50 @@ import { formatDate } from '@/lib/date-utils';
 interface UserListProps {
     users: UserData[];
     onCreateUser: () => void;
+    onImportCSV: () => void;
     isLoading?: boolean;
 }
 
-export function UserList({ users, onCreateUser, isLoading = false }: UserListProps) {
+export function UserList({ users, onCreateUser, onImportCSV, isLoading = false }: UserListProps) {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">User Management</h1>
-                <CustomButton
-                    name="Create New User"
-                    onClick={onCreateUser}
-                    btnType="button"
-                    style="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
-                    loading={isLoading}
-                />
+                <div className="flex gap-3">
+                    <CustomButton
+                        name="Import CSV"
+                        onClick={onImportCSV}
+                        btnType="button"
+                        style="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+                        loading={isLoading}
+                    />
+                    <CustomButton
+                        name="Create New User"
+                        onClick={onCreateUser}
+                        btnType="button"
+                        style="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
+                        loading={isLoading}
+                    />
+                </div>
             </div>
 
             {users.length === 0 ? (
                 <div className="text-center py-12">
                     <p className="text-gray-500 text-lg mb-4">No users found</p>
-                    <CustomButton
-                        name="Create First User"
-                        onClick={onCreateUser}
-                        btnType="button"
-                        style="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
-                    />
+                    <div className="flex gap-3 justify-center">
+                        <CustomButton
+                            name="Import from CSV"
+                            onClick={onImportCSV}
+                            btnType="button"
+                            style="bg-green-600 hover:bg-green-700 text-white px-6 py-3"
+                        />
+                        <CustomButton
+                            name="Create First User"
+                            onClick={onCreateUser}
+                            btnType="button"
+                            style="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+                        />
+                    </div>
                 </div>
             ) : (
                 <div className="bg-white rounded-lg shadow overflow-hidden">

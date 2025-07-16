@@ -1,0 +1,5 @@
+first_name,middle_name,last_name,display_name,company_email,alternate_email,manager_name,username,password,description
+John,M,Doe,John Doe,john.doe@company.com,john@personal.com,Jane Smith,johndoe,SecurePass123!,Sales representative
+Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,Marketing manager
+Mike,A,Johnson,Mike Johnson,mike.johnson@company.com,mike@example.com,Sarah Wilson,mikej,ComplexPwd789#,Software developer
+Sarah,,Wilson,Sarah Wilson,sarah.wilson@company.com,,Mike Johnson,sarahw,SafePassword012$,Project manager

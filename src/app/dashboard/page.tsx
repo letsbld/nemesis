@@ -88,12 +88,14 @@ const DashboardPage = () => {
                             <p className="text-gray-700 mb-4">
                                 Manage user accounts, permissions, and access control.
                             </p>
-                            <button
-                                onClick={() => router.push('/admin/users')}
-                                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                                Manage Users
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => router.push('/admin/users')}
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Manage Users
+                                </button>
+                            </div>
                         </div>
 
                         <div className="bg-green-50 p-6 rounded-lg border border-green-200">

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserList } from '@/components/admin/UserList';
 import { CreateUserForm } from '@/components/admin/CreateUserForm';
+import { CSVImportForm } from '@/components/admin/CSVImportForm';
 import { UserData, CreateUserData } from '@/types/admin.types';
 
 const UsersPage = () => {
@@ -13,6 +14,7 @@ const UsersPage = () => {
     const router = useRouter();
     const [users, setUsers] = useState<UserData[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [showCSVImport, setShowCSVImport] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
@@ -126,11 +128,26 @@ const UsersPage = () => {
         );
     }
 
+    if (showCSVImport) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8">
+                <CSVImportForm
+                    onImportComplete={() => {
+                        fetchUsers(); // Refresh user list after import
+                        setShowCSVImport(false);
+                    }}
+                    onClose={() => setShowCSVImport(false)}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <UserList
                 users={users}
                 onCreateUser={() => setShowCreateForm(true)}
+                onImportCSV={() => setShowCSVImport(true)}
                 isLoading={isLoading}
             />
         </div>
