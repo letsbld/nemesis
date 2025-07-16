@@ -25,7 +25,18 @@ export default function UserLoginPage() {
                 if (session.user.role === 'admin') {
                     router.push('/dashboard');
                 } else if (session.user.role === 'user') {
-                    router.push('/home');
+                    // Check if user needs to set up TOTP
+                    const requiresTotpSetup =
+                        'requiresTotpSetup' in session.user
+                            ? session.user.requiresTotpSetup
+                            : false;
+
+                    if (requiresTotpSetup) {
+                        // Redirect to TOTP setup with a query parameter to indicate it's required
+                        router.push('/user/totp?required=true');
+                    } else {
+                        router.push('/home');
+                    }
                 }
             }
         }

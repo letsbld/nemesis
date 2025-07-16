@@ -23,6 +23,16 @@ export default function RoomPage() {
             router.push('/auth/login');
             return;
         }
+
+        // Check if user needs TOTP setup (only for user role)
+        if (userRole === 'user' && session.user) {
+            const requiresTotpSetup =
+                'requiresTotpSetup' in session.user ? session.user.requiresTotpSetup : false;
+            if (requiresTotpSetup) {
+                router.push('/user/totp?required=true');
+                return;
+            }
+        }
     }, [session, status, router]);
 
     if (status === 'loading') {

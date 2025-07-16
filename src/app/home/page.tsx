@@ -29,6 +29,14 @@ export default function UserHomePage() {
                 router.push('/auth/login');
                 return;
             }
+
+            // Check if user needs TOTP setup
+            const requiresTotpSetup =
+                'requiresTotpSetup' in session.user ? session.user.requiresTotpSetup : false;
+            if (requiresTotpSetup) {
+                router.push('/user/totp?required=true');
+                return;
+            }
         } else {
             // No role defined, redirect to login
             router.push('/auth/login');

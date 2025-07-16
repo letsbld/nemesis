@@ -26,6 +26,15 @@ export class Admin {
     @Column({ type: 'varchar', default: 'admin' })
     role: string;
 
+    @Column({ type: 'text', nullable: true })
+    access_token: string;
+
+    @Column({ type: 'text', nullable: true })
+    refresh_token: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    token_expires_at: Date | null;
+
     @CreateDateColumn()
     created_at: Date;
 
