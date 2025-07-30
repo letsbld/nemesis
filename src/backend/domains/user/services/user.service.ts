@@ -64,6 +64,10 @@ export class UserService {
         return await this.userRepository.delete(id);
     }
 
+    async updateUserChallenge(id: string, challenge: string | null): Promise<void> {
+        await this.userRepository.updateChallenge(id, challenge);
+    }
+
     private mapToResponseDto(user: User): UserResponseDto {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;

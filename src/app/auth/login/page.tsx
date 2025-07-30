@@ -50,6 +50,7 @@ export default function LoginPage() {
                     </p>
                 </div>
 
+                {/* Traditional Login Options */}
                 <div className="space-y-4">
                     <Link
                         href="/auth/admin/login"
@@ -90,7 +91,7 @@ export default function LoginPage() {
                     <div className="text-center">
                         <h3 className="text-sm font-medium text-gray-900 mb-2">User Login</h3>
                         <p className="text-xs text-gray-500">
-                            Username and password for regular users
+                            Passkey authentication or username/password for regular users
                         </p>
                     </div>
                 </div>

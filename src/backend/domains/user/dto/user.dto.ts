@@ -41,6 +41,7 @@ export interface UserResponseDto {
     description?: string;
     totp_secret?: string;
     totp_enabled: boolean;
+    challenge?: string;
     created_at: Date;
     updated_at: Date;
 }

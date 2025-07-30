@@ -40,4 +40,8 @@ export class UserRepository {
         const result = await this.repository.delete(id);
         return result.affected ? result.affected > 0 : false;
     }
+
+    async updateChallenge(id: string, challenge: string | null): Promise<void> {
+        await this.repository.update(id, { challenge: challenge || undefined });
+    }
 }
