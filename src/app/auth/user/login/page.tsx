@@ -4,7 +4,6 @@ import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import PasskeyAuth from '@/components/auth/PasskeyAuth';
 
 export default function UserLoginPage() {
     const { data: session, status } = useSession();
@@ -18,8 +17,6 @@ export default function UserLoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [showTOTP, setShowTOTP] = useState(false);
     const [totpRequired, setTotpRequired] = useState(false);
-    const [passkeySuccess, setPasskeySuccess] = useState('');
-    const [passkeyError, setPasskeyError] = useState('');
 
     useEffect(() => {
         if (session?.user) {
@@ -97,27 +94,6 @@ export default function UserLoginPage() {
         }
     };
 
-    const handlePasskeySuccess = (result: any) => {
-        if (result.message) {
-            setPasskeySuccess(result.message);
-            setPasskeyError('');
-        } else if (result.id) {
-            // User authenticated successfully
-            setPasskeySuccess('Authentication successful! Redirecting...');
-            setPasskeyError('');
-            // In a real implementation, you'd create a session here
-            // For now, we'll just show success
-            setTimeout(() => {
-                router.push('/home');
-            }, 1500);
-        }
-    };
-
-    const handlePasskeyError = (errorMessage: string) => {
-        setPasskeyError(errorMessage);
-        setPasskeySuccess('');
-    };
-
     if (status === 'loading') {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -139,46 +115,8 @@ export default function UserLoginPage() {
             <div className="max-w-md w-full space-y-8 p-8">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">User Login</h1>
-                    <p className="text-gray-600 mb-8">Sign in with your passkey or username and password</p>
+                    <p className="text-gray-600 mb-8">Sign in with your username and password</p>
                 </div>
-
-                {/* Passkey Error/Success Messages */}
-                {passkeyError && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-red-700 text-sm">{passkeyError}</p>
-                    </div>
-                )}
-
-                {passkeySuccess && (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                        <p className="text-green-700 text-sm">{passkeySuccess}</p>
-                    </div>
-                )}
-
-                {/* Passkey Authentication */}
-                <div className="bg-white p-6 rounded-lg shadow-md border">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                        Passkey Authentication
-                    </h2>
-                    <PasskeyAuth onSuccess={handlePasskeySuccess} onError={handlePasskeyError} />
-                </div>
-
-                {/* Divider */}
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-gray-50 text-gray-500">Or continue with</span>
-                    </div>
-                </div>
-
-                {/* Traditional Login Error Messages */}
-                {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-red-700 text-sm">{error}</p>
-                    </div>
-                )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
@@ -245,6 +183,12 @@ export default function UserLoginPage() {
                             <p className="text-xs text-gray-500 mt-1">
                                 Enter the 6-digit code from your authenticator app
                             </p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                            {error}
                         </div>
                     )}
 

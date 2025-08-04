@@ -48,10 +48,6 @@ export class User {
     @Column({ type: 'boolean', default: false })
     totp_enabled: boolean;
 
-    // WebAuthn challenge field (temporary storage)
-    @Column({ type: 'text', nullable: true })
-    challenge?: string;
-
     @CreateDateColumn()
     created_at: Date;
 
