@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface ServiceProvider {
     id: string;
@@ -27,6 +27,7 @@ interface DLPPolicy {
 export default function SSOManagementPage() {
     const { data: session } = useSession();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState<'providers' | 'policies' | 'audit'>('providers');
     const [serviceProviders, setServiceProviders] = useState<ServiceProvider[]>([]);
     const [policies, setPolicies] = useState<DLPPolicy[]>([]);
@@ -38,8 +39,17 @@ export default function SSOManagementPage() {
             return;
         }
 
+        // Set initial tab based on URL parameter, default to 'providers'
+        const tabParam = searchParams.get('tab');
+        if (tabParam && ['providers', 'policies', 'audit'].includes(tabParam)) {
+            setActiveTab(tabParam as 'providers' | 'policies' | 'audit');
+        } else {
+            // Explicitly set to 'providers' if no valid tab parameter
+            setActiveTab('providers');
+        }
+
         loadData();
-    }, [session, router]);
+    }, [session, router, searchParams]);
 
     const loadData = async () => {
         try {
@@ -100,6 +110,14 @@ export default function SSOManagementPage() {
         }
     };
 
+    const handleTabChange = (tab: 'providers' | 'policies' | 'audit') => {
+        setActiveTab(tab);
+        // Update URL with tab parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        router.push(url.pathname + '?' + url.searchParams.toString(), { scroll: false });
+    };
+
     const generateMetadata = () => {
         const metadata = `<?xml version="1.0"?>
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
@@ -153,7 +171,7 @@ export default function SSOManagementPage() {
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => handleTabChange(tab.id as any)}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${
                                 activeTab === tab.id
                                     ? 'border-blue-500 text-blue-600'
