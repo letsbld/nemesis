@@ -99,6 +99,23 @@ const NavBarContent = () => {
                                             { href: '/user/settings', label: 'User Settings' },
                                         ]}
                                     />
+                                    <CollapsibleItem
+                                        title="SSO & Security"
+                                        links={[
+                                            {
+                                                href: '/dashboard/sso-management',
+                                                label: 'SSO Management',
+                                            },
+                                            {
+                                                href: '/dashboard/sso-management?tab=policies',
+                                                label: 'DLP Policies',
+                                            },
+                                            {
+                                                href: '/dashboard/sso-management?tab=audit',
+                                                label: 'Access Audit',
+                                            },
+                                        ]}
+                                    />
                                 </ul>
                             </SidebarMenu>
 
