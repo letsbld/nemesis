@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserList } from '@/components/admin/UserList';
 import { CreateUserForm } from '@/components/admin/CreateUserForm';
+import { EditUserForm } from '@/components/admin/EditUserForm';
 import { CSVImportForm } from '@/components/admin/CSVImportForm';
 import { UserData, CreateUserData } from '@/types/admin.types';
 
@@ -14,9 +15,12 @@ const UsersPage = () => {
     const router = useRouter();
     const [users, setUsers] = useState<UserData[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [showEditForm, setShowEditForm] = useState(false);
+    const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [showCSVImport, setShowCSVImport] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     // Check authentication and admin role
     useEffect(() => {
@@ -116,6 +120,87 @@ const UsersPage = () => {
         }
     };
 
+    const handleEditUser = (user: UserData) => {
+        console.log('Editing user:', user);
+        setEditingUser(user);
+        setShowEditForm(true);
+    };
+
+    const handleUpdateUser = async (userId: string, userData: Partial<CreateUserData>) => {
+        setIsUpdating(true);
+        try {
+            const response = await fetch(`/api/admin/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            if (response.ok) {
+                const updatedUser = await response.json();
+                setUsers((prev) => prev.map((user) => (user.id === userId ? updatedUser : user)));
+                setShowEditForm(false);
+                setEditingUser(null);
+                toast.success('User updated successfully!');
+            } else {
+                const errorData = await response.json();
+                toast.error(`Error: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error('Error updating user:', error);
+            toast.error('Failed to update user. Please try again.');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleDeleteUser = async (userId: string) => {
+        if (!confirm('Are you sure you want to delete this user?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/admin/users/${userId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setUsers((prev) => prev.filter((user) => user.id !== userId));
+                toast.success('User deleted successfully!');
+            } else {
+                const errorData = await response.json();
+                toast.error(`Error: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            toast.error('Failed to delete user. Please try again.');
+        }
+    };
+
+    const handleResetPassword = async (userId: string) => {
+        if (!confirm("Are you sure you want to reset this user's password?")) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
+                method: 'POST',
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                toast.success(`Password reset successfully! New password: ${data.newPassword}`);
+            } else {
+                const errorData = await response.json();
+                toast.error(`Error: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error('Error resetting password:', error);
+            toast.error('Failed to reset password. Please try again.');
+        }
+    };
+
     if (showCreateForm) {
         return (
             <div className="min-h-screen bg-gray-50 py-8">
@@ -123,6 +208,22 @@ const UsersPage = () => {
                     onSubmit={handleCreateUser}
                     onCancel={() => setShowCreateForm(false)}
                     isLoading={isCreating}
+                />
+            </div>
+        );
+    }
+
+    if (showEditForm && editingUser) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8">
+                <EditUserForm
+                    user={editingUser}
+                    onSubmit={(userData) => handleUpdateUser(editingUser.id, userData)}
+                    onCancel={() => {
+                        setShowEditForm(false);
+                        setEditingUser(null);
+                    }}
+                    isLoading={isUpdating}
                 />
             </div>
         );
@@ -147,6 +248,8 @@ const UsersPage = () => {
             <UserList
                 users={users}
                 onCreateUser={() => setShowCreateForm(true)}
+                onDeleteUser={handleDeleteUser}
+                onResetPassword={handleResetPassword}
                 onImportCSV={() => setShowCSVImport(true)}
                 isLoading={isLoading}
             />

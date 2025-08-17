@@ -3,15 +3,48 @@
 import { UserData } from '@/types/admin.types';
 import CustomButton from '@/components/ui/customButton';
 import { formatDate } from '@/lib/date-utils';
+import { useRouter } from 'next/navigation';
 
 interface UserListProps {
     users: UserData[];
     onCreateUser: () => void;
+    onDeleteUser: (userId: string) => Promise<void>;
+    onResetPassword: (userId: string) => Promise<void>;
     onImportCSV: () => void;
-    isLoading?: boolean;
+    isLoading: boolean;
 }
 
-export function UserList({ users, onCreateUser, onImportCSV, isLoading = false }: UserListProps) {
+export function UserList({
+    users,
+    onCreateUser,
+    onDeleteUser,
+    onResetPassword,
+    onImportCSV,
+    isLoading = false,
+}: UserListProps) {
+    const router = useRouter();
+
+    const handleEditUser = (user: UserData) => {
+        console.log('Navigating to edit user:', user.id);
+        router.push(`/admin/users/${user.id}`);
+    };
+
+    const handleDeleteClick = async (userId: string) => {
+        try {
+            await onDeleteUser(userId);
+        } catch (error) {
+            console.error('Error in delete handler:', error);
+        }
+    };
+
+    const handleResetPasswordClick = async (userId: string) => {
+        try {
+            await onResetPassword(userId);
+        } catch (error) {
+            console.error('Error in reset password handler:', error);
+        }
+    };
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -115,22 +148,29 @@ export function UserList({ users, onCreateUser, onImportCSV, isLoading = false }
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            className="text-blue-600 hover:text-blue-900 mr-4"
-                                            onClick={() => {
-                                                /* TODO: Handle edit */
-                                            }}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="text-red-600 hover:text-red-900"
-                                            onClick={() => {
-                                                /* TODO: Handle delete */
-                                            }}
-                                        >
-                                            Delete
-                                        </button>
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                className="text-blue-600 hover:text-blue-900 px-2 py-1"
+                                                onClick={() => handleEditUser(user)}
+                                                disabled={isLoading}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="text-yellow-600 hover:text-yellow-900 px-2 py-1"
+                                                onClick={() => handleResetPasswordClick(user.id)}
+                                                disabled={isLoading}
+                                            >
+                                                Reset Password
+                                            </button>
+                                            <button
+                                                className="text-red-600 hover:text-red-900 px-2 py-1"
+                                                onClick={() => handleDeleteClick(user.id)}
+                                                disabled={isLoading}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
