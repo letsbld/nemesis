@@ -165,7 +165,6 @@ async function storeAuthRequest(request: any) {
     // For testing, store in memory (use Redis/DB in production)
     const requestId = 'req_' + Math.random().toString(36).substr(2, 9);
     // Store request with expiry (implement proper storage)
-    console.log('Storing auth request:', requestId, request);
     return requestId;
 }
 

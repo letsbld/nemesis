@@ -3,23 +3,31 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
     function middleware(req) {
-        // Handle TOTP requirement redirects
         const token = req.nextauth.token;
+        const pathname = req.nextUrl.pathname;
 
-        // Only redirect to TOTP if we're certain the user needs it
-        // This helps avoid redirect loops after TOTP is enabled
+        // Skip middleware for auth routes
+        if (pathname.startsWith('/auth')) {
+            return NextResponse.next();
+        }
+
+        // Check for admin routes
+        if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+            if (token?.role !== 'admin') {
+                return NextResponse.redirect(new URL('/auth/login', req.url));
+            }
+        }
+
+        // Handle TOTP requirement for users only
         if (token?.role === 'user' && token.requiresTotpSetup === true) {
-            // Allow access to TOTP setup page
-            if (req.nextUrl.pathname === '/user/totp') {
+            if (pathname === '/user/totp') {
                 return NextResponse.next();
             }
 
-            // Allow API routes to proceed
-            if (req.nextUrl.pathname.startsWith('/api/')) {
+            if (pathname.startsWith('/api/')) {
                 return NextResponse.next();
             }
 
-            // Only redirect specific user routes to TOTP setup
             const userRoutes = [
                 '/home',
                 '/room',
@@ -28,8 +36,7 @@ export default withAuth(
                 '/user/report',
             ];
             const needsRedirect = userRoutes.some(
-                (route) =>
-                    req.nextUrl.pathname === route || req.nextUrl.pathname.startsWith(route + '/')
+                (route) => pathname === route || pathname.startsWith(route + '/')
             );
 
             if (needsRedirect) {
@@ -45,13 +52,15 @@ export default withAuth(
     {
         callbacks: {
             authorized: ({ token, req }) => {
-                // Allow auth routes without authentication
-                if (req.nextUrl.pathname.startsWith('/auth')) {
+                const pathname = req.nextUrl.pathname;
+
+                // Always allow auth routes
+                if (pathname.startsWith('/auth')) {
                     return true;
                 }
 
-                // Just require authentication for protected routes
-                return token?.email !== undefined;
+                // Require authentication for protected routes
+                return !!token?.email;
             },
         },
         pages: {
@@ -61,11 +70,5 @@ export default withAuth(
 );
 
 export const config = {
-    // Only protect specific admin and dashboard routes, exclude auth routes
-    matcher: [
-        '/dashboard/:path*',
-        '/admin/:path*',
-        // Exclude auth routes and API routes to prevent infinite loops
-        '/((?!api|auth|_next/static|_next/image|favicon.ico).*)',
-    ],
+    matcher: ['/dashboard/:path*', '/admin/:path*', '/home/:path*', '/user/:path*', '/room/:path*'],
 };
