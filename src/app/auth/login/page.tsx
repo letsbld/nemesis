@@ -101,7 +101,7 @@ export default function LoginPage() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {error && (
+                    {/* {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                             {error}
                         </div>
@@ -148,7 +148,7 @@ export default function LoginPage() {
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>
-                    </div>
+                    </div> */}
 
                     <div className="flex items-center justify-between">
                         <div className="text-sm">

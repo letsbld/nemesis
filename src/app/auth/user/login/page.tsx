@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, useSession, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -58,36 +58,53 @@ export default function UserLoginPage() {
         setIsLoading(true);
 
         try {
+            console.log('=== USER LOGIN ATTEMPT ===');
+            console.log('Username:', formData.username);
+            console.log('Password length:', formData.password.length);
+            console.log('TOTP token provided:', !!formData.totpToken);
+
             const result = await signIn('credentials', {
                 username: formData.username,
                 password: formData.password,
-                totpToken: formData.totpToken,
+                totpToken: formData.totpToken || '',
                 redirect: false,
             });
 
+            console.log('=== LOGIN RESPONSE ===');
+            console.log('Full result:', JSON.stringify(result, null, 2));
+
             if (result?.error) {
-                if (result.error === 'TOTP_REQUIRED') {
-                    setTotpRequired(true);
+                console.log('=== HANDLING LOGIN ERROR ===');
+                console.log('Error type:', result.error);
+
+                // Check for specific TOTP errors in the error message
+                if (result.error.includes('TOTP_REQUIRED')) {
+                    console.log('TOTP is required for this user');
                     setShowTOTP(true);
                     setError('Please enter your 6-digit authenticator code');
-                } else if (result.error === 'INVALID_TOTP') {
+                } else if (result.error.includes('INVALID_TOTP')) {
+                    console.log('Invalid TOTP code provided');
                     setError('Invalid authenticator code. Please try again.');
                 } else if (result.error === 'CredentialsSignin') {
-                    // Check if this is a TOTP-related error
-                    if (formData.totpToken) {
-                        setError('Invalid authenticator code. Please try again.');
+                    console.log('General credentials error');
+                    if (!showTOTP) {
+                        setShowTOTP(true);
+                        setError(
+                            'Login failed. If you have 2FA enabled, please enter your code below.'
+                        );
                     } else {
-                        setError('Invalid username or password');
+                        setError('Invalid username, password, or authenticator code.');
                     }
                 } else {
                     setError('Invalid username or password');
                 }
             } else if (result?.ok) {
-                // Successful login, NextAuth will handle the redirect
-                router.push('/home');
+                console.log('=== LOGIN SUCCESS ===');
+                // Let useEffect handle redirect based on session
             }
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('=== LOGIN EXCEPTION ===');
+            console.error('Exception details:', error);
             setError('An error occurred during login');
         } finally {
             setIsLoading(false);
@@ -159,13 +176,13 @@ export default function UserLoginPage() {
                         />
                     </div>
 
-                    {(showTOTP || totpRequired) && (
+                    {showTOTP && (
                         <div>
                             <label
                                 htmlFor="totpToken"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                6-Digit Authenticator Code
+                                6-Digit Authenticator Code (if enabled)
                             </label>
                             <input
                                 id="totpToken"
@@ -181,7 +198,7 @@ export default function UserLoginPage() {
                                 autoComplete="one-time-code"
                             />
                             <p className="text-xs text-gray-500 mt-1">
-                                Enter the 6-digit code from your authenticator app
+                                Leave blank if you don't have 2FA enabled
                             </p>
                         </div>
                     )}
@@ -194,12 +211,7 @@ export default function UserLoginPage() {
 
                     <button
                         type="submit"
-                        disabled={
-                            isLoading ||
-                            !formData.username ||
-                            !formData.password ||
-                            (totpRequired && !formData.totpToken)
-                        }
+                        disabled={isLoading || !formData.username || !formData.password}
                         className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                     >
                         {isLoading ? 'Signing in...' : 'Sign In'}
