@@ -3,6 +3,38 @@ import { verifyAuth } from '../../../../backend/lib/auth-helpers';
 import { UserService } from '../../../../backend/domains/user/services/user.service';
 import { TOTPService } from '../../../../backend/domains/auth/services/totp.service';
 
+export async function GET(request: NextRequest) {
+    try {
+        // Verify authentication
+        const authResult = await verifyAuth(request);
+        if (!authResult.success || !authResult.user || authResult.user.role !== 'user') {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const userId = authResult.user.id;
+        const userService = new UserService();
+        const user = await userService.getUserById(userId);
+
+        if (!user) {
+            return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({
+            success: true,
+            data: {
+                enabled: user.totp_enabled || false,
+                hasSecret: !!user.totp_secret,
+            },
+        });
+    } catch (error) {
+        console.error('TOTP status API error:', error);
+        return NextResponse.json(
+            { success: false, error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         // Verify authentication

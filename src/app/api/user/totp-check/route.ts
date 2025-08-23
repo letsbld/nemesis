@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '../../../backend/lib/auth-helpers';
-import { UserService } from '../../../backend/domains/user/services/user.service';
+import { verifyAuth } from '../../../../backend/lib/auth-helpers';
+import { UserService } from '../../../../backend/domains/user/services/user.service';
 
 export async function GET(request: NextRequest) {
     try {

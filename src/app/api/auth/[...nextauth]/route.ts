@@ -1,8 +1,12 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
+import type { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import { AppDataSource } from '@/backend/lib/typeorm';
+import { User } from '@/backend/domains/user/entities/User.entity';
+import bcrypt from 'bcryptjs';
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -13,46 +17,65 @@ export const authOptions: NextAuthOptions = {
             credentials: {
                 username: { label: 'Username', type: 'text' },
                 password: { label: 'Password', type: 'password' },
-                totpToken: { label: 'TOTP Token', type: 'text' },
             },
             async authorize(credentials) {
-                // In production, validate against your database
-                // This is where you'd implement your actual authentication logic
-                // For now, keeping basic validation for testing
+                console.log('=== NEXTAUTH AUTHORIZE CALLED ===');
+                console.log('Received credentials:', {
+                    username: credentials?.username,
+                    passwordProvided: !!credentials?.password,
+                });
 
-                if (credentials?.username && credentials?.password) {
-                    // Replace with your actual authentication logic
-                    // This should validate against your user database
-
-                    // Example validation (replace with real implementation)
-                    if (credentials.username === 'admin' && credentials.password === 'admin') {
-                        return {
-                            id: '1',
-                            name: 'Admin User',
-                            email: 'admin@example.com',
-                            role: 'admin',
-                        };
-                    }
-
-                    if (credentials.username === 'user' && credentials.password === 'user') {
-                        return {
-                            id: '2',
-                            name: 'Regular User',
-                            email: 'user@example.com',
-                            role: 'user',
-                        };
-                    }
+                if (!credentials?.username || !credentials?.password) {
+                    console.log('Missing username or password');
+                    return null;
                 }
 
-                return null;
+                try {
+                    if (!AppDataSource.isInitialized) {
+                        await AppDataSource.initialize();
+                    }
+
+                    const userRepository = AppDataSource.getRepository(User);
+                    const user = await userRepository.findOne({
+                        where: { username: credentials.username },
+                    });
+
+                    if (!user) {
+                        console.log('User not found:', credentials.username);
+                        return null;
+                    }
+
+                    console.log('User found:', user.username);
+
+                    const isValidPassword = await bcrypt.compare(
+                        credentials.password,
+                        user.password
+                    );
+
+                    if (!isValidPassword) {
+                        console.log('Invalid password for user:', credentials.username);
+                        return null;
+                    }
+
+                    console.log('Password validated successfully');
+
+                    return {
+                        id: user.id.toString(),
+                        name: user.display_name || user.username,
+                        email: user.company_email,
+                        role: user.role || 'user',
+                        totpEnabled: user.totp_enabled || false,
+                    };
+                } catch (error: any) {
+                    console.error('Authentication error:', error);
+                    return null;
+                }
             },
         }),
     ],
     callbacks: {
-        async signIn({ user, account, profile }) {
+        async signIn({ user, account }) {
             if (account?.provider === 'google') {
-                // Handle Google sign-in for admins
-                // You might want to check if the email is in your admin list
                 const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
                 if (adminEmails.includes(user.email || '')) {
                     (user as any).role = 'admin';
@@ -65,9 +88,11 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user, account }) {
             if (user) {
                 token.role = (user as any).role;
+                token.requiresTotpSetup = (user as any).requiresTotpSetup;
+                token.totpEnabled = (user as any).totpEnabled;
             }
             if (account?.provider === 'google') {
-                token.role = 'admin'; // Google logins are admin
+                token.role = 'admin';
             }
             return token;
         },
@@ -75,6 +100,8 @@ export const authOptions: NextAuthOptions = {
             if (session.user) {
                 (session.user as any).id = token.sub;
                 (session.user as any).role = token.role;
+                (session.user as any).requiresTotpSetup = token.requiresTotpSetup;
+                (session.user as any).totpEnabled = token.totpEnabled;
             }
             return session;
         },
@@ -86,6 +113,7 @@ export const authOptions: NextAuthOptions = {
         strategy: 'jwt',
     },
     secret: process.env.NEXTAUTH_SECRET,
+    debug: process.env.NODE_ENV === 'development',
 };
 
 const handler = NextAuth(authOptions);
