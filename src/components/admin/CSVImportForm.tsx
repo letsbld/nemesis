@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import CustomButton from '@/components/ui/customButton';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface ImportResult {
     success: number;
@@ -47,26 +48,17 @@ export function CSVImportForm({ onImportComplete, onClose }: CSVImportProps) {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await fetch('/api/admin/users/import-csv', {
+            const data = await apiFetch('/admin/users/import-csv', {
                 method: 'POST',
                 body: formData,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setImportResult(data.result);
-                if (data.result.success > 0) {
-                    onImportComplete();
-                }
-            } else {
-                setError(data.error || 'Upload failed');
-                if (data.details) {
-                    setError(`${data.error}: ${data.details.join(', ')}`);
-                }
+            setImportResult(data.result);
+            if (data.result.success > 0) {
+                onImportComplete();
             }
-        } catch (err) {
-            setError('Failed to upload file');
+        } catch (err: any) {
+            setError(err?.error || 'Failed to upload file');
             console.error('Upload error:', err);
         } finally {
             setIsUploading(false);
@@ -230,6 +222,14 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                 
                 <CustomButton
                     name="Cancel"
+                    onClick={onClose}
+                    btnType="button"
+                    style="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2"
+                />
+            </div>
+        </div>
+    );
+}
                     onClick={onClose}
                     btnType="button"
                     style="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2"

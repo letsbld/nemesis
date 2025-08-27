@@ -1,12 +1,20 @@
 'use client';
 
-import { signIn, useSession, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { jwtDecode } from 'jwt-decode';
+import { apiFetch } from '@/lib/apiFetch';
+
+interface DecodedToken {
+    id: string;
+    username: string;
+    role?: string;
+    exp?: number;
+    requiresTotpSetup?: boolean;
+}
 
 export default function UserLoginPage() {
-    const { data: session, status } = useSession();
     const router = useRouter();
     const [formData, setFormData] = useState({
         username: '',
@@ -16,31 +24,34 @@ export default function UserLoginPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showTOTP, setShowTOTP] = useState(false);
-    const [totpRequired, setTotpRequired] = useState(false);
 
+    // 🔐 Auto-redirect if already logged in
     useEffect(() => {
-        if (session?.user) {
-            // Redirect based on user role
-            if ('role' in session.user) {
-                if (session.user.role === 'admin') {
-                    router.push('/dashboard');
-                } else if (session.user.role === 'user') {
-                    // Check if user needs to set up TOTP
-                    const requiresTotpSetup =
-                        'requiresTotpSetup' in session.user
-                            ? session.user.requiresTotpSetup
-                            : false;
+        const token = localStorage.getItem('authToken');
+        const userStr = localStorage.getItem('authUser');
 
-                    if (requiresTotpSetup) {
-                        // Redirect to TOTP setup with a query parameter to indicate it's required
-                        router.push('/user/totp?required=true');
-                    } else {
-                        router.push('/home');
+        if (token && userStr) {
+            try {
+                const decoded: DecodedToken = jwtDecode(token);
+                if (decoded.exp && decoded.exp * 1000 > Date.now()) {
+                    const user = JSON.parse(userStr);
+
+                    if (user.role === 'admin') router.replace('/dashboard');
+                    else if (user.role === 'user') {
+                        if (user.requiresTotpSetup) {
+                            router.replace('/user/totp?required=true');
+                        } else {
+                            router.replace('/home');
+                        }
                     }
                 }
+            } catch {
+                // invalid token → clear storage
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('authUser');
             }
         }
-    }, [session, router]);
+    }, [router]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -48,7 +59,6 @@ export default function UserLoginPage() {
             ...prev,
             [name]: value,
         }));
-        // Clear error when user starts typing
         if (error) setError('');
     };
 
@@ -58,74 +68,71 @@ export default function UserLoginPage() {
         setIsLoading(true);
 
         try {
-            console.log('=== USER LOGIN ATTEMPT ===');
-            console.log('Username:', formData.username);
-            console.log('Password length:', formData.password.length);
-            console.log('TOTP token provided:', !!formData.totpToken);
-
-            const result = await signIn('credentials', {
-                username: formData.username,
-                password: formData.password,
-                totpToken: formData.totpToken || '',
-                redirect: false,
+            const result = await apiFetch(`/auth/user/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: formData.username,
+                    password: formData.password,
+                    totpToken: formData.totpToken || '',
+                }),
             });
 
-            console.log('=== LOGIN RESPONSE ===');
-            console.log('Full result:', JSON.stringify(result, null, 2));
+            // ✅ Save token & user
+            localStorage.setItem('authToken', result.token);
+            localStorage.setItem('user', JSON.stringify(result.user));
 
-            if (result?.error) {
-                console.log('=== HANDLING LOGIN ERROR ===');
-                console.log('Error type:', result.error);
-
-                // Check for specific TOTP errors in the error message
-                if (result.error.includes('TOTP_REQUIRED')) {
-                    console.log('TOTP is required for this user');
-                    setShowTOTP(true);
-                    setError('Please enter your 6-digit authenticator code');
-                } else if (result.error.includes('INVALID_TOTP')) {
-                    console.log('Invalid TOTP code provided');
-                    setError('Invalid authenticator code. Please try again.');
-                } else if (result.error === 'CredentialsSignin') {
-                    console.log('General credentials error');
-                    if (!showTOTP) {
-                        setShowTOTP(true);
-                        setError(
-                            'Login failed. If you have 2FA enabled, please enter your code below.'
-                        );
-                    } else {
-                        setError('Invalid username, password, or authenticator code.');
-                    }
-                } else {
-                    setError('Invalid username or password');
-                }
-            } else if (result?.ok) {
-                console.log('=== LOGIN SUCCESS ===');
-                // Let useEffect handle redirect based on session
+            // ✅ Redirect based on role
+            if (result.user.role === 'admin') {
+                router.replace('/dashboard');
+            } else {
+                router.replace('/home'); // or `/user/home`
             }
-        } catch (error) {
-            console.error('=== LOGIN EXCEPTION ===');
-            console.error('Exception details:', error);
-            setError('An error occurred during login');
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            console.error('Login failed:', err);
+            setError('Invalid credentials or server error');
         }
+
+        // try {
+        //     const result = await apiFetch(`/auth/user/login`, {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({
+        //             username: formData.username,
+        //             password: formData.password,
+        //             totpToken: formData.totpToken || '',
+        //         }),
+        //     });
+
+        //     // Save token + user
+        //     localStorage.setItem('authToken', result.token);
+        //     localStorage.setItem('authUser', JSON.stringify(result.user));
+
+        //     // Redirect based on role
+        //     if (result.user.role === 'admin') {
+        //         router.push('/dashboard');
+        //     } else if (result.user.role === 'user') {
+        //         if (result.user.requiresTotpSetup) {
+        //             router.push('/user/totp?required=true');
+        //         } else {
+        //             router.push('/home');
+        //         }
+        //     }
+        // } catch (err: any) {
+        //     console.error('Login failed:', err);
+        //     const msg = err?.error || 'Invalid username, password, or TOTP code.';
+        //     if (msg.includes('TOTP_REQUIRED')) {
+        //         setShowTOTP(true);
+        //         setError('Please enter your 6-digit authenticator code');
+        //     } else if (msg.includes('INVALID_TOTP')) {
+        //         setError('Invalid authenticator code. Please try again.');
+        //     } else {
+        //         setError(msg);
+        //     }
+        // } finally {
+        //     setIsLoading(false);
+        // }
     };
-
-    if (status === 'loading') {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Loading...</div>
-            </div>
-        );
-    }
-
-    if (session) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Redirecting...</div>
-            </div>
-        );
-    }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -182,7 +189,7 @@ export default function UserLoginPage() {
                                 htmlFor="totpToken"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                6-Digit Authenticator Code (if enabled)
+                                6-Digit Authenticator Code
                             </label>
                             <input
                                 id="totpToken"
@@ -197,9 +204,6 @@ export default function UserLoginPage() {
                                 disabled={isLoading}
                                 autoComplete="one-time-code"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Leave blank if you don't have 2FA enabled
-                            </p>
                         </div>
                     )}
 
@@ -212,7 +216,7 @@ export default function UserLoginPage() {
                     <button
                         type="submit"
                         disabled={isLoading || !formData.username || !formData.password}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
                     >
                         {isLoading ? 'Signing in...' : 'Sign In'}
                     </button>
@@ -226,13 +230,6 @@ export default function UserLoginPage() {
                     >
                         Admin Login →
                     </Link>
-                </div>
-
-                <div className="text-center text-sm text-gray-500">
-                    <p>Your account is created by your administrator.</p>
-                    <p className="mt-1">
-                        Contact your administrator if you need access or forgot your password.
-                    </p>
                 </div>
             </div>
         </div>

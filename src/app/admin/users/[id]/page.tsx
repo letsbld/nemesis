@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserData, CreateUserData } from '@/types/admin.types';
+import { apiFetch } from '@/lib/apiFetch';
 
 const EditUserPage = () => {
     const { data: session, status } = useSession();
@@ -73,34 +74,20 @@ const EditUserPage = () => {
 
         setIsLoading(true);
         try {
-            console.log('Fetching user with ID:', userId);
-            const response = await fetch(`/api/admin/users/${userId}`);
-
-            if (response.ok) {
-                const userData = await response.json();
-                console.log('Fetched user data:', userData);
-                setUser(userData);
-
-                // Populate form data with correct field mapping
-                setFormData({
-                    username: userData.username || '',
-                    display_name: userData.display_name || '',
-                    first_name: userData.first_name || '',
-                    middle_name: userData.middle_name || '',
-                    last_name: userData.last_name || '',
-                    manager_name: userData.manager_name || '',
-                    company_email: userData.company_email || '',
-                    alternate_email: userData.alternate_email || '',
-                });
-            } else {
-                const errorData = await response.json();
-                console.error('Error response:', errorData);
-                toast.error(`Error: ${errorData.error}`);
-                router.push('/admin/users');
-            }
-        } catch (error) {
-            console.error('Error fetching user:', error);
-            toast.error('Failed to fetch user data');
+            const userData = await apiFetch(`/admin/users/${userId}`);
+            setUser(userData);
+            setFormData({
+                username: userData.username || '',
+                display_name: userData.display_name || '',
+                first_name: userData.first_name || '',
+                middle_name: userData.middle_name || '',
+                last_name: userData.last_name || '',
+                manager_name: userData.manager_name || '',
+                company_email: userData.company_email || '',
+                alternate_email: userData.alternate_email || '',
+            });
+        } catch (error: any) {
+            toast.error(`Error: ${error?.error || 'Failed to fetch user data.'}`);
             router.push('/admin/users');
         } finally {
             setIsLoading(false);
@@ -122,26 +109,15 @@ const EditUserPage = () => {
         setIsSaving(true);
 
         try {
-            console.log('Updating user with data:', formData);
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            await apiFetch(`/admin/users/${userId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
-
-            if (response.ok) {
-                toast.success('User updated successfully!');
-                router.push('/admin/users');
-            } else {
-                const errorData = await response.json();
-                console.error('Update error:', errorData);
-                toast.error(`Error: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error updating user:', error);
-            toast.error('Failed to update user');
+            toast.success('User updated successfully!');
+            router.push('/admin/users');
+        } catch (error: any) {
+            toast.error(`Error: ${error?.error || 'Failed to update user.'}`);
         } finally {
             setIsSaving(false);
         }
@@ -310,6 +286,30 @@ const EditUserPage = () => {
                         </div>
 
                         <div className="flex gap-4 pt-6">
+                            <button
+                                type="submit"
+                                disabled={isSaving}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                {isSaving ? 'Updating...' : 'Update User'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => router.push('/admin/users')}
+                                disabled={isSaving}
+                                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default EditUserPage;
                             <button
                                 type="submit"
                                 disabled={isSaving}

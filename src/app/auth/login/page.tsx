@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -18,28 +17,23 @@ export default function LoginPage() {
     const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
     const oidcRequest = searchParams.get('oidc_request');
 
+    // Check if user already logged in
     useEffect(() => {
-        const checkSession = async () => {
-            const session = await getSession();
-            if (session?.user) {
-                // If there's an OIDC request, continue with OIDC flow
-                if (oidcRequest) {
-                    return;
-                }
+        const token = localStorage.getItem('authToken');
+        const user = localStorage.getItem('authUser');
+        if (token && user) {
+            const parsedUser = JSON.parse(user);
 
-                // Redirect based on user role
-                const userRole = (session.user as any).role;
-                if (userRole === 'admin') {
-                    router.push('/dashboard');
-                } else if (userRole === 'user') {
-                    router.push('/home');
-                } else {
-                    router.push(callbackUrl);
-                }
+            if (oidcRequest) return; // handle OIDC separately
+
+            if (parsedUser.role === 'admin') {
+                router.push('/dashboard');
+            } else if (parsedUser.role === 'user') {
+                router.push('/home');
+            } else {
+                router.push(callbackUrl);
             }
-        };
-
-        checkSession();
+        }
     }, [router, callbackUrl, oidcRequest]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -48,38 +42,39 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const result = await signIn('credentials', {
-                username: credentials.username,
-                password: credentials.password,
-                redirect: false,
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials),
             });
 
-            if (result?.error) {
+            if (!res.ok) {
                 setError('Invalid credentials');
-            } else {
-                // Get the session to determine redirect
-                const session = await getSession();
-
-                // If there's an OIDC request, redirect back to the auth endpoint
-                if (oidcRequest) {
-                    // Remove oidc_request from params and redirect to OIDC auth
-                    const params = new URLSearchParams(window.location.search);
-                    params.delete('oidc_request');
-                    window.location.href = `/api/oidc/auth?${params.toString()}`;
-                } else {
-                    // Normal login redirect based on role
-                    const userRole = (session?.user as any)?.role;
-                    if (userRole === 'admin') {
-                        router.push('/dashboard');
-                    } else if (userRole === 'user') {
-                        router.push('/home');
-                    } else {
-                        router.push(callbackUrl);
-                    }
-                }
+                return;
             }
-        } catch (error) {
-            console.error('Login error:', error);
+
+            const data = await res.json(); // { token, user }
+
+            // Store JWT + user in localStorage
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('authUser', JSON.stringify(data.user));
+
+            if (oidcRequest) {
+                const params = new URLSearchParams(window.location.search);
+                params.delete('oidc_request');
+                window.location.href = `/api/oidc/auth?${params.toString()}`;
+            } else {
+                router.push('/home');
+                // if (data.user.role === 'admin') {
+                //     router.push('/dashboard');
+                // } else if (data.user.role === 'user') {
+                //     router.push('/home');
+                // } else {
+                //     router.push(callbackUrl);
+                // }
+            }
+        } catch (err) {
+            console.error('Login error:', err);
             setError('Login failed');
         } finally {
             setLoading(false);
@@ -101,13 +96,13 @@ export default function LoginPage() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {/* {error && (
+                    {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                             {error}
                         </div>
                     )}
 
-                    <div className="rounded-md shadow-sm -space-y-px">
+                    {/* <div className="rounded-md shadow-sm -space-y-px">
                         <div>
                             <input
                                 type="text"
@@ -138,13 +133,13 @@ export default function LoginPage() {
                                 placeholder="Password"
                             />
                         </div>
-                    </div>
+                    </div> */}
 
-                    <div>
+                    {/* <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>

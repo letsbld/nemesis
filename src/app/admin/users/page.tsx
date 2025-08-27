@@ -9,6 +9,7 @@ import { CreateUserForm } from '@/components/admin/CreateUserForm';
 import { EditUserForm } from '@/components/admin/EditUserForm';
 import { CSVImportForm } from '@/components/admin/CSVImportForm';
 import { UserData, CreateUserData } from '@/types/admin.types';
+import { apiFetch } from '@/lib/apiFetch';
 
 const UsersPage = () => {
     const { data: session, status } = useSession();
@@ -78,13 +79,8 @@ const UsersPage = () => {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/admin/users');
-            if (response.ok) {
-                const data = await response.json();
-                setUsers(data);
-            } else {
-                console.error('Failed to fetch users');
-            }
+            const data = await apiFetch('/admin/users');
+            setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
         } finally {
@@ -95,26 +91,16 @@ const UsersPage = () => {
     const handleCreateUser = async (userData: CreateUserData) => {
         setIsCreating(true);
         try {
-            const response = await fetch('/api/admin/users', {
+            const newUser = await apiFetch('/admin/users', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify(userData),
+                headers: { 'Content-Type': 'application/json' },
             });
-
-            if (response.ok) {
-                const newUser = await response.json();
-                setUsers((prev) => [...prev, newUser]);
-                setShowCreateForm(false);
-                toast.success('User created successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(`Error: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error creating user:', error);
-            toast.error('Failed to create user. Please try again.');
+            setUsers((prev) => [...prev, newUser]);
+            setShowCreateForm(false);
+            toast.success('User created successfully!');
+        } catch (error: any) {
+            toast.error(`Error: ${error?.error || 'Failed to create user.'}`);
         } finally {
             setIsCreating(false);
         }
@@ -129,27 +115,17 @@ const UsersPage = () => {
     const handleUpdateUser = async (userId: string, userData: Partial<CreateUserData>) => {
         setIsUpdating(true);
         try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            const updatedUser = await apiFetch(`/admin/users/${userId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify(userData),
+                headers: { 'Content-Type': 'application/json' },
             });
-
-            if (response.ok) {
-                const updatedUser = await response.json();
-                setUsers((prev) => prev.map((user) => (user.id === userId ? updatedUser : user)));
-                setShowEditForm(false);
-                setEditingUser(null);
-                toast.success('User updated successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(`Error: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error updating user:', error);
-            toast.error('Failed to update user. Please try again.');
+            setUsers((prev) => prev.map((user) => (user.id === userId ? updatedUser : user)));
+            setShowEditForm(false);
+            setEditingUser(null);
+            toast.success('User updated successfully!');
+        } catch (error: any) {
+            toast.error(`Error: ${error?.error || 'Failed to update user.'}`);
         } finally {
             setIsUpdating(false);
         }
@@ -159,22 +135,12 @@ const UsersPage = () => {
         if (!confirm('Are you sure you want to delete this user?')) {
             return;
         }
-
         try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                setUsers((prev) => prev.filter((user) => user.id !== userId));
-                toast.success('User deleted successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(`Error: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            toast.error('Failed to delete user. Please try again.');
+            await apiFetch(`/admin/users/${userId}`, { method: 'DELETE' });
+            setUsers((prev) => prev.filter((user) => user.id !== userId));
+            toast.success('User deleted successfully!');
+        } catch (error: any) {
+            toast.error(`Error: ${error?.error || 'Failed to delete user.'}`);
         }
     };
 
@@ -182,22 +148,11 @@ const UsersPage = () => {
         if (!confirm("Are you sure you want to reset this user's password?")) {
             return;
         }
-
         try {
-            const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
-                method: 'POST',
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                toast.success(`Password reset successfully! New password: ${data.newPassword}`);
-            } else {
-                const errorData = await response.json();
-                toast.error(`Error: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error resetting password:', error);
-            toast.error('Failed to reset password. Please try again.');
+            const data = await apiFetch(`/admin/users/${userId}/reset-password`, { method: 'POST' });
+            toast.success(`Password reset successfully! New password: ${data.newPassword}`);
+        } catch (error: any) {
+            toast.error(`Error: ${error?.error || 'Failed to reset password.'}`);
         }
     };
 
@@ -213,6 +168,51 @@ const UsersPage = () => {
         );
     }
 
+    if (showEditForm && editingUser) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8">
+                <EditUserForm
+                    user={editingUser}
+                    onSubmit={(userData) => handleUpdateUser(editingUser.id, userData)}
+                    onCancel={() => {
+                        setShowEditForm(false);
+                        setEditingUser(null);
+                    }}
+                    isLoading={isUpdating}
+                />
+            </div>
+        );
+    }
+
+    if (showCSVImport) {
+        return (
+            <div className="min-h-screen bg-gray-50 py-8">
+                <CSVImportForm
+                    onImportComplete={() => {
+                        fetchUsers(); // Refresh user list after import
+                        setShowCSVImport(false);
+                    }}
+                    onClose={() => setShowCSVImport(false)}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <UserList
+                users={users}
+                onCreateUser={() => setShowCreateForm(true)}
+                onDeleteUser={handleDeleteUser}
+                onResetPassword={handleResetPassword}
+                onImportCSV={() => setShowCSVImport(true)}
+                isLoading={isLoading}
+            />
+        </div>
+    );
+};
+
+export default UsersPage;
     if (showEditForm && editingUser) {
         return (
             <div className="min-h-screen bg-gray-50 py-8">

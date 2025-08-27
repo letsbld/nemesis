@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface GoogleWorkspaceUser {
     id: string;
@@ -68,9 +69,7 @@ export default function GoogleWorkspaceImportPage() {
 
     const testConnection = async () => {
         try {
-            const response = await fetch('/api/admin/google-workspace?action=test-connection');
-            const data = await response.json();
-
+            const data = await apiFetch('/admin/google-workspace?action=test-connection');
             if (data.success) {
                 setConnectionStatus('connected');
                 toast.success('Google Workspace connection successful');
@@ -80,16 +79,13 @@ export default function GoogleWorkspaceImportPage() {
             }
         } catch (error: any) {
             setConnectionStatus('error');
-            console.error('Connection test failed:', error);
             toast.error('Failed to test Google Workspace connection');
         }
     };
 
     const getAdminDomain = async () => {
         try {
-            const response = await fetch('/api/admin/google-workspace?action=get-domain');
-            const data = await response.json();
-
+            const data = await apiFetch('/admin/google-workspace?action=get-domain');
             if (data.success && data.domain) {
                 setAdminDomain(data.domain);
                 setImportSettings((prev) => ({ ...prev, domain: data.domain }));
@@ -107,10 +103,7 @@ export default function GoogleWorkspaceImportPage() {
                 ...(importSettings.domain && { domain: importSettings.domain }),
                 maxResults: importSettings.maxResults.toString(),
             });
-
-            const response = await fetch(`/api/admin/google-workspace?${queryParams}`);
-            const data = await response.json();
-
+            const data = await apiFetch(`/admin/google-workspace?${queryParams}`);
             if (data.success) {
                 setUsers(data.users);
                 toast.success(`Fetched ${data.users.length} users from Google Workspace`);
@@ -118,7 +111,6 @@ export default function GoogleWorkspaceImportPage() {
                 toast.error(`Failed to fetch users: ${data.error}`);
             }
         } catch (error: any) {
-            console.error('Failed to fetch users:', error);
             toast.error('Failed to fetch users from Google Workspace');
         } finally {
             setIsLoading(false);
@@ -130,10 +122,9 @@ export default function GoogleWorkspaceImportPage() {
             toast.error('Please select users to import');
             return;
         }
-
         setIsLoading(true);
         try {
-            const response = await fetch('/api/admin/google-workspace', {
+            const data: ImportResult = await apiFetch('/admin/google-workspace', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -143,19 +134,14 @@ export default function GoogleWorkspaceImportPage() {
                     createDefaultPassword: importSettings.createDefaultPassword,
                 }),
             });
-
-            const data: ImportResult = await response.json();
-
             if (data.success) {
                 toast.success(data.message);
                 setSelectedUsers(new Set());
-                // Refresh user list
                 fetchUsers();
             } else {
                 toast.error(`Import failed: ${data.details?.errors?.[0] || 'Unknown error'}`);
             }
         } catch (error: any) {
-            console.error('Import failed:', error);
             toast.error('Failed to import users');
         } finally {
             setIsLoading(false);
@@ -421,3 +407,4 @@ export default function GoogleWorkspaceImportPage() {
         </div>
     );
 }
+                                          

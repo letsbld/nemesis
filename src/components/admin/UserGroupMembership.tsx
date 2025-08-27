@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { UserData, GroupUserData, AddUsersToGroupData } from '@/types/admin.types';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface UserGroupMembershipProps {
     groupId: string;
@@ -20,13 +21,8 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
     const fetchGroupUsers = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/admin/user-groups/${groupId}/users`);
-            if (response.ok) {
-                const users = await response.json();
-                setGroupUsers(users);
-            } else {
-                console.error('Failed to fetch group users');
-            }
+            const users = await apiFetch(`/admin/user-groups/${groupId}/users`);
+            setGroupUsers(users);
         } catch (error) {
             console.error('Error fetching group users:', error);
         } finally {
@@ -36,13 +32,8 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
 
     const fetchAllUsers = useCallback(async () => {
         try {
-            const response = await fetch('/api/admin/users');
-            if (response.ok) {
-                const users = await response.json();
-                setAllUsers(users);
-            } else {
-                console.error('Failed to fetch all users');
-            }
+            const users = await apiFetch('/admin/users');
+            setAllUsers(users);
         } catch (error) {
             console.error('Error fetching all users:', error);
         }
@@ -58,26 +49,17 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
 
         setIsAddingUsers(true);
         try {
-            const response = await fetch(`/api/admin/user-groups/${groupId}/users`, {
+            await apiFetch(`/admin/user-groups/${groupId}/users`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userIds: selectedUserIds } as AddUsersToGroupData),
             });
-
-            if (response.ok) {
-                await fetchGroupUsers(); // Refresh the group users list
-                setSelectedUserIds([]);
-                setShowAddUsersForm(false);
-                toast.success('Users added to group successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(`Failed to add users: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error adding users to group:', error);
-            toast.error('An error occurred while adding users to the group');
+            await fetchGroupUsers();
+            setSelectedUserIds([]);
+            setShowAddUsersForm(false);
+            toast.success('Users added to group successfully!');
+        } catch (error: any) {
+            toast.error(`Failed to add users: ${error?.error || 'Unknown error'}`);
         } finally {
             setIsAddingUsers(false);
         }
@@ -87,25 +69,12 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
         if (!confirm('Are you sure you want to remove this user from the group?')) {
             return;
         }
-
         try {
-            const response = await fetch(
-                `/api/admin/user-groups/${groupId}/users?userId=${userId}`,
-                {
-                    method: 'DELETE',
-                }
-            );
-
-            if (response.ok) {
-                await fetchGroupUsers(); // Refresh the group users list
-                toast.success('User removed from group successfully!');
-            } else {
-                const errorData = await response.json();
-                toast.error(`Failed to remove user: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error removing user from group:', error);
-            toast.error('An error occurred while removing the user from the group');
+            await apiFetch(`/admin/user-groups/${groupId}/users?userId=${userId}`, { method: 'DELETE' });
+            await fetchGroupUsers();
+            toast.success('User removed from group successfully!');
+        } catch (error: any) {
+            toast.error(`Failed to remove user: ${error?.error || 'Unknown error'}`);
         }
     };
 
@@ -202,6 +171,37 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
                 <div className="p-4 border-b">
                     <h3 className="text-lg font-semibold">Current Group Members</h3>
                 </div>
+                <div className="p-4">
+                    {groupUsers.length === 0 ? (
+                        <p className="text-gray-500">No users in this group yet.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {groupUsers.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className="flex justify-between items-center p-3 border rounded-lg"
+                                >
+                                    <div>
+                                        <div className="font-medium">{user.display_name}</div>
+                                        <div className="text-sm text-gray-600">
+                                            {user.company_email} • @{user.username}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemoveUser(user.id)}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
                 <div className="p-4">
                     {groupUsers.length === 0 ? (
                         <p className="text-gray-500">No users in this group yet.</p>
