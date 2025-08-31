@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { UserGroupList } from '@/components/admin/UserGroupList';
 import { CreateUserGroupForm } from '@/components/admin/CreateUserGroupForm';
 import { UserGroupData, CreateUserGroupData } from '@/types/admin.types';
+import { apiFetch } from '@/lib/apiFetch';
 
 const UserGroupsPage = () => {
     const { user, status } = useAuth();
@@ -18,10 +19,13 @@ const UserGroupsPage = () => {
 
     // Check authentication and admin role
     useEffect(() => {
+        console.log('[ADMIN USER GROUPS] user:', user);
+        console.log('[ADMIN USER GROUPS] status:', status);
+
         if (status === 'loading') return; // Still loading
 
         if (!user) {
-            // Not authenticated, redirect to login
+            console.log('[ADMIN USER GROUPS] Not authenticated, redirecting');
             router.push('/auth/login');
             return;
         }
@@ -29,7 +33,7 @@ const UserGroupsPage = () => {
         // Check if user is admin
         if ('role' in user) {
             if (user.role !== 'admin') {
-                // Not an admin, redirect to appropriate page
+                console.log('[ADMIN USER GROUPS] Not admin, role:', user.role);
                 if (user.role === 'user') {
                     router.push('/home');
                 } else {
@@ -38,7 +42,7 @@ const UserGroupsPage = () => {
                 return;
             }
         } else {
-            // No role defined, redirect to login
+            console.log('[ADMIN USER GROUPS] No role defined, redirecting');
             router.push('/auth/login');
             return;
         }
@@ -72,7 +76,7 @@ const UserGroupsPage = () => {
     const fetchGroups = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/admin/user-groups');
+            const response = await apiFetch('/api/user-groups');
             if (response.ok) {
                 const data = await response.json();
                 setGroups(data);
@@ -89,7 +93,7 @@ const UserGroupsPage = () => {
     const handleCreateGroup = async (groupData: CreateUserGroupData) => {
         setIsCreating(true);
         try {
-            const response = await fetch('/api/admin/user-groups', {
+            const response = await apiFetch('/api/user-groups', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

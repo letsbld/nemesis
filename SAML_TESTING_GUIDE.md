@@ -295,7 +295,7 @@ saml-validate --response response.xml --certificate cert.pem
 // Jest test example
 describe('SAML IdP', () => {
   test('should generate valid metadata', async () => {
-    const response = await fetch('/api/saml/metadata');
+    const response = await apiFetch('/api/saml/metadata');
     const metadata = await response.text();
     expect(metadata).toContain('EntityDescriptor');
   });

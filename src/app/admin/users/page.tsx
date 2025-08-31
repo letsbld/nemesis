@@ -81,7 +81,7 @@ const UsersPage = () => {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const data = await apiFetch('/admin/users');
+            const data = await apiFetch('/user');
             setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -93,7 +93,7 @@ const UsersPage = () => {
     const handleCreateUser = async (userData: CreateUserData) => {
         setIsCreating(true);
         try {
-            const newUser = await apiFetch('/admin/users', {
+            const newUser = await apiFetch('/user', {
                 method: 'POST',
                 body: JSON.stringify(userData),
                 headers: { 'Content-Type': 'application/json' },
@@ -111,7 +111,7 @@ const UsersPage = () => {
     const handleUpdateUser = async (userId: string, userData: Partial<CreateUserData>) => {
         setIsUpdating(true);
         try {
-            const updatedUser = await apiFetch(`/admin/users/${userId}`, {
+            const updatedUser = await apiFetch(`/user/${userId}`, {
                 method: 'PUT',
                 body: JSON.stringify(userData),
                 headers: { 'Content-Type': 'application/json' },
@@ -132,7 +132,7 @@ const UsersPage = () => {
             return;
         }
         try {
-            await apiFetch(`/admin/users/${userId}`, { method: 'DELETE' });
+            await apiFetch(`/user/${userId}`, { method: 'DELETE' });
             setUsers((prev) => prev.filter((user) => user.id !== userId));
             toast.success('User deleted successfully!');
         } catch (error: any) {
@@ -145,7 +145,7 @@ const UsersPage = () => {
             return;
         }
         try {
-            const data = await apiFetch(`/admin/users/${userId}/reset-password`, {
+            const data = await apiFetch(`/user/${userId}/reset-password`, {
                 method: 'POST',
             });
             toast.success(`Password reset successfully! New password: ${data.newPassword}`);

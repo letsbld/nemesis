@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PrivateRoute } from '@/components/PrivateRoute';
 
@@ -33,7 +33,7 @@ interface DLPPolicy {
     actions: any[];
 }
 
-export default function SSOManagementPage() {
+function SSOManagementPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState<'providers' | 'policies' | 'audit'>('providers');
@@ -792,5 +792,13 @@ export default function SSOManagementPage() {
                 )}
             </div>
         </PrivateRoute>
+    );
+}
+
+export default function SSOManagementPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SSOManagementPageContent />
+        </Suspense>
     );
 }

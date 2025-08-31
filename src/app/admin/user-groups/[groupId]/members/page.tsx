@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { UserGroupMembership } from '@/components/admin/UserGroupMembership';
 import { UserGroupData } from '@/types/admin.types';
+import { apiFetch } from '@/lib/apiFetch';
 
 const GroupMembersPage = () => {
     const params = useParams();
@@ -16,7 +17,7 @@ const GroupMembersPage = () => {
     const fetchGroup = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/admin/user-groups/${groupId}`);
+            const response = await apiFetch(`/api/user-groups/${groupId}`);
             if (response.ok) {
                 const groupData = await response.json();
                 setGroup(groupData);

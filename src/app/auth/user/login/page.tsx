@@ -35,8 +35,9 @@ export default function UserLoginPage() {
                 if (decoded.exp && decoded.exp * 1000 > Date.now()) {
                     const user = JSON.parse(userStr);
 
-                    if (user.role === 'admin') router.replace('/dashboard');
-                    else if (user.role === 'user') {
+                    if (user.role === 'admin') {
+                        router.replace('/dashboard');
+                    } else if (user.role === 'user') {
                         if (user.requiresTotpSetup) {
                             router.replace('/user/totp?required=true');
                         } else {
@@ -45,7 +46,6 @@ export default function UserLoginPage() {
                     }
                 }
             } catch {
-                // invalid token → clear storage
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('authUser');
             }

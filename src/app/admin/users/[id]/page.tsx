@@ -43,15 +43,21 @@ const EditUserPage = () => {
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         const userStr = localStorage.getItem('authUser');
+        console.log('[ADMIN EDIT USER] localStorage.authToken:', token);
+        console.log('[ADMIN EDIT USER] localStorage.authUser:', userStr);
+
         if (!token || !userStr) {
+            console.log('[ADMIN EDIT USER] Not authenticated, redirecting');
             setAuthStatus('unauthenticated');
             router.push('/auth/login');
             return;
         }
         try {
             const parsedUser = JSON.parse(userStr);
+            console.log('[ADMIN EDIT USER] Parsed user:', parsedUser);
             setAuthUser(parsedUser);
             if (parsedUser.role !== 'admin') {
+                console.log('[ADMIN EDIT USER] Not admin, role:', parsedUser.role);
                 setAuthStatus('unauthenticated');
                 if (parsedUser.role === 'user') {
                     router.push('/home');
@@ -61,7 +67,8 @@ const EditUserPage = () => {
                 return;
             }
             setAuthStatus('authenticated');
-        } catch {
+        } catch (e) {
+            console.log('[ADMIN EDIT USER] Error parsing user:', e);
             setAuthStatus('unauthenticated');
             router.push('/auth/login');
         }
@@ -79,7 +86,7 @@ const EditUserPage = () => {
 
         setIsLoading(true);
         try {
-            const userData = await apiFetch(`/admin/users/${userId}`);
+            const userData = await apiFetch(`/user/${userId}`);
             setUser(userData);
             setFormData({
                 username: userData.username || '',

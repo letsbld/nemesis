@@ -2,7 +2,23 @@ export async function apiFetch(endpoint: string, options?: RequestInit): Promise
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     const url = endpoint.startsWith('/') ? `${apiUrl}${endpoint}` : `${apiUrl}/${endpoint}`;
     console.log(url, 'Urll here');
-    const response = await fetch(url, options);
+
+    // Attach Authorization header if token exists
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    let fetchOptions: RequestInit;
+
+    if (token) {
+        const headers = new Headers(options?.headers || {});
+        headers.set('Authorization', `Bearer ${token}`);
+        fetchOptions = {
+            ...options,
+            headers,
+        };
+    } else {
+        fetchOptions = options || {};
+    }
+
+    const response = await fetch(url, fetchOptions);
 
     let data;
     try {

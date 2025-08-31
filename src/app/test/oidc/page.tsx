@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { apiFetch } from '@/lib/apiFetch';
 
-export default function OIDCTestPage() {
+function OIDCFlowContent() {
     const searchParams = useSearchParams();
     const [testConfig, setTestConfig] = useState({
         clientId: 'test-client-123',
@@ -62,7 +63,7 @@ export default function OIDCTestPage() {
             formData.append('client_id', testConfig.clientId);
             formData.append('client_secret', 'test-secret'); // In production, this would be secure
 
-            const response = await fetch('/api/oidc/token', {
+            const response = await apiFetch('/api/oidc/token', {
                 method: 'POST',
                 body: formData,
             });
@@ -82,7 +83,7 @@ export default function OIDCTestPage() {
 
         setLoading(true);
         try {
-            const response = await fetch('/api/oidc/userinfo', {
+            const response = await apiFetch('/api/oidc/userinfo', {
                 headers: {
                     Authorization: `Bearer ${tokenResult.access_token}`,
                 },
@@ -295,5 +296,13 @@ export default function OIDCTestPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function OIDCTestPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <OIDCFlowContent />
+        </Suspense>
     );
 }

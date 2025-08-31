@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface TOTPStatus {
     enabled: boolean;
     hasSecret: boolean;
 }
 
-export default function TOTPSetupPage() {
+function TOTPSetupPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isRequired = searchParams.get('required') === 'true';
@@ -45,7 +46,7 @@ export default function TOTPSetupPage() {
 
     const fetchTOTPStatus = useCallback(async () => {
         try {
-            const response = await fetch('/api/user/totp', {
+            const response = await apiFetch('/api/user/totp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'status' }),
@@ -64,13 +65,6 @@ export default function TOTPSetupPage() {
     }, []);
 
     useEffect(() => {
-        if (status === 'loading') return;
-
-        if (!user || !('role' in user) || user.role !== 'user') {
-            router.push('/auth/user/login');
-            return;
-        }
-
         fetchTOTPStatus();
     }, [user, status, router, fetchTOTPStatus]);
 
@@ -88,7 +82,7 @@ export default function TOTPSetupPage() {
     const setupTOTP = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/user/totp', {
+            const response = await apiFetch('/api/user/totp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'setup' }),
@@ -121,7 +115,7 @@ export default function TOTPSetupPage() {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/user/totp', {
+            const response = await apiFetch('/api/user/totp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'enable', totpToken: verificationCode }),
@@ -163,7 +157,7 @@ export default function TOTPSetupPage() {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/user/totp', {
+            const response = await apiFetch('/api/user/totp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'disable', totpToken: verificationCode }),
@@ -438,5 +432,13 @@ export default function TOTPSetupPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function TOTPSetupPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <TOTPSetupPageContent />
+        </Suspense>
     );
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginPageContent() {
     const [error, setError] = useState('');
     // Add missing state for credentials and loading if you want to enable the login form
     // const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -19,21 +19,29 @@ export default function LoginPage() {
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         const user = localStorage.getItem('authUser');
-        console.log('inisde auth login');
-        console.log({ token, user });
-        console.log(typeof user);
+        console.log('[AUTH LOGIN] localStorage.authToken:', token);
+        console.log('[AUTH LOGIN] localStorage.authUser:', user);
+
         if (token && user) {
-            const parsedUser = JSON.parse(user);
+            let parsedUser;
+            try {
+                parsedUser = JSON.parse(user);
+            } catch (e) {
+                console.log('[AUTH LOGIN] Error parsing user:', e);
+                return;
+            }
 
             if (oidcRequest) return; // handle OIDC separately
 
-            console.log(parsedUser, 'parsedUser');
+            console.log('[AUTH LOGIN] Parsed user:', parsedUser);
             if (parsedUser.role === 'admin') {
-                console.log('Admin user detected, redirecting');
+                console.log('[AUTH LOGIN] Admin user detected, redirecting');
                 router.push('/dashboard');
             } else if (parsedUser.role === 'user') {
+                console.log('[AUTH LOGIN] User detected, redirecting');
                 router.push('/home');
             } else {
+                console.log('[AUTH LOGIN] Unknown role, redirecting to callbackUrl');
                 router.push(callbackUrl);
             }
         }
@@ -60,6 +68,7 @@ export default function LoginPage() {
             // // Store JWT + user in localStorage
             // localStorage.setItem('authToken', data.token);
             // localStorage.setItem('authUser', JSON.stringify(data.user));
+            // document.cookie = `authToken=${data.token}; path=/;`;
 
             if (oidcRequest) {
                 const params = new URLSearchParams(window.location.search);
@@ -127,5 +136,13 @@ export default function LoginPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginPageContent />
+        </Suspense>
     );
 }

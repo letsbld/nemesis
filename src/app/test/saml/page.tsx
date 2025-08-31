@@ -49,7 +49,7 @@ export default function SAMLTestPage() {
 //     const testMetadata = async () => {
 //         setLoading(true);
 //         try {
-//             const response = await fetch('/api/saml/metadata');
+//             const response = await apiFetch('/api/saml/metadata');
 //             const metadata = await response.text();
 
 //             // Open in new window to view metadata
