@@ -20,10 +20,11 @@ const EditUserPage = () => {
         first_name: '',
         middle_name: '',
         last_name: '',
-        manager_name: '',
+        manager_id: '',
         company_email: '',
         alternate_email: '',
     });
+    const [users, setUsers] = useState<{ id: string; display_name: string }[]>([]);
 
     // Auth state
     const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>(
@@ -81,6 +82,24 @@ const EditUserPage = () => {
         }
     }, [userId, authStatus, authUser]);
 
+    // Fetch all users for manager dropdown
+    useEffect(() => {
+        async function fetchUsersList() {
+            try {
+                const data = await apiFetch('/user');
+                setUsers(
+                    data.map((u: any) => ({
+                        id: u.id,
+                        display_name: u.display_name,
+                    }))
+                );
+            } catch {
+                setUsers([]);
+            }
+        }
+        fetchUsersList();
+    }, []);
+
     const fetchUser = async () => {
         if (!userId) return;
 
@@ -94,7 +113,7 @@ const EditUserPage = () => {
                 first_name: userData.first_name || '',
                 middle_name: userData.middle_name || '',
                 last_name: userData.last_name || '',
-                manager_name: userData.manager_name || '',
+                manager_id: userData.manager_id || '', // use manager_id
                 company_email: userData.company_email || '',
                 alternate_email: userData.alternate_email || '',
             });
@@ -106,7 +125,7 @@ const EditUserPage = () => {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -121,10 +140,13 @@ const EditUserPage = () => {
         setIsSaving(true);
 
         try {
-            await apiFetch(`/admin/users/${userId}`, {
+            // Remove manager_name, send manager_id
+            const payload = { ...formData };
+            delete (payload as any).manager_name;
+            await apiFetch(`/user/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
             toast.success('User updated successfully!');
             router.push('/admin/users');
@@ -255,16 +277,22 @@ const EditUserPage = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Manager Name
+                                    Manager
                                 </label>
-                                <input
-                                    type="text"
-                                    name="manager_name"
-                                    value={formData.manager_name || ''}
+                                <select
+                                    name="manager_id"
+                                    value={formData.manager_id || ''}
                                     onChange={handleChange}
                                     disabled={isSaving}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-                                />
+                                >
+                                    <option value="">Select a manager</option>
+                                    {users.map((u) => (
+                                        <option key={u.id} value={u.id}>
+                                            {u.display_name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>

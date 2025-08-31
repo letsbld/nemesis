@@ -17,7 +17,7 @@ const GroupMembersPage = () => {
     const fetchGroup = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await apiFetch(`/api/user-groups/${groupId}`);
+            const response = await apiFetch(`/user-group/${groupId}`);
             if (response.ok) {
                 const groupData = await response.json();
                 setGroup(groupData);

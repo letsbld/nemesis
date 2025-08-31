@@ -76,10 +76,9 @@ const UserGroupsPage = () => {
     const fetchGroups = async () => {
         setIsLoading(true);
         try {
-            const response = await apiFetch('/api/user-groups');
-            if (response.ok) {
-                const data = await response.json();
-                setGroups(data);
+            const response = await apiFetch('/user-group');
+            if (response) {
+                setGroups(response);
             } else {
                 console.error('Failed to fetch user groups');
             }
@@ -93,7 +92,7 @@ const UserGroupsPage = () => {
     const handleCreateGroup = async (groupData: CreateUserGroupData) => {
         setIsCreating(true);
         try {
-            const response = await apiFetch('/api/user-groups', {
+            const response = await apiFetch('/user-group', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

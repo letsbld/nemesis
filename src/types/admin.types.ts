@@ -5,7 +5,7 @@ export interface CreateUserData {
     display_name: string;
     company_email: string;
     alternate_email?: string;
-    manager_name: string;
+    manager_id: string;
     username: string;
     password: string;
     description?: string;

@@ -1,13 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CustomButton from '@/components/ui/customButton';
 import { CreateUserData } from '@/types/admin.types';
+import { apiFetch } from '@/lib/apiFetch';
 
 interface CreateUserFormProps {
     onSubmit: (userData: CreateUserData) => void;
     onCancel: () => void;
     isLoading?: boolean;
+}
+
+// Add prop for users list
+interface UserOption {
+    id: string;
+    display_name: string;
 }
 
 export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: CreateUserFormProps) {
@@ -18,15 +25,35 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
         display_name: '',
         company_email: '',
         alternate_email: '',
-        manager_name: '',
         username: '',
         password: '',
         description: '',
+        manager_id: '', // new field
     });
-
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [users, setUsers] = useState<UserOption[]>([]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // Fetch all users for manager dropdown
+    useEffect(() => {
+        async function fetchUsers() {
+            try {
+                const data = await apiFetch('/user');
+                setUsers(
+                    data.map((u: any) => ({
+                        id: u.id,
+                        display_name: u.display_name,
+                    }))
+                );
+            } catch {
+                setUsers([]);
+            }
+        }
+        fetchUsers();
+    }, []);
+
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -62,7 +89,7 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
         if (!formData.last_name) newErrors.last_name = 'Last name is required';
         if (!formData.display_name) newErrors.display_name = 'Display name is required';
         if (!formData.company_email) newErrors.company_email = 'Company email is required';
-        if (!formData.manager_name) newErrors.manager_name = 'Manager name is required';
+        if (!formData.manager_id) newErrors.manager_id = 'Manager is required';
         if (!formData.username) newErrors.username = 'Username is required';
         if (!formData.password) newErrors.password = 'Password is required';
 
@@ -93,7 +120,10 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            onSubmit(formData);
+            // Remove manager_name, send manager_id
+            const payload = { ...formData };
+            delete (payload as any).manager_name;
+            onSubmit(payload);
         }
     };
 
@@ -206,21 +236,27 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
                     </div>
                 </div>
 
-                {/* Manager */}
+                {/* Manager Dropdown */}
                 <div>
-                    <label className="block text-sm font-medium mb-1">Manager Name *</label>
-                    <input
-                        type="text"
-                        name="manager_name"
-                        value={formData.manager_name}
+                    <label className="block text-sm font-medium mb-1">Manager *</label>
+                    <select
+                        name="manager_id"
+                        value={formData.manager_id}
                         onChange={handleChange}
                         className={`w-full p-2 border rounded-md ${
-                            errors.manager_name ? 'border-red-500' : 'border-gray-300'
+                            errors.manager_id ? 'border-red-500' : 'border-gray-300'
                         }`}
                         disabled={isLoading}
-                    />
-                    {errors.manager_name && (
-                        <p className="text-red-500 text-xs mt-1">{errors.manager_name}</p>
+                    >
+                        <option value="">Select a manager</option>
+                        {users.map((u) => (
+                            <option key={u.id} value={u.id}>
+                                {u.display_name}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.manager_id && (
+                        <p className="text-red-500 text-xs mt-1">{errors.manager_id}</p>
                     )}
                 </div>
 
