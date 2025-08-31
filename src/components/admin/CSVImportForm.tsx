@@ -66,7 +66,7 @@ export function CSVImportForm({ onImportComplete, onClose }: CSVImportProps) {
     };
 
     const downloadTemplate = () => {
-        const csvContent = `first_name,middle_name,last_name,display_name,company_email,alternate_email,manager_name,username,password,description
+        const csvContent = `first_name,middle_name,last_name,display_name,company_email,alternate_email,manager_id,username,password,description
 John,M,Doe,John Doe,john.doe@company.com,john@personal.com,Jane Smith,johndoe,SecurePass123!,Sales representative
 Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,Marketing manager`;
 
@@ -210,7 +210,7 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                             char)
                         </li>
                         <li>
-                            <strong>manager_name</strong> - Name of the user&apos;s manager
+                            <strong>manager_id</strong> - Name of the user&apos;s manager
                         </li>
                     </ul>
                     <p className="mt-2">

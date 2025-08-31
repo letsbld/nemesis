@@ -122,7 +122,7 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
         if (validateForm()) {
             // Remove manager_name, send manager_id
             const payload = { ...formData };
-            delete (payload as any).manager_name;
+            // delete (payload as any).manager_name;
             onSubmit(payload);
         }
     };

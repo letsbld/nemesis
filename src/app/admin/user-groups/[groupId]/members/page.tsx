@@ -18,9 +18,8 @@ const GroupMembersPage = () => {
         setIsLoading(true);
         try {
             const response = await apiFetch(`/user-group/${groupId}`);
-            if (response.ok) {
-                const groupData = await response.json();
-                setGroup(groupData);
+            if (response) {
+                setGroup(response);
             } else {
                 console.error('Failed to fetch group details');
                 // Redirect back to group list if group not found

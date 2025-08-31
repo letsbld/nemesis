@@ -21,8 +21,8 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
     const fetchGroupUsers = useCallback(async () => {
         setIsLoading(true);
         try {
-            const users = await apiFetch(`/admin/user-groups/${groupId}/users`);
-            setGroupUsers(users);
+            const group = await apiFetch(`/user-group/${groupId}`);
+            setGroupUsers(group.users || []);
         } catch (error) {
             console.error('Error fetching group users:', error);
         } finally {
@@ -32,7 +32,7 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
 
     const fetchAllUsers = useCallback(async () => {
         try {
-            const users = await apiFetch('/admin/users');
+            const users = await apiFetch('/user');
             setAllUsers(users);
         } catch (error) {
             console.error('Error fetching all users:', error);
@@ -49,7 +49,7 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
 
         setIsAddingUsers(true);
         try {
-            await apiFetch(`/admin/user-groups/${groupId}/users`, {
+            await apiFetch(`/user-group/${groupId}/members`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userIds: selectedUserIds } as AddUsersToGroupData),
@@ -70,7 +70,7 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
             return;
         }
         try {
-            await apiFetch(`/admin/user-groups/${groupId}/users?userId=${userId}`, {
+            await apiFetch(`/user-group/${groupId}/users?userId=${userId}`, {
                 method: 'DELETE',
             });
             await fetchGroupUsers();

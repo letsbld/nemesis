@@ -142,7 +142,6 @@ const EditUserPage = () => {
         try {
             // Remove manager_name, send manager_id
             const payload = { ...formData };
-            delete (payload as any).manager_name;
             await apiFetch(`/user/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

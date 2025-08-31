@@ -19,7 +19,7 @@ export interface UserData {
     display_name: string;
     company_email: string;
     alternate_email?: string;
-    manager_name: string;
+    manager_id: string;
     username: string;
     description?: string;
     created_at: Date;

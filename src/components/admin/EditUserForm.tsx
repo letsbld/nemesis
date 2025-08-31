@@ -17,7 +17,7 @@ export function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditUserFo
         first_name: '',
         middle_name: '',
         last_name: '',
-        manager_name: '',
+        manager_id: '',
         company_email: '',
         alternate_email: '',
     });
@@ -30,7 +30,7 @@ export function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditUserFo
             first_name: user.first_name,
             middle_name: user.middle_name || '',
             last_name: user.last_name,
-            manager_name: user.manager_name || '',
+            manager_id: user.manager_id || '',
             company_email: user.company_email,
             alternate_email: user.alternate_email || '',
         });
@@ -136,8 +136,8 @@ export function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditUserFo
                             </label>
                             <input
                                 type="text"
-                                name="manager_name"
-                                value={formData.manager_name || ''}
+                                name="manager_id"
+                                value={formData.manager_id || ''}
                                 onChange={handleChange}
                                 disabled={isLoading}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
