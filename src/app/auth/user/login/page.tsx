@@ -23,7 +23,6 @@ export default function UserLoginPage() {
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showTOTP, setShowTOTP] = useState(false);
 
     // 🔐 Auto-redirect if already logged in
     useEffect(() => {
@@ -80,7 +79,7 @@ export default function UserLoginPage() {
 
             // ✅ Save token & user
             localStorage.setItem('authToken', result.token);
-            localStorage.setItem('user', JSON.stringify(result.user));
+            localStorage.setItem('authUser', JSON.stringify(result.user));
 
             // ✅ Redirect based on role
             if (result.user.role === 'admin') {
@@ -182,30 +181,6 @@ export default function UserLoginPage() {
                             disabled={isLoading}
                         />
                     </div>
-
-                    {showTOTP && (
-                        <div>
-                            <label
-                                htmlFor="totpToken"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                6-Digit Authenticator Code
-                            </label>
-                            <input
-                                id="totpToken"
-                                name="totpToken"
-                                type="text"
-                                maxLength={6}
-                                pattern="[0-9]{6}"
-                                value={formData.totpToken}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="000000"
-                                disabled={isLoading}
-                                autoComplete="one-time-code"
-                            />
-                        </div>
-                    )}
 
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">

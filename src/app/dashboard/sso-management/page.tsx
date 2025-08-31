@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { PrivateRoute } from '@/components/PrivateRoute';
 
 interface ServiceProvider {
     id: string;
@@ -34,7 +34,6 @@ interface DLPPolicy {
 }
 
 export default function SSOManagementPage() {
-    const { data: session } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState<'providers' | 'policies' | 'audit'>('providers');
@@ -59,22 +58,16 @@ export default function SSOManagementPage() {
     });
 
     useEffect(() => {
-        if (!session?.user || (session.user as any).role !== 'admin') {
-            router.push('/auth/login');
-            return;
-        }
-
         // Set initial tab based on URL parameter, default to 'providers'
         const tabParam = searchParams.get('tab');
         if (tabParam && ['providers', 'policies', 'audit'].includes(tabParam)) {
             setActiveTab(tabParam as 'providers' | 'policies' | 'audit');
         } else {
-            // Explicitly set to 'providers' if no valid tab parameter
             setActiveTab('providers');
         }
 
         loadData();
-    }, [session, router, searchParams]);
+    }, [router, searchParams]);
 
     const loadData = async () => {
         try {
@@ -211,13 +204,13 @@ export default function SSOManagementPage() {
         if (protocol === 'SAML') {
             metadata = `<?xml version="1.0"?>
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
-                     entityID="${process.env.NEXTAUTH_URL}/saml/metadata">
+                     entityID="${process.env.NEXT_PUBLIC_API_BASE_URL}/saml/metadata">
   <md:IDPSSODescriptor WantAuthnRequestsSigned="false"
                        protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
     <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-                            Location="${process.env.NEXTAUTH_URL}/api/saml/sso/protected-login"/>
+                            Location="${process.env.NEXT_PUBLIC_API_BASE_URL}/api/saml/sso/protected-login"/>
     <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                            Location="${process.env.NEXTAUTH_URL}/api/saml/sso/protected-login"/>
+                            Location="${process.env.NEXT_PUBLIC_API_BASE_URL}/api/saml/sso/protected-login"/>
   </md:IDPSSODescriptor>
 </md:EntityDescriptor>`;
             filename = 'dlp-idp-metadata.xml';
@@ -225,11 +218,11 @@ export default function SSOManagementPage() {
         } else {
             metadata = JSON.stringify(
                 {
-                    issuer: `${process.env.NEXTAUTH_URL}`,
-                    authorization_endpoint: `${process.env.NEXTAUTH_URL}/api/oidc/auth`,
-                    token_endpoint: `${process.env.NEXTAUTH_URL}/api/oidc/token`,
-                    userinfo_endpoint: `${process.env.NEXTAUTH_URL}/api/oidc/userinfo`,
-                    jwks_uri: `${process.env.NEXTAUTH_URL}/api/oidc/jwks`,
+                    issuer: `${process.env.NEXT_PUBLIC_API_BASE_URL}`,
+                    authorization_endpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/oidc/auth`,
+                    token_endpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/oidc/token`,
+                    userinfo_endpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/oidc/userinfo`,
+                    jwks_uri: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/oidc/jwks`,
                     scopes_supported: ['openid', 'profile', 'email'],
                     response_types_supported: ['code', 'id_token', 'token'],
                     grant_types_supported: ['authorization_code', 'implicit'],
@@ -254,6 +247,7 @@ export default function SSOManagementPage() {
         URL.revokeObjectURL(url);
     };
 
+    // Loading state for data only
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -263,519 +257,540 @@ export default function SSOManagementPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    SSO Identity Provider & DLP Management
-                </h1>
-                <p className="text-gray-600">
-                    Manage SAML service providers, DLP policies, and audit access requests
-                </p>
-            </div>
+        <PrivateRoute allowedRoles={['admin']}>
+            <div className="container mx-auto px-4 py-8">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        SSO Identity Provider & DLP Management
+                    </h1>
+                    <p className="text-gray-600">
+                        Manage SAML service providers, DLP policies, and audit access requests
+                    </p>
+                </div>
 
-            {/* Tabs */}
-            <div className="border-b border-gray-200 mb-6">
-                <nav className="-mb-px flex space-x-8">
-                    {[
-                        { id: 'providers', label: 'Service Providers', icon: '🔗' },
-                        { id: 'policies', label: 'DLP Policies', icon: '🛡️' },
-                        { id: 'audit', label: 'Audit Log', icon: '📊' },
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabChange(tab.id as any)}
-                            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                                activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            <span className="mr-2">{tab.icon}</span>
-                            {tab.label}
-                        </button>
-                    ))}
-                </nav>
-            </div>
+                {/* Tabs */}
+                <div className="border-b border-gray-200 mb-6">
+                    <nav className="-mb-px flex space-x-8">
+                        {[
+                            { id: 'providers', label: 'Service Providers', icon: '🔗' },
+                            { id: 'policies', label: 'DLP Policies', icon: '🛡️' },
+                            { id: 'audit', label: 'Audit Log', icon: '📊' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => handleTabChange(tab.id as any)}
+                                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                                    activeTab === tab.id
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                <span className="mr-2">{tab.icon}</span>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
 
-            {/* Service Providers Tab */}
-            {activeTab === 'providers' && (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-semibold">Service Providers</h2>
-                        <div className="space-x-3">
-                            <button
-                                onClick={() => generateMetadata('SAML')}
-                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                            >
-                                📥 SAML Metadata
-                            </button>
-                            <button
-                                onClick={() => generateMetadata('OIDC')}
-                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                            >
-                                📥 OIDC Discovery
-                            </button>
-                            <a
-                                href="/test/saml"
-                                className="inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                            >
-                                🧪 Test SAML
-                            </a>
-                            <a
-                                href="/test/oidc"
-                                className="inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                            >
-                                🧪 Test OIDC
-                            </a>
-                            <button
-                                onClick={() => setShowAddProvider(true)}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                                ➕ Add Provider
-                            </button>
+                {/* Service Providers Tab */}
+                {activeTab === 'providers' && (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-semibold">Service Providers</h2>
+                            <div className="space-x-3">
+                                <button
+                                    onClick={() => generateMetadata('SAML')}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                                >
+                                    📥 SAML Metadata
+                                </button>
+                                <button
+                                    onClick={() => generateMetadata('OIDC')}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                                >
+                                    📥 OIDC Discovery
+                                </button>
+                                <a
+                                    href="/test/saml"
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                >
+                                    🧪 Test SAML
+                                </a>
+                                <a
+                                    href="/test/oidc"
+                                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                >
+                                    🧪 Test OIDC
+                                </a>
+                                <button
+                                    onClick={() => setShowAddProvider(true)}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    ➕ Add Provider
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Add Provider Modal */}
-                    {showAddProvider && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                                <h3 className="text-lg font-semibold mb-4">Add Service Provider</h3>
+                        {/* Add Provider Modal */}
+                        {showAddProvider && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        Add Service Provider
+                                    </h3>
 
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={newProvider.name}
-                                            onChange={(e) =>
-                                                setNewProvider((prev) => ({
-                                                    ...prev,
-                                                    name: e.target.value,
-                                                }))
-                                            }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="e.g., AWS Production"
-                                        />
-                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={newProvider.name}
+                                                onChange={(e) =>
+                                                    setNewProvider((prev) => ({
+                                                        ...prev,
+                                                        name: e.target.value,
+                                                    }))
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="e.g., AWS Production"
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Protocol
-                                        </label>
-                                        <select
-                                            value={newProvider.protocol}
-                                            onChange={(e) =>
-                                                setNewProvider((prev) => ({
-                                                    ...prev,
-                                                    protocol: e.target.value as 'SAML' | 'OIDC',
-                                                }))
-                                            }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option value="SAML">SAML 2.0</option>
-                                            <option value="OIDC">OpenID Connect</option>
-                                        </select>
-                                    </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Protocol
+                                            </label>
+                                            <select
+                                                value={newProvider.protocol}
+                                                onChange={(e) =>
+                                                    setNewProvider((prev) => ({
+                                                        ...prev,
+                                                        protocol: e.target.value as 'SAML' | 'OIDC',
+                                                    }))
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            >
+                                                <option value="SAML">SAML 2.0</option>
+                                                <option value="OIDC">OpenID Connect</option>
+                                            </select>
+                                        </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Description
-                                        </label>
-                                        <textarea
-                                            value={newProvider.description}
-                                            onChange={(e) =>
-                                                setNewProvider((prev) => ({
-                                                    ...prev,
-                                                    description: e.target.value,
-                                                }))
-                                            }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            rows={2}
-                                            placeholder="Description of this service provider"
-                                        />
-                                    </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Description
+                                            </label>
+                                            <textarea
+                                                value={newProvider.description}
+                                                onChange={(e) =>
+                                                    setNewProvider((prev) => ({
+                                                        ...prev,
+                                                        description: e.target.value,
+                                                    }))
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                rows={2}
+                                                placeholder="Description of this service provider"
+                                            />
+                                        </div>
 
-                                    {newProvider.protocol === 'SAML' ? (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Entity ID
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={newProvider.entityId}
-                                                    onChange={(e) =>
-                                                        setNewProvider((prev) => ({
-                                                            ...prev,
-                                                            entityId: e.target.value,
-                                                        }))
-                                                    }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="urn:amazon:webservices"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Assertion Consumer Service URL
-                                                </label>
-                                                <input
-                                                    type="url"
-                                                    value={newProvider.assertEndpoint}
-                                                    onChange={(e) =>
-                                                        setNewProvider((prev) => ({
-                                                            ...prev,
-                                                            assertEndpoint: e.target.value,
-                                                        }))
-                                                    }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="https://signin.aws.amazon.com/saml"
-                                                />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Client ID
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={newProvider.clientId}
-                                                    onChange={(e) =>
-                                                        setNewProvider((prev) => ({
-                                                            ...prev,
-                                                            clientId: e.target.value,
-                                                        }))
-                                                    }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="client-id-123"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Client Secret
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    value={newProvider.clientSecret}
-                                                    onChange={(e) =>
-                                                        setNewProvider((prev) => ({
-                                                            ...prev,
-                                                            clientSecret: e.target.value,
-                                                        }))
-                                                    }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="client-secret"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Redirect URIs
-                                                </label>
-                                                {newProvider.redirectUris.map((uri, index) => (
-                                                    <div key={index} className="flex gap-2 mb-2">
-                                                        <input
-                                                            type="url"
-                                                            value={uri}
-                                                            onChange={(e) =>
-                                                                updateRedirectUri(
-                                                                    index,
-                                                                    e.target.value
-                                                                )
-                                                            }
-                                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                            placeholder="https://example.com/callback"
-                                                        />
-                                                        {newProvider.redirectUris.length > 1 && (
-                                                            <button
-                                                                onClick={() =>
-                                                                    setNewProvider((prev) => ({
-                                                                        ...prev,
-                                                                        redirectUris:
-                                                                            prev.redirectUris.filter(
-                                                                                (_, i) =>
-                                                                                    i !== index
-                                                                            ),
-                                                                    }))
+                                        {newProvider.protocol === 'SAML' ? (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Entity ID
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={newProvider.entityId}
+                                                        onChange={(e) =>
+                                                            setNewProvider((prev) => ({
+                                                                ...prev,
+                                                                entityId: e.target.value,
+                                                            }))
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        placeholder="urn:amazon:webservices"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Assertion Consumer Service URL
+                                                    </label>
+                                                    <input
+                                                        type="url"
+                                                        value={newProvider.assertEndpoint}
+                                                        onChange={(e) =>
+                                                            setNewProvider((prev) => ({
+                                                                ...prev,
+                                                                assertEndpoint: e.target.value,
+                                                            }))
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        placeholder="https://signin.aws.amazon.com/saml"
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Client ID
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={newProvider.clientId}
+                                                        onChange={(e) =>
+                                                            setNewProvider((prev) => ({
+                                                                ...prev,
+                                                                clientId: e.target.value,
+                                                            }))
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        placeholder="client-id-123"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Client Secret
+                                                    </label>
+                                                    <input
+                                                        type="password"
+                                                        value={newProvider.clientSecret}
+                                                        onChange={(e) =>
+                                                            setNewProvider((prev) => ({
+                                                                ...prev,
+                                                                clientSecret: e.target.value,
+                                                            }))
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        placeholder="client-secret"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Redirect URIs
+                                                    </label>
+                                                    {newProvider.redirectUris.map((uri, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex gap-2 mb-2"
+                                                        >
+                                                            <input
+                                                                type="url"
+                                                                value={uri}
+                                                                onChange={(e) =>
+                                                                    updateRedirectUri(
+                                                                        index,
+                                                                        e.target.value
+                                                                    )
                                                                 }
-                                                                className="px-3 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50"
-                                                            >
-                                                                ✕
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <button
-                                                    onClick={addRedirectUri}
-                                                    className="text-sm text-blue-600 hover:text-blue-700"
+                                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="https://example.com/callback"
+                                                            />
+                                                            {newProvider.redirectUris.length >
+                                                                1 && (
+                                                                <button
+                                                                    onClick={() =>
+                                                                        setNewProvider((prev) => ({
+                                                                            ...prev,
+                                                                            redirectUris:
+                                                                                prev.redirectUris.filter(
+                                                                                    (_, i) =>
+                                                                                        i !== index
+                                                                                ),
+                                                                        }))
+                                                                    }
+                                                                    className="px-3 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <button
+                                                        onClick={addRedirectUri}
+                                                        className="text-sm text-blue-600 hover:text-blue-700"
+                                                    >
+                                                        + Add Redirect URI
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-end space-x-3 mt-6">
+                                        <button
+                                            onClick={() => setShowAddProvider(false)}
+                                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleAddProvider}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                        >
+                                            Add Provider
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid gap-6">
+                            {serviceProviders.map((provider) => (
+                                <div
+                                    key={provider.id}
+                                    className="bg-white p-6 rounded-lg border shadow-sm"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold flex items-center">
+                                                {provider.name}
+                                                <span
+                                                    className={`ml-3 px-2 py-1 text-xs rounded-full ${
+                                                        provider.protocol === 'SAML'
+                                                            ? 'bg-blue-100 text-blue-800'
+                                                            : 'bg-purple-100 text-purple-800'
+                                                    }`}
                                                 >
-                                                    + Add Redirect URI
-                                                </button>
+                                                    {provider.protocol}
+                                                </span>
+                                                <span
+                                                    className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                                                        provider.enabled
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                    }`}
+                                                >
+                                                    {provider.enabled ? 'Enabled' : 'Disabled'}
+                                                </span>
+                                            </h3>
+                                            <p className="text-gray-600 mt-1">
+                                                {provider.description}
+                                            </p>
+                                        </div>
+                                        <div className="space-x-2">
+                                            <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                                Edit
+                                            </button>
+                                            <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                                Test
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {provider.protocol === 'SAML' ? (
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span className="font-medium text-gray-700">
+                                                    Entity ID:
+                                                </span>
+                                                <p className="text-gray-600 font-mono">
+                                                    {provider.entityId}
+                                                </p>
                                             </div>
-                                        </>
+                                            <div>
+                                                <span className="font-medium text-gray-700">
+                                                    Assertion Endpoint:
+                                                </span>
+                                                <p className="text-gray-600 font-mono break-all">
+                                                    {provider.assertEndpoint}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span className="font-medium text-gray-700">
+                                                    Client ID:
+                                                </span>
+                                                <p className="text-gray-600 font-mono">
+                                                    {provider.clientId}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-gray-700">
+                                                    Redirect URIs:
+                                                </span>
+                                                <div className="text-gray-600">
+                                                    {provider.redirectUris?.map((uri, index) => (
+                                                        <p
+                                                            key={index}
+                                                            className="font-mono text-xs break-all"
+                                                        >
+                                                            {uri}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-gray-700">
+                                                    Scopes:
+                                                </span>
+                                                <p className="text-gray-600">
+                                                    {provider.scopes?.join(', ')}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-gray-700">
+                                                    Grant Types:
+                                                </span>
+                                                <p className="text-gray-600">
+                                                    {provider.grantTypes?.join(', ')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {provider.id === 'aws-saml' && (
+                                        <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+                                            <h4 className="font-medium text-blue-900 mb-2">
+                                                🔧 AWS SAML Configuration
+                                            </h4>
+                                            <p className="text-sm text-blue-800 mb-2">
+                                                To configure AWS to use this SAML Identity Provider:
+                                            </p>
+                                            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                                                <li>Download the SAML metadata file above</li>
+                                                <li>
+                                                    Go to AWS IAM → Identity Providers → Create
+                                                    Provider
+                                                </li>
+                                                <li>Choose SAML and upload the metadata file</li>
+                                                <li>
+                                                    Create IAM roles with the SAML provider as
+                                                    trusted entity
+                                                </li>
+                                            </ol>
+                                            <div className="mt-3 p-2 bg-blue-100 rounded text-xs font-mono">
+                                                SSO URL: {process.env.NEXT_PUBLIC_API_BASE_URL}
+                                                /api/saml/sso/protected-login
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {provider.id === 'aws-oidc' && (
+                                        <div className="mt-4 p-3 bg-purple-50 rounded border border-purple-200">
+                                            <h4 className="font-medium text-purple-900 mb-2">
+                                                🔧 AWS OIDC Configuration
+                                            </h4>
+                                            <p className="text-sm text-purple-800 mb-2">
+                                                To configure AWS to use this OIDC Identity Provider:
+                                            </p>
+                                            <ol className="text-sm text-purple-800 space-y-1 list-decimal list-inside">
+                                                <li>Download the OIDC discovery document above</li>
+                                                <li>
+                                                    Go to AWS IAM → Identity Providers → Create
+                                                    Provider
+                                                </li>
+                                                <li>
+                                                    Choose OpenID Connect and enter the issuer URL
+                                                </li>
+                                                <li>
+                                                    Add the client ID and create IAM roles with OIDC
+                                                    conditions
+                                                </li>
+                                            </ol>
+                                            <div className="mt-3 p-2 bg-purple-100 rounded text-xs font-mono space-y-1">
+                                                <div>
+                                                    Issuer URL:{' '}
+                                                    {process.env.NEXT_PUBLIC_API_BASE_URL}
+                                                </div>
+                                                <div>
+                                                    Authorization Endpoint:{' '}
+                                                    {process.env.NEXT_PUBLIC_API_BASE_URL}
+                                                    /api/oidc/auth
+                                                </div>
+                                                <div>
+                                                    Token Endpoint:{' '}
+                                                    {process.env.NEXT_PUBLIC_API_BASE_URL}
+                                                    /api/oidc/token
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
-                                <div className="flex justify-end space-x-3 mt-6">
-                                    <button
-                                        onClick={() => setShowAddProvider(false)}
-                                        className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleAddProvider}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                                    >
-                                        Add Provider
-                                    </button>
+                {/* DLP Policies Tab */}
+                {activeTab === 'policies' && (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-semibold">DLP Policies</h2>
+                            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                ➕ Create Policy
+                            </button>
+                        </div>
+
+                        <div className="grid gap-4">
+                            {policies.map((policy) => (
+                                <div
+                                    key={policy.id}
+                                    className="bg-white p-6 rounded-lg border shadow-sm"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-semibold flex items-center">
+                                                {policy.name}
+                                                <span
+                                                    className={`ml-3 px-2 py-1 text-xs rounded-full ${
+                                                        policy.enabled
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                    }`}
+                                                >
+                                                    {policy.enabled ? 'Active' : 'Inactive'}
+                                                </span>
+                                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                                    Priority: {policy.priority}
+                                                </span>
+                                            </h3>
+                                            <p className="text-gray-600 mt-1">
+                                                {policy.description}
+                                            </p>
+                                        </div>
+                                        <div className="space-x-2">
+                                            <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                                Edit
+                                            </button>
+                                            <button className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Audit Log Tab */}
+                {activeTab === 'audit' && (
+                    <div className="space-y-6">
+                        <h2 className="text-xl font-semibold">Access Audit Log</h2>
+
+                        <div className="bg-white rounded-lg border shadow-sm">
+                            <div className="p-6 border-b">
+                                <h3 className="font-medium">Recent Access Requests</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="text-center text-gray-500 py-8">
+                                    <p>🔍 No access requests logged yet</p>
+                                    <p className="text-sm mt-2">
+                                        Access requests will appear here once users start
+                                        authenticating through the IdP
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                    <div className="grid gap-6">
-                        {serviceProviders.map((provider) => (
-                            <div
-                                key={provider.id}
-                                className="bg-white p-6 rounded-lg border shadow-sm"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold flex items-center">
-                                            {provider.name}
-                                            <span
-                                                className={`ml-3 px-2 py-1 text-xs rounded-full ${
-                                                    provider.protocol === 'SAML'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : 'bg-purple-100 text-purple-800'
-                                                }`}
-                                            >
-                                                {provider.protocol}
-                                            </span>
-                                            <span
-                                                className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                                                    provider.enabled
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                }`}
-                                            >
-                                                {provider.enabled ? 'Enabled' : 'Disabled'}
-                                            </span>
-                                        </h3>
-                                        <p className="text-gray-600 mt-1">{provider.description}</p>
-                                    </div>
-                                    <div className="space-x-2">
-                                        <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-                                            Edit
-                                        </button>
-                                        <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-                                            Test
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {provider.protocol === 'SAML' ? (
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                Entity ID:
-                                            </span>
-                                            <p className="text-gray-600 font-mono">
-                                                {provider.entityId}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                Assertion Endpoint:
-                                            </span>
-                                            <p className="text-gray-600 font-mono break-all">
-                                                {provider.assertEndpoint}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                Client ID:
-                                            </span>
-                                            <p className="text-gray-600 font-mono">
-                                                {provider.clientId}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                Redirect URIs:
-                                            </span>
-                                            <div className="text-gray-600">
-                                                {provider.redirectUris?.map((uri, index) => (
-                                                    <p
-                                                        key={index}
-                                                        className="font-mono text-xs break-all"
-                                                    >
-                                                        {uri}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                Scopes:
-                                            </span>
-                                            <p className="text-gray-600">
-                                                {provider.scopes?.join(', ')}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                Grant Types:
-                                            </span>
-                                            <p className="text-gray-600">
-                                                {provider.grantTypes?.join(', ')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {provider.id === 'aws-saml' && (
-                                    <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
-                                        <h4 className="font-medium text-blue-900 mb-2">
-                                            🔧 AWS SAML Configuration
-                                        </h4>
-                                        <p className="text-sm text-blue-800 mb-2">
-                                            To configure AWS to use this SAML Identity Provider:
-                                        </p>
-                                        <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                                            <li>Download the SAML metadata file above</li>
-                                            <li>
-                                                Go to AWS IAM → Identity Providers → Create Provider
-                                            </li>
-                                            <li>Choose SAML and upload the metadata file</li>
-                                            <li>
-                                                Create IAM roles with the SAML provider as trusted
-                                                entity
-                                            </li>
-                                        </ol>
-                                        <div className="mt-3 p-2 bg-blue-100 rounded text-xs font-mono">
-                                            SSO URL: {process.env.NEXTAUTH_URL}
-                                            /api/saml/sso/protected-login
-                                        </div>
-                                    </div>
-                                )}
-
-                                {provider.id === 'aws-oidc' && (
-                                    <div className="mt-4 p-3 bg-purple-50 rounded border border-purple-200">
-                                        <h4 className="font-medium text-purple-900 mb-2">
-                                            🔧 AWS OIDC Configuration
-                                        </h4>
-                                        <p className="text-sm text-purple-800 mb-2">
-                                            To configure AWS to use this OIDC Identity Provider:
-                                        </p>
-                                        <ol className="text-sm text-purple-800 space-y-1 list-decimal list-inside">
-                                            <li>Download the OIDC discovery document above</li>
-                                            <li>
-                                                Go to AWS IAM → Identity Providers → Create Provider
-                                            </li>
-                                            <li>Choose OpenID Connect and enter the issuer URL</li>
-                                            <li>
-                                                Add the client ID and create IAM roles with OIDC
-                                                conditions
-                                            </li>
-                                        </ol>
-                                        <div className="mt-3 p-2 bg-purple-100 rounded text-xs font-mono space-y-1">
-                                            <div>Issuer URL: {process.env.NEXTAUTH_URL}</div>
-                                            <div>
-                                                Authorization Endpoint: {process.env.NEXTAUTH_URL}
-                                                /api/oidc/auth
-                                            </div>
-                                            <div>
-                                                Token Endpoint: {process.env.NEXTAUTH_URL}
-                                                /api/oidc/token
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
                     </div>
-                </div>
-            )}
-
-            {/* DLP Policies Tab */}
-            {activeTab === 'policies' && (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-semibold">DLP Policies</h2>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            ➕ Create Policy
-                        </button>
-                    </div>
-
-                    <div className="grid gap-4">
-                        {policies.map((policy) => (
-                            <div
-                                key={policy.id}
-                                className="bg-white p-6 rounded-lg border shadow-sm"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold flex items-center">
-                                            {policy.name}
-                                            <span
-                                                className={`ml-3 px-2 py-1 text-xs rounded-full ${
-                                                    policy.enabled
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                }`}
-                                            >
-                                                {policy.enabled ? 'Active' : 'Inactive'}
-                                            </span>
-                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                                                Priority: {policy.priority}
-                                            </span>
-                                        </h3>
-                                        <p className="text-gray-600 mt-1">{policy.description}</p>
-                                    </div>
-                                    <div className="space-x-2">
-                                        <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-                                            Edit
-                                        </button>
-                                        <button className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Audit Log Tab */}
-            {activeTab === 'audit' && (
-                <div className="space-y-6">
-                    <h2 className="text-xl font-semibold">Access Audit Log</h2>
-
-                    <div className="bg-white rounded-lg border shadow-sm">
-                        <div className="p-6 border-b">
-                            <h3 className="font-medium">Recent Access Requests</h3>
-                        </div>
-                        <div className="p-6">
-                            <div className="text-center text-gray-500 py-8">
-                                <p>🔍 No access requests logged yet</p>
-                                <p className="text-sm mt-2">
-                                    Access requests will appear here once users start authenticating
-                                    through the IdP
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </PrivateRoute>
     );
 }

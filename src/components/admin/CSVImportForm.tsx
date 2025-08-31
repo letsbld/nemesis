@@ -69,7 +69,7 @@ export function CSVImportForm({ onImportComplete, onClose }: CSVImportProps) {
         const csvContent = `first_name,middle_name,last_name,display_name,company_email,alternate_email,manager_name,username,password,description
 John,M,Doe,John Doe,john.doe@company.com,john@personal.com,Jane Smith,johndoe,SecurePass123!,Sales representative
 Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,Marketing manager`;
-        
+
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -95,9 +95,7 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
         <div className="max-w-2xl mx-auto p-6">
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Users from CSV</h2>
-                <p className="text-gray-600">
-                    Upload a CSV file to import multiple users at once.
-                </p>
+                <p className="text-gray-600">Upload a CSV file to import multiple users at once.</p>
             </div>
 
             {/* Template Download */}
@@ -146,11 +144,15 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Import Results</h3>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="text-center p-3 bg-green-100 rounded-lg">
-                            <div className="text-2xl font-bold text-green-600">{importResult.success}</div>
+                            <div className="text-2xl font-bold text-green-600">
+                                {importResult.success}
+                            </div>
                             <div className="text-sm text-green-700">Users Created</div>
                         </div>
                         <div className="text-center p-3 bg-red-100 rounded-lg">
-                            <div className="text-2xl font-bold text-red-600">{importResult.failed}</div>
+                            <div className="text-2xl font-bold text-red-600">
+                                {importResult.failed}
+                            </div>
                             <div className="text-sm text-red-700">Failed</div>
                         </div>
                     </div>
@@ -160,7 +162,10 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                             <h4 className="font-medium text-gray-900 mb-2">Errors:</h4>
                             <div className="max-h-64 overflow-y-auto">
                                 {importResult.errors.map((error, index) => (
-                                    <div key={index} className="mb-2 p-2 bg-red-50 border border-red-200 rounded text-sm">
+                                    <div
+                                        key={index}
+                                        className="mb-2 p-2 bg-red-50 border border-red-200 rounded text-sm"
+                                    >
                                         <div className="font-medium text-red-800">
                                             Row {error.row}
                                             {error.username && ` (${error.username})`}
@@ -185,15 +190,32 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                 <div className="text-yellow-700 text-sm">
                     <p className="mb-2">The CSV file must include these headers (in any order):</p>
                     <ul className="list-disc list-inside space-y-1">
-                        <li><strong>first_name</strong> - User&apos;s first name</li>
-                        <li><strong>last_name</strong> - User&apos;s last name</li>
-                        <li><strong>display_name</strong> - Display name for the user</li>
-                        <li><strong>company_email</strong> - User&apos;s company email address</li>
-                        <li><strong>username</strong> - Unique username for login</li>
-                        <li><strong>password</strong> - Password (10-64 chars, mixed case, special char)</li>
-                        <li><strong>manager_name</strong> - Name of the user&apos;s manager</li>
+                        <li>
+                            <strong>first_name</strong> - User&apos;s first name
+                        </li>
+                        <li>
+                            <strong>last_name</strong> - User&apos;s last name
+                        </li>
+                        <li>
+                            <strong>display_name</strong> - Display name for the user
+                        </li>
+                        <li>
+                            <strong>company_email</strong> - User&apos;s company email address
+                        </li>
+                        <li>
+                            <strong>username</strong> - Unique username for login
+                        </li>
+                        <li>
+                            <strong>password</strong> - Password (10-64 chars, mixed case, special
+                            char)
+                        </li>
+                        <li>
+                            <strong>manager_name</strong> - Name of the user&apos;s manager
+                        </li>
                     </ul>
-                    <p className="mt-2">Optional headers: middle_name, alternate_email, description</p>
+                    <p className="mt-2">
+                        Optional headers: middle_name, alternate_email, description
+                    </p>
                 </div>
             </div>
 
@@ -210,7 +232,7 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                     }`}
                     loading={isUploading}
                 />
-                
+
                 {importResult && (
                     <CustomButton
                         name="Import Another File"
@@ -219,17 +241,9 @@ Jane,,Smith,Jane Smith,jane.smith@company.com,,John Doe,janesmith,StrongPwd456@,
                         style="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                     />
                 )}
-                
+
                 <CustomButton
                     name="Cancel"
-                    onClick={onClose}
-                    btnType="button"
-                    style="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2"
-                />
-            </div>
-        </div>
-    );
-}
                     onClick={onClose}
                     btnType="button"
                     style="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2"

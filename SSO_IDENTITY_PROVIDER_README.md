@@ -90,7 +90,7 @@ SAML_SP_CERTIFICATE=service_provider_certificate
 SAML_SP_PRIVATE_KEY=service_provider_private_key
 WEBAUTHN_RP_ID=yourdomain.com
 WEBAUTHN_ORIGIN=https://yourdomain.com
-NEXTAUTH_URL=https://yourdomain.com
+NEXT_PUBLIC_API_BASE_URL=https://yourdomain.com
 ```
 
 ### AWS SAML Configuration

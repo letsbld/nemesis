@@ -1,7 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 interface ClientOnlyProps {
     children: React.ReactNode;
@@ -23,7 +23,7 @@ export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
 }
 
 interface SessionWrapperProps {
-    children: (session: any, status: string) => React.ReactNode;
+    children: (user: any, status: string) => React.ReactNode;
 }
 
 const LoadingNav = () => (
@@ -34,7 +34,7 @@ const LoadingNav = () => (
 );
 
 export function SessionWrapper({ children }: SessionWrapperProps) {
-    const { data: session, status } = useSession();
+    const { user, status } = useAuth();
 
-    return <ClientOnly fallback={<LoadingNav />}>{children(session, status)}</ClientOnly>;
+    return <ClientOnly fallback={<LoadingNav />}>{children(user, status)}</ClientOnly>;
 }

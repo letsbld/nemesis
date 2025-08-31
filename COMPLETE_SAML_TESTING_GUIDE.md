@@ -178,7 +178,7 @@ openssl x509 -in <(echo "YOUR_CERT_HERE") -checkend 86400
 ### 1. Environment Variables
 Create `.env.local`:
 ```env
-NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 NODE_ENV=development
 SAML_IDP_CERTIFICATE=<your-cert>
 SAML_SP_CERTIFICATE=<your-cert>

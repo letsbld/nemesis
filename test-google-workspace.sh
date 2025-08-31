@@ -30,11 +30,11 @@ else
     echo "✅ NEXTAUTH_SECRET is set"
 fi
 
-if [ -z "$NEXTAUTH_URL" ]; then
-    echo "❌ NEXTAUTH_URL is not set"
+if [ -z "$NEXT_PUBLIC_API_BASE_URL" ]; then
+    echo "❌ NEXT_PUBLIC_API_BASE_URL is not set"
     exit 1
 else
-    echo "✅ NEXTAUTH_URL is set"
+    echo "✅ NEXT_PUBLIC_API_BASE_URL is set"
 fi
 
 echo ""

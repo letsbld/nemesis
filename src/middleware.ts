@@ -1,73 +1,66 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken';
 
-export default withAuth(
-    function middleware(req) {
-        const token = req.nextauth.token;
-        const pathname = req.nextUrl.pathname;
+// Helper to get JWT payload from cookie
+function getUserFromJWT(req: NextRequest) {
+    const token = req.cookies.get('authToken')?.value;
+    if (!token) return null;
+    try {
+        // Replace 'your_jwt_secret' with your actual secret if needed for verification
+        const payload = jwt.decode(token);
+        return payload as any;
+    } catch {
+        return null;
+    }
+}
 
-        // Skip middleware for auth routes
-        if (pathname.startsWith('/auth')) {
+export function middleware(req: NextRequest) {
+    const user = getUserFromJWT(req);
+    const pathname = req.nextUrl.pathname;
+
+    // Skip middleware for auth routes
+    if (pathname.startsWith('/auth')) {
+        return NextResponse.next();
+    }
+
+    // Require authentication for protected routes
+    if (!user || !user.email) {
+        return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
+
+    // Check for admin routes
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+        if (user.role !== 'admin') {
+            return NextResponse.redirect(new URL('/auth/login', req.url));
+        }
+    }
+
+    // Handle TOTP requirement for users only
+    if (user.role === 'user' && user.requiresTotpSetup === true) {
+        if (pathname === '/user/totp') {
             return NextResponse.next();
         }
 
-        // Check for admin routes
-        if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-            if (token?.role !== 'admin') {
-                return NextResponse.redirect(new URL('/auth/login', req.url));
-            }
+        if (pathname.startsWith('/api/')) {
+            return NextResponse.next();
         }
 
-        // Handle TOTP requirement for users only
-        if (token?.role === 'user' && token.requiresTotpSetup === true) {
-            if (pathname === '/user/totp') {
-                return NextResponse.next();
-            }
+        const userRoutes = ['/home', '/room', '/user/profile', '/user/settings', '/user/report'];
+        const needsRedirect = userRoutes.some(
+            (route) => pathname === route || pathname.startsWith(route + '/')
+        );
 
-            if (pathname.startsWith('/api/')) {
-                return NextResponse.next();
-            }
-
-            const userRoutes = [
-                '/home',
-                '/room',
-                '/user/profile',
-                '/user/settings',
-                '/user/report',
-            ];
-            const needsRedirect = userRoutes.some(
-                (route) => pathname === route || pathname.startsWith(route + '/')
-            );
-
-            if (needsRedirect) {
-                const url = req.nextUrl.clone();
-                url.pathname = '/user/totp';
-                url.searchParams.set('required', 'true');
-                return NextResponse.redirect(url);
-            }
+        if (needsRedirect) {
+            const url = req.nextUrl.clone();
+            url.pathname = '/user/totp';
+            url.searchParams.set('required', 'true');
+            return NextResponse.redirect(url);
         }
-
-        return NextResponse.next();
-    },
-    {
-        callbacks: {
-            authorized: ({ token, req }) => {
-                const pathname = req.nextUrl.pathname;
-
-                // Always allow auth routes
-                if (pathname.startsWith('/auth')) {
-                    return true;
-                }
-
-                // Require authentication for protected routes
-                return !!token?.email;
-            },
-        },
-        pages: {
-            signIn: '/auth/login',
-        },
     }
-);
+
+    return NextResponse.next();
+}
 
 export const config = {
     matcher: ['/dashboard/:path*', '/admin/:path*', '/home/:path*', '/user/:path*', '/room/:path*'],

@@ -47,7 +47,7 @@ Update your `.env.local` file:
 GOOGLE_CLIENT_ID=your_client_id_here
 GOOGLE_CLIENT_SECRET=your_client_secret_here
 NEXTAUTH_SECRET=your_nextauth_secret
-NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 ```
 
 ### 4. Database Migration

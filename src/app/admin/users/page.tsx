@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserList } from '@/components/admin/UserList';
@@ -12,7 +11,6 @@ import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 
 const UsersPage = () => {
-    const { data: session, status } = useSession();
     const router = useRouter();
     const [users, setUsers] = useState<UserData[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -22,41 +20,45 @@ const UsersPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>(
+        'loading'
+    );
+    const [user, setUser] = useState<any>(null);
 
     // Check authentication and admin role
     useEffect(() => {
-        if (status === 'loading') return; // Still loading
-
-        if (!session) {
-            // Not authenticated, redirect to login
+        const token = localStorage.getItem('authToken');
+        const userStr = localStorage.getItem('authUser');
+        if (!token || !userStr) {
+            setStatus('unauthenticated');
             router.push('/auth/login');
             return;
         }
-
-        // Check if user is admin
-        if (session.user && 'role' in session.user) {
-            if (session.user.role !== 'admin') {
-                // Not an admin, redirect to appropriate page
-                if (session.user.role === 'user') {
+        try {
+            const parsedUser = JSON.parse(userStr);
+            setUser(parsedUser);
+            if (parsedUser.role !== 'admin') {
+                setStatus('unauthenticated');
+                if (parsedUser.role === 'user') {
                     router.push('/home');
                 } else {
                     router.push('/auth/login');
                 }
                 return;
             }
-        } else {
-            // No role defined, redirect to login
+            setStatus('authenticated');
+        } catch {
+            setStatus('unauthenticated');
             router.push('/auth/login');
-            return;
         }
-    }, [session, status, router]);
+    }, [router]);
 
     // Fetch users on component mount (only after auth check)
     useEffect(() => {
-        if (session?.user && 'role' in session.user && session.user.role === 'admin') {
+        if (status === 'authenticated' && user && user.role === 'admin') {
             fetchUsers();
         }
-    }, [session]);
+    }, [status, user]);
 
     // Show loading state while checking authentication
     if (status === 'loading') {
@@ -68,7 +70,7 @@ const UsersPage = () => {
     }
 
     // Show redirecting state if not admin
-    if (!session || !session.user || !('role' in session.user) || session.user.role !== 'admin') {
+    if (status !== 'authenticated' || !user || user.role !== 'admin') {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-lg">Redirecting...</div>
@@ -104,12 +106,6 @@ const UsersPage = () => {
         } finally {
             setIsCreating(false);
         }
-    };
-
-    const handleEditUser = (user: UserData) => {
-        console.log('Editing user:', user);
-        setEditingUser(user);
-        setShowEditForm(true);
     };
 
     const handleUpdateUser = async (userId: string, userData: Partial<CreateUserData>) => {
@@ -149,7 +145,9 @@ const UsersPage = () => {
             return;
         }
         try {
-            const data = await apiFetch(`/admin/users/${userId}/reset-password`, { method: 'POST' });
+            const data = await apiFetch(`/admin/users/${userId}/reset-password`, {
+                method: 'POST',
+            });
             toast.success(`Password reset successfully! New password: ${data.newPassword}`);
         } catch (error: any) {
             toast.error(`Error: ${error?.error || 'Failed to reset password.'}`);
@@ -168,51 +166,6 @@ const UsersPage = () => {
         );
     }
 
-    if (showEditForm && editingUser) {
-        return (
-            <div className="min-h-screen bg-gray-50 py-8">
-                <EditUserForm
-                    user={editingUser}
-                    onSubmit={(userData) => handleUpdateUser(editingUser.id, userData)}
-                    onCancel={() => {
-                        setShowEditForm(false);
-                        setEditingUser(null);
-                    }}
-                    isLoading={isUpdating}
-                />
-            </div>
-        );
-    }
-
-    if (showCSVImport) {
-        return (
-            <div className="min-h-screen bg-gray-50 py-8">
-                <CSVImportForm
-                    onImportComplete={() => {
-                        fetchUsers(); // Refresh user list after import
-                        setShowCSVImport(false);
-                    }}
-                    onClose={() => setShowCSVImport(false)}
-                />
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-gray-50">
-            <UserList
-                users={users}
-                onCreateUser={() => setShowCreateForm(true)}
-                onDeleteUser={handleDeleteUser}
-                onResetPassword={handleResetPassword}
-                onImportCSV={() => setShowCSVImport(true)}
-                isLoading={isLoading}
-            />
-        </div>
-    );
-};
-
-export default UsersPage;
     if (showEditForm && editingUser) {
         return (
             <div className="min-h-screen bg-gray-50 py-8">

@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 
 const EditUserPage = () => {
-    const { data: session, status } = useSession();
     const router = useRouter();
     const params = useParams();
     const [userId, setUserId] = useState<string | null>(null);
@@ -27,47 +25,54 @@ const EditUserPage = () => {
         alternate_email: '',
     });
 
+    // Auth state
+    const [authStatus, setAuthStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>(
+        'loading'
+    );
+    const [authUser, setAuthUser] = useState<any>(null);
+
     // Extract userId from params
     useEffect(() => {
-        const extractUserId = async () => {
-            if (params?.id) {
-                const id = Array.isArray(params.id) ? params.id[0] : params.id;
-                setUserId(id);
-            }
-        };
-        extractUserId();
+        if (params?.id) {
+            const id = Array.isArray(params.id) ? params.id[0] : params.id;
+            setUserId(id);
+        }
     }, [params]);
 
     // Authentication check
     useEffect(() => {
-        if (status === 'loading') return;
-
-        if (!session) {
+        const token = localStorage.getItem('authToken');
+        const userStr = localStorage.getItem('authUser');
+        if (!token || !userStr) {
+            setAuthStatus('unauthenticated');
             router.push('/auth/login');
             return;
         }
-
-        if (session.user && 'role' in session.user) {
-            if (session.user.role !== 'admin') {
-                if (session.user.role === 'user') {
+        try {
+            const parsedUser = JSON.parse(userStr);
+            setAuthUser(parsedUser);
+            if (parsedUser.role !== 'admin') {
+                setAuthStatus('unauthenticated');
+                if (parsedUser.role === 'user') {
                     router.push('/home');
                 } else {
                     router.push('/auth/login');
                 }
                 return;
             }
-        } else {
+            setAuthStatus('authenticated');
+        } catch {
+            setAuthStatus('unauthenticated');
             router.push('/auth/login');
-            return;
         }
-    }, [session, status, router]);
+    }, [router]);
 
     // Fetch user data
     useEffect(() => {
-        if (userId && session?.user && 'role' in session.user && session.user.role === 'admin') {
+        if (userId && authStatus === 'authenticated' && authUser && authUser.role === 'admin') {
             fetchUser();
         }
-    }, [userId, session]);
+    }, [userId, authStatus, authUser]);
 
     const fetchUser = async () => {
         if (!userId) return;
@@ -124,7 +129,7 @@ const EditUserPage = () => {
     };
 
     // Show loading state
-    if (status === 'loading' || isLoading || !userId) {
+    if (authStatus === 'loading' || isLoading || !userId) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-lg">Loading user data...</div>
@@ -133,7 +138,7 @@ const EditUserPage = () => {
     }
 
     // Show redirecting state if not admin
-    if (!session || !session.user || !('role' in session.user) || session.user.role !== 'admin') {
+    if (authStatus !== 'authenticated' || !authUser || authUser.role !== 'admin') {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-lg">Redirecting...</div>
@@ -286,30 +291,6 @@ const EditUserPage = () => {
                         </div>
 
                         <div className="flex gap-4 pt-6">
-                            <button
-                                type="submit"
-                                disabled={isSaving}
-                                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                            >
-                                {isSaving ? 'Updating...' : 'Update User'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => router.push('/admin/users')}
-                                disabled={isSaving}
-                                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:cursor-not-allowed"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default EditUserPage;
                             <button
                                 type="submit"
                                 disabled={isSaving}

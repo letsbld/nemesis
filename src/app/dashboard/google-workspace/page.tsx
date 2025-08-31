@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { apiFetch } from '@/lib/apiFetch';
+import { useAuth } from '@/context/AuthContext';
 
 interface GoogleWorkspaceUser {
     id: string;
@@ -39,7 +39,7 @@ interface ImportResult {
 }
 
 export default function GoogleWorkspaceImportPage() {
-    const { data: session, status } = useSession();
+    const { user, status } = useAuth();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'error'>(
@@ -57,7 +57,7 @@ export default function GoogleWorkspaceImportPage() {
     useEffect(() => {
         if (status === 'loading') return;
 
-        if (!session?.user || !('role' in session.user) || session.user.role !== 'admin') {
+        if (!user || !('role' in user) || user.role !== 'admin') {
             router.push('/auth/login');
             return;
         }
@@ -65,7 +65,7 @@ export default function GoogleWorkspaceImportPage() {
         // Test connection and get admin domain on load
         testConnection();
         getAdminDomain();
-    }, [session, status, router]);
+    }, [user, status, router]);
 
     const testConnection = async () => {
         try {
@@ -407,4 +407,3 @@ export default function GoogleWorkspaceImportPage() {
         </div>
     );
 }
-                                          

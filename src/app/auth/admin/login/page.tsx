@@ -1,41 +1,65 @@
 'use client';
 
-import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
 export default function AdminLoginPage() {
-    const { data: session, status } = useSession();
     const router = useRouter();
 
+    const handleGoogleLogin = () => {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+        window.location.href = `${apiBase}/api/auth/admin/login/google`;
+    };
+
     useEffect(() => {
-        if (session?.user) {
-            // Redirect based on user role
-            if ('role' in session.user) {
-                if (session.user.role === 'admin') {
-                    router.push('/dashboard');
-                } else if (session.user.role === 'user') {
-                    router.push('/home');
+        // Handle Google OAuth callback with JWT
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            const jwt = urlParams.get('jwt');
+            if (jwt) {
+                // Store JWT in localStorage and decode user info from JWT
+                localStorage.setItem('authToken', jwt);
+                try {
+                    // Decode JWT payload (without verifying signature)
+                    const payload = JSON.parse(atob(jwt.split('.')[1]));
+                    localStorage.setItem('authUser', JSON.stringify(payload));
+                } catch {
+                    localStorage.setItem('authUser', JSON.stringify({ role: 'admin' }));
                 }
+                router.replace('/dashboard');
+                return;
             }
         }
-    }, [session, router]);
 
-    if (status === 'loading') {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Loading...</div>
-            </div>
-        );
-    }
+        const token = localStorage.getItem('authToken');
+        const userStr = localStorage.getItem('authUser');
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user.role === 'admin') {
+                    router.push('/dashboard');
+                } else if (user.role === 'user') {
+                    router.push('/home');
+                }
+            } catch {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('authUser');
+            }
+        }
+    }, [router]);
 
-    if (session) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Redirecting...</div>
-            </div>
-        );
+    // Loading state not needed, just show redirecting if already logged in
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('authToken');
+        const userStr = localStorage.getItem('authUser');
+        if (token && userStr) {
+            return (
+                <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-lg">Redirecting...</div>
+                </div>
+            );
+        }
     }
 
     return (
@@ -50,7 +74,7 @@ export default function AdminLoginPage() {
 
                 <div className="space-y-4">
                     <button
-                        onClick={() => signIn('google')}
+                        onClick={handleGoogleLogin}
                         className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                     >
                         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

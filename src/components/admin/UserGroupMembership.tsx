@@ -70,7 +70,9 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
             return;
         }
         try {
-            await apiFetch(`/admin/user-groups/${groupId}/users?userId=${userId}`, { method: 'DELETE' });
+            await apiFetch(`/admin/user-groups/${groupId}/users?userId=${userId}`, {
+                method: 'DELETE',
+            });
             await fetchGroupUsers();
             toast.success('User removed from group successfully!');
         } catch (error: any) {
@@ -171,37 +173,6 @@ export const UserGroupMembership: React.FC<UserGroupMembershipProps> = ({ groupI
                 <div className="p-4 border-b">
                     <h3 className="text-lg font-semibold">Current Group Members</h3>
                 </div>
-                <div className="p-4">
-                    {groupUsers.length === 0 ? (
-                        <p className="text-gray-500">No users in this group yet.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {groupUsers.map((user) => (
-                                <div
-                                    key={user.id}
-                                    className="flex justify-between items-center p-3 border rounded-lg"
-                                >
-                                    <div>
-                                        <div className="font-medium">{user.display_name}</div>
-                                        <div className="text-sm text-gray-600">
-                                            {user.company_email} • @{user.username}
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => handleRemoveUser(user.id)}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
                 <div className="p-4">
                     {groupUsers.length === 0 ? (
                         <p className="text-gray-500">No users in this group yet.</p>

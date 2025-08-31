@@ -1,32 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-    const [credentials, setCredentials] = useState({
-        username: '',
-        password: '',
-    });
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    // Add missing state for credentials and loading if you want to enable the login form
+    // const [credentials, setCredentials] = useState({ username: '', password: '' });
+    // const [loading, setLoading] = useState(false);
 
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
     const oidcRequest = searchParams.get('oidc_request');
 
-    // Check if user already logged in
+    // Check if user already logged in s
     useEffect(() => {
         const token = localStorage.getItem('authToken');
         const user = localStorage.getItem('authUser');
+        console.log('inisde auth login');
+        console.log({ token, user });
+        console.log(typeof user);
         if (token && user) {
             const parsedUser = JSON.parse(user);
 
             if (oidcRequest) return; // handle OIDC separately
 
+            console.log(parsedUser, 'parsedUser');
             if (parsedUser.role === 'admin') {
+                console.log('Admin user detected, redirecting');
                 router.push('/dashboard');
             } else if (parsedUser.role === 'user') {
                 router.push('/home');
@@ -38,26 +41,25 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError('');
 
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credentials),
-            });
+            // const res = await fetch('/api/auth/login', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(credential),
+            // });
 
-            if (!res.ok) {
-                setError('Invalid credentials');
-                return;
-            }
+            // if (!res.ok) {
+            //     setError('Invalid credentials');
+            //     return;
+            // }
 
-            const data = await res.json(); // { token, user }
+            // const data = await res.json(); // { token, user }
 
-            // Store JWT + user in localStorage
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('authUser', JSON.stringify(data.user));
+            // // Store JWT + user in localStorage
+            // localStorage.setItem('authToken', data.token);
+            // localStorage.setItem('authUser', JSON.stringify(data.user));
 
             if (oidcRequest) {
                 const params = new URLSearchParams(window.location.search);
@@ -76,8 +78,6 @@ export default function LoginPage() {
         } catch (err) {
             console.error('Login error:', err);
             setError('Login failed');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -102,48 +102,9 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    {/* <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <input
-                                type="text"
-                                required
-                                value={credentials.username}
-                                onChange={(e) =>
-                                    setCredentials((prev) => ({
-                                        ...prev,
-                                        username: e.target.value,
-                                    }))
-                                }
-                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Username"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="password"
-                                required
-                                value={credentials.password}
-                                onChange={(e) =>
-                                    setCredentials((prev) => ({
-                                        ...prev,
-                                        password: e.target.value,
-                                    }))
-                                }
-                                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Password"
-                            />
-                        </div>
-                    </div> */}
-
-                    {/* <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {loading ? 'Signing in...' : 'Sign in'}
-                        </button>
-                    </div> */}
+                    {/* Login form fields are commented out.
+                        Uncomment and add missing state if you want to enable the login form.
+                    */}
 
                     <div className="flex items-center justify-between">
                         <div className="text-sm">

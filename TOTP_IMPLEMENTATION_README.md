@@ -162,7 +162,7 @@ Ensure these are set in your `.env.local`:
 
 ```
 NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=http://localhost:3001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
 DATABASE_URL=your-database-url
 ```
 

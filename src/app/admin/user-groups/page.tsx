@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { UserGroupList } from '@/components/admin/UserGroupList';
@@ -9,7 +9,7 @@ import { CreateUserGroupForm } from '@/components/admin/CreateUserGroupForm';
 import { UserGroupData, CreateUserGroupData } from '@/types/admin.types';
 
 const UserGroupsPage = () => {
-    const { data: session, status } = useSession();
+    const { user, status } = useAuth();
     const router = useRouter();
     const [groups, setGroups] = useState<UserGroupData[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -20,17 +20,17 @@ const UserGroupsPage = () => {
     useEffect(() => {
         if (status === 'loading') return; // Still loading
 
-        if (!session) {
+        if (!user) {
             // Not authenticated, redirect to login
             router.push('/auth/login');
             return;
         }
 
         // Check if user is admin
-        if (session.user && 'role' in session.user) {
-            if (session.user.role !== 'admin') {
+        if ('role' in user) {
+            if (user.role !== 'admin') {
                 // Not an admin, redirect to appropriate page
-                if (session.user.role === 'user') {
+                if (user.role === 'user') {
                     router.push('/home');
                 } else {
                     router.push('/auth/login');
@@ -42,14 +42,14 @@ const UserGroupsPage = () => {
             router.push('/auth/login');
             return;
         }
-    }, [session, status, router]);
+    }, [user, status, router]);
 
     // Fetch groups on component mount (only after auth check)
     useEffect(() => {
-        if (session?.user && 'role' in session.user && session.user.role === 'admin') {
+        if (user && 'role' in user && user.role === 'admin') {
             fetchGroups();
         }
-    }, [session]);
+    }, [user]);
 
     // Show loading state while checking authentication
     if (status === 'loading') {
@@ -61,7 +61,7 @@ const UserGroupsPage = () => {
     }
 
     // Show redirecting state if not admin
-    if (!session || !session.user || !('role' in session.user) || session.user.role !== 'admin') {
+    if (!user || !('role' in user) || user.role !== 'admin') {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-lg">Redirecting...</div>

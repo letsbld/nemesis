@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import { SideNavBar } from '@/components/dashboard/SideNavBar';
 import { Providers } from './providers';
+import { AuthProvider } from '@/context/AuthContext';
+// import { useAuth } from '@/context/AuthContext';
 
 const poppins = Poppins({
     weight: ['400', '700'],
@@ -26,14 +28,16 @@ export default function RootLayout({
         <html lang="en">
             <meta name="apple-mobile-web-app-title" content="DLP" />
             <body className={`${poppins.variable} antialiased`}>
-                <Providers>
-                    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
-                        <div className="w-full flex-none md:w-64">
-                            <SideNavBar />
+                <AuthProvider>
+                    <Providers>
+                        <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
+                            <div className="w-full flex-none md:w-64">
+                                <SideNavBar />
+                            </div>
+                            <div className="flex-grow md:overflow-y-auto">{children}</div>
                         </div>
-                        <div className="flex-grow md:overflow-y-auto">{children}</div>
-                    </div>
-                </Providers>
+                    </Providers>
+                </AuthProvider>
             </body>
         </html>
     );

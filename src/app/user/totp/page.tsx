@@ -1,9 +1,9 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 interface TOTPStatus {
     enabled: boolean;
@@ -11,7 +11,6 @@ interface TOTPStatus {
 }
 
 export default function TOTPSetupPage() {
-    const { data: session, status, update } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
     const isRequired = searchParams.get('required') === 'true';
@@ -21,6 +20,28 @@ export default function TOTPSetupPage() {
     const [verificationCode, setVerificationCode] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [step, setStep] = useState<'status' | 'setup' | 'verify'>('status');
+    const [user, setUser] = useState<any>(null);
+    const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>(
+        'loading'
+    );
+
+    // Loads user from localStorage
+    useEffect(() => {
+        const userStr = localStorage.getItem('authUser');
+        if (userStr) {
+            try {
+                const parsedUser = JSON.parse(userStr);
+                setUser(parsedUser);
+                setStatus('authenticated');
+            } catch {
+                setUser(null);
+                setStatus('unauthenticated');
+            }
+        } else {
+            setUser(null);
+            setStatus('unauthenticated');
+        }
+    }, []);
 
     const fetchTOTPStatus = useCallback(async () => {
         try {
@@ -45,13 +66,13 @@ export default function TOTPSetupPage() {
     useEffect(() => {
         if (status === 'loading') return;
 
-        if (!session?.user || !('role' in session.user) || session.user.role !== 'user') {
+        if (!user || !('role' in user) || user.role !== 'user') {
             router.push('/auth/user/login');
             return;
         }
 
         fetchTOTPStatus();
-    }, [session, status, router, fetchTOTPStatus]);
+    }, [user, status, router, fetchTOTPStatus]);
 
     // Auto-start TOTP setup for required users
     useEffect(() => {
@@ -113,8 +134,8 @@ export default function TOTPSetupPage() {
                 setVerificationCode('');
                 await fetchTOTPStatus();
 
-                // Update the session to reflect the new TOTP status
-                await update();
+                // Update the user context to reflect the new TOTP status
+                // await updateUser();
 
                 // If TOTP setup was required, redirect to home
                 if (isRequired) {
@@ -154,8 +175,8 @@ export default function TOTPSetupPage() {
                 setVerificationCode('');
                 await fetchTOTPStatus();
 
-                // Update the session to reflect the new TOTP status
-                await update();
+                // Update the user context to reflect the new TOTP status
+                // await updateUser();
             } else {
                 toast.error(data.error || 'Failed to disable TOTP');
             }
@@ -190,20 +211,18 @@ export default function TOTPSetupPage() {
                             <div>Session Status: {status}</div>
                             <div>
                                 User Role:{' '}
-                                {session?.user && 'role' in session.user
-                                    ? String(session.user.role)
+                                {user && 'role' in user ? String(user.role) : 'undefined'}
+                            </div>
+                            <div>
+                                TOTP Enabled (User):{' '}
+                                {user && 'totpEnabled' in user
+                                    ? String(user.totpEnabled)
                                     : 'undefined'}
                             </div>
                             <div>
-                                TOTP Enabled (Session):{' '}
-                                {session?.user && 'totpEnabled' in session.user
-                                    ? String(session.user.totpEnabled)
-                                    : 'undefined'}
-                            </div>
-                            <div>
-                                Requires TOTP Setup (Session):{' '}
-                                {session?.user && 'requiresTotpSetup' in session.user
-                                    ? String(session.user.requiresTotpSetup)
+                                Requires TOTP Setup (User):{' '}
+                                {user && 'requiresTotpSetup' in user
+                                    ? String(user.requiresTotpSetup)
                                     : 'undefined'}
                             </div>
                             <div>
@@ -340,9 +359,11 @@ export default function TOTPSetupPage() {
                                 Scan this QR code with your authenticator app:
                             </p>
                             <div className="flex justify-center mb-4">
-                                <img
+                                <Image
                                     src={qrCodeUrl}
                                     alt="TOTP QR Code"
+                                    width={200}
+                                    height={200}
                                     className="border border-gray-300 rounded"
                                 />
                             </div>
