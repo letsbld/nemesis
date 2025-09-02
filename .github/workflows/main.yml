@@ -1,0 +1,45 @@
+name: Deploy to Prodcution
+
+on:
+  push:
+    branches:
+      - main
+      - frontend-only
+    paths:
+      - '**'
+      - '.github/workflows/**'
+  workflow_dispatch:  
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Artifacts Directory
+        run: |
+          mkdir -p backend
+          shopt -s extglob
+          cp -r !(backend) backend/
+
+      - name: Upload repo to remote server
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          tar czf backend.tar.gz backend/
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.SANDY_KEY }}"
+          scp -o StrictHostKeyChecking=no -r -P ${{ secrets.SANDY_PORT }} backend.tar.gz ${{ secrets.SANDY_USERNAME }}@${{secrets.SANDY_HOST}}:/root/backend/
+
+      - name: SSH TO Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SANDY_HOST }}
+          username: ${{ secrets.SANDY_USERNAME }}
+          key: ${{ secrets.SANDY_KEY }}
+          port: ${{ secrets.SANDY_PORT }}
+          script: |
+            bash /root/backend/deploy-FE.sh
