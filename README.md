@@ -2,23 +2,41 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, configure your backend API base URL:
+
+- Create a `.env.local` file in the project root and set your backend API port:
+
+  ```
+  NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+  ```
+
+- For production deployments, use a `.env.production` file with the appropriate backend URL:
+
+  ```
+  NEXT_PUBLIC_API_BASE_URL=https://your-production-backend.com
+  ```
+
+Next, install dependencies:
+
+If you don't have `pnpm` installed, install it globally:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install -g pnpm
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then install project dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm i
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then, run the development server:
+
+```bash
+pnpm run dev
+```
+
+Open [http://localhost:3030](http://localhost:3030) with your browser to see the result.
 
 ## Learn More
 
