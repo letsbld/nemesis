@@ -1,7 +1,7 @@
 import React from 'react';
 
 const DeviceProfile = () => {
-    return <div>Device Profile</div>;
+    return <div>Profile</div>;
 };
 
 export default DeviceProfile;

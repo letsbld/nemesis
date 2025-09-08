@@ -1,7 +1,7 @@
 import React from 'react';
 
 const DeviceReport = () => {
-    return <div>DeviceReport</div>;
+    return <div>Applications</div>;
 };
 
 export default DeviceReport;

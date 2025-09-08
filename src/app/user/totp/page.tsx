@@ -29,10 +29,13 @@ function TOTPSetupPageContent() {
     // Loads user from localStorage
     useEffect(() => {
         const userStr = localStorage.getItem('authUser');
+
+        console.log(typeof userStr, 'UserStr here');
         if (userStr) {
             try {
-                const parsedUser = JSON.parse(userStr);
-                setUser(parsedUser);
+                // const parsedUser = JSON.parse(userStr);
+                setUser(userStr ? JSON.parse(userStr) : null);
+                console.log(JSON.parse(userStr), 'User here one');
                 setStatus('authenticated');
             } catch {
                 setUser(null);
@@ -46,15 +49,17 @@ function TOTPSetupPageContent() {
 
     const fetchTOTPStatus = useCallback(async () => {
         try {
-            const response = await apiFetch('/api/user/totp', {
-                method: 'POST',
+            console.log(user, 'User here');
+            const response = await apiFetch(`/user/${user.id}`, {
+                method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'status' }),
             });
+
+            console.log(response, 'Response here');
 
             const data = await response.json();
             if (data.success) {
-                setTotpStatus(data.data);
+                setTotpStatus(data.totpStatus);
             } else {
                 toast.error('Failed to fetch TOTP status');
             }
