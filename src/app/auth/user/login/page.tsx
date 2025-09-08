@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
 import { apiFetch } from '@/lib/apiFetch';
+import { loginWithPasskey } from '@/components/user/passkey';
 
 interface DecodedToken {
     id: string;
@@ -91,46 +92,31 @@ export default function UserLoginPage() {
             console.error('Login failed:', err);
             setError('Invalid credentials or server error');
         }
+    };
 
-        // try {
-        //     const result = await apiFetch(`/auth/user/login`, {
-        //         method: 'POST',
-        //         headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify({
-        //             username: formData.username,
-        //             password: formData.password,
-        //             totpToken: formData.totpToken || '',
-        //         }),
-        //     });
-
-        //     // Save token + user
-        //     localStorage.setItem('authToken', result.token);
-        //     localStorage.setItem('authUser', JSON.stringify(result.user));
-
-        //     // Redirect based on role
-        //     if (result.user.role === 'admin') {
-        //         router.push('/dashboard');
-        //     } else if (result.user.role === 'user') {
-        //         if (result.user.requiresTotpSetup) {
-        //             router.push('/user/totp?required=true');
-        //         } else {
-        //             router.push('/home');
-        //         }
-        //     }
-        // } catch (err: any) {
-        //     console.error('Login failed:', err);
-        //     const msg = err?.error || 'Invalid username, password, or TOTP code.';
-        //     if (msg.includes('TOTP_REQUIRED')) {
-        //         setShowTOTP(true);
-        //         setError('Please enter your 6-digit authenticator code');
-        //     } else if (msg.includes('INVALID_TOTP')) {
-        //         setError('Invalid authenticator code. Please try again.');
-        //     } else {
-        //         setError(msg);
-        //     }
-        // } finally {
-        //     setIsLoading(false);
-        // }
+    const handlePasskeyLogin = async () => {
+        setError('');
+        setIsLoading(true);
+        try {
+            const result = await loginWithPasskey(formData.username);
+            // result should contain user/token if backend returns them after passkey login
+            if (result && result.token && result.user) {
+                localStorage.setItem('authToken', result.token);
+                localStorage.setItem('authUser', JSON.stringify(result.user));
+                if (result.user.role === 'admin') {
+                    router.replace('/dashboard');
+                } else {
+                    router.replace('/home');
+                }
+            } else {
+                // fallback: reload or show error
+                setError('Authenticated, but no session info returned.');
+            }
+        } catch (err: any) {
+            setError(err?.error || err?.message || 'Passkey login failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -196,6 +182,21 @@ export default function UserLoginPage() {
                         {isLoading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>
+
+                <div className="flex items-center my-6">
+                    <div className="flex-grow border-t border-gray-300"></div>
+                    <span className="mx-4 text-gray-400 text-sm">or</span>
+                    <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={handlePasskeyLogin}
+                    disabled={isLoading || !formData.username}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+                >
+                    {isLoading ? 'Authenticating...' : 'Sign in with Passkey'}
+                </button>
 
                 <div className="text-center">
                     <p className="text-sm text-gray-500 mb-2">Are you an administrator?</p>

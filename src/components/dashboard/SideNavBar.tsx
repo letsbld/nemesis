@@ -129,8 +129,13 @@ const NavBarContent = () => {
                             </Link>
                         </li>
                         <li className="mb-2">
-                            <Link href="/user/report" className="hover:underline">
+                            <Link href="/user/applications" className="hover:underline">
                                 Applications
+                            </Link>
+                        </li>
+                        <li className="mb-2">
+                            <Link href="/user/list" className="hover:underline">
+                                Users
                             </Link>
                         </li>
                         <li className="mb-2">
@@ -141,6 +146,11 @@ const NavBarContent = () => {
                         <li className="mb-2">
                             <Link href="/user/totp" className="hover:underline">
                                 Two-Factor Auth
+                            </Link>
+                        </li>
+                        <li className="mb-2">
+                            <Link href="/user/passkey" className="hover:underline">
+                                Passkey
                             </Link>
                         </li>
                     </ul>
