@@ -109,7 +109,7 @@ export default function UserLoginPage() {
                     router.replace('/home');
                 }
             } else {
-                // fallback: reload or show error
+                // fallback: reload or show error here
                 setError('Authenticated, but no session info returned.');
             }
         } catch (err: any) {
