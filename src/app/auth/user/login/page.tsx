@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
 import { apiFetch } from '@/lib/apiFetch';
+import { useAuth } from '@/context/AuthContext';
 
 interface DecodedToken {
     id: string;
@@ -16,12 +17,17 @@ interface DecodedToken {
 
 export default function UserLoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         password: '',
         totpToken: '',
     });
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState<{
+        username?: string;
+        password?: string;
+        general?: string;
+    }>({});
     const [isLoading, setIsLoading] = useState(false);
 
     // 🔐 Auto-redirect if already logged in
@@ -58,12 +64,32 @@ export default function UserLoginPage() {
             ...prev,
             [name]: value,
         }));
-        if (error) setError('');
+        // ✅ Clear error for the field being edited
+        setErrors((prev) => ({
+            ...prev,
+            [name]: undefined,
+            general: undefined,
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setErrors({});
+        
+        // Validate form
+        const newErrors: typeof errors = {};
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required';
+        }
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        }
+        
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -77,60 +103,32 @@ export default function UserLoginPage() {
                 }),
             });
 
-            // ✅ Save token & user
-            localStorage.setItem('authToken', result.token);
-            localStorage.setItem('authUser', JSON.stringify(result.user));
+            // ✅ Update auth context with new token and user
+            login(result.token, result.user);
 
             // ✅ Redirect based on role
             if (result.user.role === 'admin') {
                 router.replace('/dashboard');
             } else {
-                router.replace('/home'); // or `/user/home`
+                if (result.user.requiresTotpSetup) {
+                    router.replace('/user/totp?required=true');
+                } else {
+                    router.replace('/home');
+                }
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Login failed:', err);
-            setError('Invalid credentials or server error');
+
+            // ✅ Show inline error under password
+            setErrors({
+                password: 'Invalid username or password',
+            });
+
+            // Focus username field
+            document.querySelector<HTMLInputElement>('input[name="username"]')?.focus();
+        } finally {
+            setIsLoading(false);
         }
-
-        // try {
-        //     const result = await apiFetch(`/auth/user/login`, {
-        //         method: 'POST',
-        //         headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify({
-        //             username: formData.username,
-        //             password: formData.password,
-        //             totpToken: formData.totpToken || '',
-        //         }),
-        //     });
-
-        //     // Save token + user
-        //     localStorage.setItem('authToken', result.token);
-        //     localStorage.setItem('authUser', JSON.stringify(result.user));
-
-        //     // Redirect based on role
-        //     if (result.user.role === 'admin') {
-        //         router.push('/dashboard');
-        //     } else if (result.user.role === 'user') {
-        //         if (result.user.requiresTotpSetup) {
-        //             router.push('/user/totp?required=true');
-        //         } else {
-        //             router.push('/home');
-        //         }
-        //     }
-        // } catch (err: any) {
-        //     console.error('Login failed:', err);
-        //     const msg = err?.error || 'Invalid username, password, or TOTP code.';
-        //     if (msg.includes('TOTP_REQUIRED')) {
-        //         setShowTOTP(true);
-        //         setError('Please enter your 6-digit authenticator code');
-        //     } else if (msg.includes('INVALID_TOTP')) {
-        //         setError('Invalid authenticator code. Please try again.');
-        //     } else {
-        //         setError(msg);
-        //     }
-        // } finally {
-        //     setIsLoading(false);
-        // }
     };
 
     return (
@@ -156,10 +154,15 @@ export default function UserLoginPage() {
                             required
                             value={formData.username}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                                errors.username ? 'border-red-500' : 'border-gray-300'
+                            }`}
                             placeholder="Enter your username"
                             disabled={isLoading}
                         />
+                        {errors.username && (
+                            <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                        )}
                     </div>
 
                     <div>
@@ -176,15 +179,20 @@ export default function UserLoginPage() {
                             required
                             value={formData.password}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                                errors.password ? 'border-red-500' : 'border-gray-300'
+                            }`}
                             placeholder="Enter your password"
                             disabled={isLoading}
                         />
+                        {errors.password && (
+                            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                        )}
                     </div>
 
-                    {error && (
+                    {errors.general && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                            {error}
+                            {errors.general}
                         </div>
                     )}
 
