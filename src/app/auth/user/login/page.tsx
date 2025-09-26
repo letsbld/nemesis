@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
 import { apiFetch } from '@/lib/apiFetch';
+import { useAuth } from '@/context/AuthContext';
 import { loginWithPasskey } from '@/components/user/passkey';
 
 interface DecodedToken {
@@ -17,12 +18,17 @@ interface DecodedToken {
 
 export default function UserLoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         password: '',
         totpToken: '',
     });
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState<{
+        username?: string;
+        password?: string;
+        general?: string;
+    }>({});
     const [isLoading, setIsLoading] = useState(false);
 
     // 🔐 Auto-redirect if already logged in
@@ -37,12 +43,12 @@ export default function UserLoginPage() {
                     const user = JSON.parse(userStr);
 
                     if (user.role === 'admin') {
-                        router.replace('/dashboard');
+                        router.replace('/admin/dashboard');
                     } else if (user.role === 'user') {
                         if (user.requiresTotpSetup) {
                             router.replace('/user/totp?required=true');
                         } else {
-                            router.replace('/home');
+                            router.replace('/user/home');
                         }
                     }
                 }
@@ -59,12 +65,32 @@ export default function UserLoginPage() {
             ...prev,
             [name]: value,
         }));
-        if (error) setError('');
+        // ✅ Clear error for the field being edited
+        setErrors((prev) => ({
+            ...prev,
+            [name]: undefined,
+            general: undefined,
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setErrors({});
+        
+        // Validate form
+        const newErrors: typeof errors = {};
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required';
+        }
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        }
+        
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -78,136 +104,194 @@ export default function UserLoginPage() {
                 }),
             });
 
-            // ✅ Save token & user
-            localStorage.setItem('authToken', result.token);
-            localStorage.setItem('authUser', JSON.stringify(result.user));
+            // ✅ Update auth context with new token and user
+            login(result.token, result.user);
 
             // ✅ Redirect based on role
             if (result.user.role === 'admin') {
-                router.replace('/dashboard');
+                router.replace('/admin/dashboard');
             } else {
-                router.replace('/home'); // or `/user/home`
-            }
-        } catch (err) {
-            console.error('Login failed:', err);
-            setError('Invalid credentials or server error');
-        }
-    };
-
-    const handlePasskeyLogin = async () => {
-        setError('');
-        setIsLoading(true);
-        try {
-            const result = await loginWithPasskey(formData.username);
-            // result should contain user/token if backend returns them after passkey login
-            if (result && result.token && result.user) {
-                localStorage.setItem('authToken', result.token);
-                localStorage.setItem('authUser', JSON.stringify(result.user));
-                if (result.user.role === 'admin') {
-                    router.replace('/dashboard');
+                if (result.user.requiresTotpSetup) {
+                    router.replace('/user/totp?required=true');
                 } else {
-                    router.replace('/home');
+                    router.replace('/user/home');
                 }
-            } else {
-                // fallback: reload or show error here
-                setError('Authenticated, but no session info returned.');
             }
         } catch (err: any) {
-            setError(err?.error || err?.message || 'Passkey login failed');
+            console.error('Login failed:', err);
+
+            // ✅ Show inline error under password
+            setErrors({
+                password: 'Invalid username or password',
+            });
+
+            // Focus username field
+            document.querySelector<HTMLInputElement>('input[name="username"]')?.focus();
         } finally {
             setIsLoading(false);
         }
     };
 
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            <div className="max-w-md w-full space-y-8 p-8">
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">User Login</h1>
-                    <p className="text-gray-600 mb-8">Sign in with your username and password</p>
-                </div>
+    const handlePasskeyLogin = async () => {
+        setErrors({});
+        setIsLoading(true);
+        try {
+            const result = await loginWithPasskey(formData.username);
+            // result should contain user/token if backend returns them after passkey login
+            if (result && result.token && result.user) {
+                // Use auth context instead of direct localStorage manipulation
+                login(result.token, result.user);
+                
+                // Redirect based on role
+                if (result.user.role === 'admin') {
+                    router.replace('/admin/dashboard');
+                } else if (result.user.requiresTotpSetup) {
+                    router.replace('/user/totp?required=true');
+                } else {
+                    router.replace('/user/home');
+                }
+            } else {
+                setErrors({
+                    general: 'Authenticated, but no session info returned.'
+                });
+            }
+        } catch (err: any) {
+            console.error('Passkey login failed:', err);
+            setErrors({
+                general: err?.error || err?.message || 'Passkey login failed'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label
-                            htmlFor="username"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Username
-                        </label>
-                        <input
-                            id="username"
-                            name="username"
-                            type="text"
-                            required
-                            value={formData.username}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Enter your username"
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="password"
-                            className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            required
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Enter your password"
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                            {error}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={isLoading || !formData.username || !formData.password}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
-                    >
-                        {isLoading ? 'Signing in...' : 'Sign In'}
-                    </button>
-                </form>
-
-                <div className="flex items-center my-6">
-                    <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="mx-4 text-gray-400 text-sm">or</span>
-                    <div className="flex-grow border-t border-gray-300"></div>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={handlePasskeyLogin}
-                    disabled={isLoading || !formData.username}
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
-                >
-                    {isLoading ? 'Authenticating...' : 'Sign in with Passkey'}
-                </button>
-
-                <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-2">Are you an administrator?</p>
-                    <Link
-                        href="/auth/admin/login"
-                        className="text-blue-600 hover:text-blue-500 text-sm font-medium"
-                    >
-                        Admin Login →
-                    </Link>
-                </div>
-            </div>
+   return (
+  <div className="flex pt-3 pb-10 justify-center min-h-screen bg-gray-100">
+    {/* Card with Image + Login */}
+    <div className="bg-white shadow-xl rounded-2xl flex max-w-4xl w-full overflow-hidden m-10">
+      
+      {/* Left Side - Image */}
+      <div className="w-1/2 bg-white flex flex-col items-center justify-between p-6">
+        {/* Centered Image */}
+        <div className="flex-grow flex mt-5 justify-center">
+            <img
+            src="/lap-img.png"
+            alt="Security Illustration"
+            className="max-w-xs"
+            />
         </div>
-    );
+
+        {/* Admin Login at Bottom */}
+        <div className="text-center mb-10">
+            <p className="text-md text-gray-500 mb-1">Are you an administrator?</p>
+            <Link
+            href="/auth/admin/login"
+            className="text-blue-600 hover:text-blue-500 text-sm font-large"
+            >
+            Admin Login →
+            </Link>
+        </div>
+        </div>
+
+
+      {/* Right Side - Login Form */}
+      <div className="w-1/2 p-8 flex flex-col justify-center">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-black">User Login</h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Username */}
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              required
+              value={formData.username}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none hover:border-blue-500 focus:ring-blue-500 focus:border-blue-500 ${
+                errors.username ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter your email"
+              disabled={isLoading}
+            />
+            {errors.username && (
+              <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+            )}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none hover:border-blue-500 focus:ring-blue-500 focus:border-blue-500 ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter your password"
+              disabled={isLoading}
+            />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            )}
+          </div>
+
+          {/* General Errors */}
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+              {errors.general}
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading || !formData.username || !formData.password}
+            className="w-full flex justify-center py-3 px-4 rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-6">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="mx-4 text-gray-400 text-sm">or</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        {/* Passkey Button */}
+        <button
+          type="button"
+          onClick={handlePasskeyLogin}
+          disabled={isLoading || !formData.username}
+          className="w-full flex justify-center py-3 px-4 rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700"
+        >
+          {isLoading ? "Authenticating..." : "Sign in with Passkey"}
+        </button>
+      </div>
+    </div>
+
+    {/* Admin Login (Below the Card) */}
+    
+  </div>
+);
+
 }

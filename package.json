@@ -9,12 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/font": "^14.2.15",
     "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-separator": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
-    "@simplewebauthn/browser": "^13.1.2",
+    "@simplewebauthn/browser": "^13.2.0",
     "@types/bcrypt": "^5.0.2",
     "@types/saml2-js": "^3.0.4",
     "@types/xmldom": "^0.1.34",

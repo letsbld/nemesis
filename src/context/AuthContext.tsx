@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const logout = () => {
         localStorage.clear();
-        window.location.href = '/auth/login';
+        window.location.href = '/auth/user/login';
         setToken(null);
         setUser(null);
         setStatus('unauthenticated');
