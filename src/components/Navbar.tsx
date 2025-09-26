@@ -15,25 +15,25 @@ export const Navbar = () => {
                         href="/"
                         className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700"
                     >
-                        <span>DLP</span>
+                        <span text-5xl>DLP Dashboard</span>
                     </Link>
 
                     {/* Right side - Navigation Links */}
                     <div className="flex items-center space-x-4">
                         <Link
-                            href="/about"
+                            href="/"
                             className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                         >
                             About Us
                         </Link>
                         <Link
-                            href="/services"
+                            href="/"
                             className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                         >
                             Services
                         </Link>
                         <Link
-                            href="/contact"
+                            href="/"
                             className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                         >
                             Contact Us
@@ -47,7 +47,7 @@ export const Navbar = () => {
                             </button>
                         ) : (
                             <Link
-                                href="/auth/login"
+                                href="/auth/user/login"
                                 className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
                             >
                                 Login

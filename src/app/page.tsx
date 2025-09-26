@@ -15,7 +15,7 @@ export default function HomePage() {
                                 Advanced data loss prevention solutions for your organization
                             </p>
                             <Link
-                                href="/auth/login"
+                                href="/auth/user/login"
                                 className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors"
                             >
                                 Get Started

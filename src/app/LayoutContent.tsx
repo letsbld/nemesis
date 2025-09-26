@@ -3,7 +3,7 @@
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { usePathname } from 'next/navigation';
-import { SideNavBar } from '@/components/dashboard/SideNavBar';
+import { SideNavBar } from '@/components/SideNavBar';
 
 // These paths will show the sidebar
 const PROTECTED_PATHS = [
