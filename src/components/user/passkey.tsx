@@ -57,6 +57,8 @@ export async function registerPasskey() {
     }
 }
 
+
+
 export async function loginWithPasskey(username: string) {
     try {
         // Step 1: Ask backend for authentication options
@@ -110,3 +112,53 @@ export async function loginWithPasskey(username: string) {
         throw err;
     }
 }
+
+export async function getUserDevices() {
+    try {
+        const resp = await apiFetch('/passkey', {
+            method: 'GET',
+        });
+
+        let data;
+        if (typeof resp.json === 'function') {
+            data = await resp.json();
+        } else {
+            data = resp;
+        }
+
+        if (!data || !data.passkeys) {
+            throw new Error('No devices found');
+        }
+
+        console.log('User devices:', data.passkeys);
+        return data.passkeys;
+    } catch (err: any) {
+        console.error('Error fetching devices:', err);
+        throw err;
+    }
+}
+
+export async function deletePasskey(Id: string) {
+    try {
+        const resp = await apiFetch(`/passkey/${Id}`, {
+            method: 'DELETE',
+        });
+
+        let data;
+        if (typeof resp.json === 'function') {
+            data = await resp.json();
+        } else {
+            data = resp;
+        }
+
+        if (data && data.success) {
+            return true;
+        } else {
+            throw new Error(data?.error || 'Failed to delete credential');
+        }
+    } catch (err: any) {
+        console.error('Error deleting passkey:', err);
+        throw err;
+    }
+}
+
