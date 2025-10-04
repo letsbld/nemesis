@@ -7,12 +7,8 @@ import { SideNavBar } from '@/components/SideNavBar';
 
 // These paths will show the sidebar
 const PROTECTED_PATHS = [
-    '/dashboard',
-    '/home',
     '/admin',
-    '/device',
-    '/user',
-    '/room'
+    '/user',   
 ];
 
 export function LayoutContent({
@@ -42,7 +38,7 @@ export function LayoutContent({
                     </div>
                 )}
             </main>
-            <Footer />
+            {!isProtectedRoute && <Footer />}
         </>
     );
 }

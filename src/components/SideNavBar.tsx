@@ -136,20 +136,23 @@ const NavBarContent = () => {
                         </li>
                         
                         <li className="mb-2">
-                            <Link href="/user/settings" className="hover:underline">
-                                Settings
+                            <Link href="/user/device" className="hover:underline">
+                                My Devices
                             </Link>
                         </li>
-                        <li className="mb-2">
-                            <Link href="/user/totp" className="hover:underline">
-                                Two-Factor Auth
-                            </Link>
-                        </li>
+
                         <li className="mb-2">
                             <Link href="/user/passkey" className="hover:underline">
                                 Passkey
                             </Link>
                         </li>
+                        
+                        <li className="mb-2">
+                            <Link href="/user/totp" className="hover:underline">
+                                Two-Factor Auth
+                            </Link>
+                        </li>
+                        
                     </ul>
                 </SidebarMenu>
 
