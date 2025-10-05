@@ -51,7 +51,6 @@ const SideDrawer: React.FC<SideDrawerProps> = ({
                     >
                         Save
                     </CustomButton>
-                    />
                 </SheetFooter>
             </SheetContent>
         </Sheet>
