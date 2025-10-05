@@ -11,10 +11,6 @@ export default function UserProfile() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Default values
-  
-
-
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -162,7 +158,7 @@ export default function UserProfile() {
             <input
                 type="text"
                 value={user.first_name}
-                disabled
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
@@ -171,7 +167,7 @@ export default function UserProfile() {
             <input
                 type="text"
                 value={user.last_name}
-                disabled
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
@@ -181,7 +177,7 @@ export default function UserProfile() {
             <input
                 type="text"
                 value={user.role}
-                disabled
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
@@ -191,7 +187,7 @@ export default function UserProfile() {
             <input
                 type="company email"
                 value={user.company_email}
-                disabled
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
@@ -208,6 +204,7 @@ export default function UserProfile() {
             <input
                 type="manager email"
                 value={user.manager_email}
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
@@ -216,6 +213,7 @@ export default function UserProfile() {
             <input
                 type="totp enabled"
                 value={user.totp_enabled ? "Yes" : "No"}
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
@@ -224,6 +222,7 @@ export default function UserProfile() {
             <input
                 type="ssh enabled"
                 value={user.ssh_key_allowed ? "Yes" : "No"}
+                readOnly
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 bg-gray-100 cursor-not-allowed"
             />
             </div>
