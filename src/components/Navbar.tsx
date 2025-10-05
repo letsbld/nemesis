@@ -51,10 +51,11 @@ export const Navbar = () => {
                             </>
                         ) : (
                             <div className="flex items-center space-x-4">
-                                {user.role === 'admin' && pathname?.startsWith('/user/') && (
+                                {pathname?.startsWith('/auth/user/') && user.role === 'admin' && (
                                     <Link
-                                        href="/admin/dashboard"
+                                        href="/auth/admin/login"
                                         className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
+                                        title="Switch to admin dashboard"
                                     >
                                         Launch Admin
                                     </Link>
