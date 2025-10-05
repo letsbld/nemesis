@@ -48,7 +48,7 @@ export default function UserLoginPage() {
                         if (user.requiresTotpSetup) {
                             router.replace('/user/totp?required=true');
                         } else {
-                            router.replace('/user/home');
+                            router.replace('/user/applications');
                         }
                     }
                 }
@@ -74,62 +74,65 @@ export default function UserLoginPage() {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrors({});
-        
-        // Validate form
-        const newErrors: typeof errors = {};
-        if (!formData.username.trim()) {
-            newErrors.username = 'Username is required';
-        }
-        if (!formData.password) {
-            newErrors.password = 'Password is required';
-        }
-        
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
+      e.preventDefault();
+      setErrors({});
 
-        setIsLoading(true);
+      // --- Form validation remains the same ---
+      const newErrors: typeof errors = {};
+      if (!formData.username.trim()) {
+          newErrors.username = 'Username is required';
+      }
+      if (!formData.password) {
+          newErrors.password = 'Password is required';
+      }
+      if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
+      }
+      // --- End of validation ---
 
-        try {
-            const result = await apiFetch(`/auth/user/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: formData.username,
-                    password: formData.password,
-                    totpToken: formData.totpToken || '',
-                }),
-            });
+      setIsLoading(true);
 
-            // ✅ Update auth context with new token and user
+      try {
+        const result = await apiFetch(`/auth/user/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: formData.username,
+                password: formData.password,
+            }),
+        });
+
+        // Case 1: Successful login with final token (user already has 2FA)
+        if (result.token && result.user && !result.requireTotpSetup) {
             login(result.token, result.user);
+            router.replace('/user/applications');
+        
+        // Case 2: Existing user needs to verify with their TOTP code
+        } else if (result.requireTotp && result.userId) {
+            sessionStorage.setItem('pendingUserId', result.userId);
+            router.replace(`/auth/user/verify-totp`);
 
-            // ✅ Redirect based on role
-            if (result.user.role === 'admin') {
-                router.replace('/admin/dashboard');
-            } else {
-                if (result.user.requiresTotpSetup) {
-                    router.replace('/user/totp?required=true');
-                } else {
-                    router.replace('/user/home');
-                }
-            }
-        } catch (err: any) {
-            console.error('Login failed:', err);
-
-            // ✅ Show inline error under password
-            setErrors({
-                password: 'Invalid username or password',
-            });
-
-            // Focus username field
-            document.querySelector<HTMLInputElement>('input[name="username"]')?.focus();
-        } finally {
-            setIsLoading(false);
+        // ✅ NEW Case 3: User must set up TOTP for the first time
+        } else if (result.requireTotpSetup && result.token && result.userId) {
+            // Store the temporary token and userId for the setup process
+            sessionStorage.setItem('tempTotpToken', result.token);
+            sessionStorage.setItem('pendingUserId', result.userId);
+            router.replace(`/auth/user/totp-setup`);
+        
+        // Case 4: Unexpected response
+        } else {
+            throw new Error("Invalid or unexpected response from server.");
         }
+
+      } catch (err: any) {
+          console.error('Login failed:', err);
+          setErrors({
+              general: err.message || 'Invalid username or password.',
+          });
+      } finally {
+          setIsLoading(false);
+      }
     };
 
     const handlePasskeyLogin = async () => {
@@ -145,10 +148,8 @@ export default function UserLoginPage() {
                 // Redirect based on role
                 if (result.user.role === 'admin') {
                     router.replace('/admin/dashboard');
-                } else if (result.user.requiresTotpSetup) {
-                    router.replace('/user/totp?required=true');
                 } else {
-                    router.replace('/user/home');
+                    router.replace('/user/applications');
                 }
             } else {
                 setErrors({

@@ -8,7 +8,7 @@ import { SideNavBar } from '@/components/SideNavBar';
 // These paths will show the sidebar
 const PROTECTED_PATHS = [
     '/admin',
-    '/user',   
+    '/user', 
 ];
 
 export function LayoutContent({

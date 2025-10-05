@@ -1,27 +1,23 @@
 import React from 'react';
 
 interface CustomButtonProps {
-    name: string;
     btnType?: 'button' | 'submit' | 'reset';
     style?: string;
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
-    children?: React.ReactNode;
+    children: React.ReactNode;
     loading?: boolean;
     onClick?: () => void;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
-    name,
     btnType = 'button',
     style = '',
     startIcon,
     endIcon,
     children,
     loading = false,
-    onClick,
-
-    
+    onClick
 }) => {
     return (
         <button
@@ -50,13 +46,13 @@ const CustomButton: React.FC<CustomButtonProps> = ({
                     <path
                         className="opacity-75"
                         fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8H4z"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     ></path>
                 </svg>
             ) : (
                 <>
                     {startIcon && <span className="mr-2">{startIcon}</span>}
-                    {children || name}
+                    {children}
                     {endIcon && <span className="ml-2">{endIcon}</span>}
                 </>
             )}
