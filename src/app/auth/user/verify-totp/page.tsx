@@ -14,18 +14,20 @@ export default function VerifyTotpPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // ✅ Read the userId from sessionStorage on mount
-    // This value will persist across re-renders within this component.
-    const pendingUserId = sessionStorage.getItem('pendingUserId');
+    const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
     useEffect(() => {
+        // Read the userId from sessionStorage on mount
+        const storedUserId = sessionStorage.getItem('pendingUserId');
+        setPendingUserId(storedUserId);
+
         // If someone navigates to this page directly without a pending user ID,
         // redirect them back to the login page immediately.
-        if (!pendingUserId) {
+        if (!storedUserId) {
             // Redirect if no pending user ID (user tried to access page directly)
             router.replace('/auth/user/login');
         }
-    }, [pendingUserId, router]);
+    }, [router]);
 
 
     const handleVerifySubmit = async (e: FormEvent) => {
@@ -70,13 +72,15 @@ export default function VerifyTotpPage() {
         }
     };
 
-    // If there's no ID, we can show a loading/redirecting state
+    // If we haven't loaded the pendingUserId from sessionStorage yet or if it's not present
     if (!pendingUserId) {
         return (
-             <div className="flex items-center justify-center min-h-screen">
-                <p>Invalid session, redirecting...</p>
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                    <p className="text-center text-gray-600">Verifying session...</p>
+                </div>
             </div>
-        )
+        );
     }
 
     return (
