@@ -17,7 +17,7 @@ export const Navbar = () => {
                         href="/"
                         className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700"
                     >
-                        <span>DLP Dashboard</span>
+                        <span>Nemesis</span>
                     </Link>
 
                     {/* Right side - Navigation Links */}
