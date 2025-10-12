@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Filter, Download, Settings, AlertCircle, CheckCircle, Activity } from 'lucide-react';
@@ -38,7 +38,8 @@ interface ActivityEvent {
 }
 
 
-const DeviceOverviewPage = () => {
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+const DeviceOverviewContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [devices, setDevices] = useState<DeviceData[]>([]);
@@ -586,6 +587,19 @@ const DeviceOverviewPage = () => {
             )}
 
         </div>
+    );
+};
+
+// Main component that wraps the content in Suspense
+const DeviceOverviewPage = () => {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-64">
+                <div className="text-lg">Loading device overview...</div>
+            </div>
+        }>
+            <DeviceOverviewContent />
+        </Suspense>
     );
 };
 
