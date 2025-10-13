@@ -15,7 +15,7 @@ export const Navbar = () => {
                     {/* Left side - Logo/Brand */}
                     <Link 
                         href="/"
-                        className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700"
+                        className="flex space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700"
                     >
                         <span>DLP Dashboard</span>
                     </Link>
@@ -50,7 +50,7 @@ export const Navbar = () => {
                                 </Link>
                             </>
                         ) : (
-                            <div className="flex items-center space-x-4">
+                            <div className="flex  space-x-4">
                                 {pathname?.startsWith('/auth/user/') && user.role === 'admin' && (
                                     <Link
                                         href="/auth/admin/login"

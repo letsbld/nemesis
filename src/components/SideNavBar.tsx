@@ -25,15 +25,15 @@ const NavBarContent = () => {
     const { user } = useAuth();
     const pathname = usePathname();
 
-    // Loading or not authenticated
-    if (!user) {
-        return (
-            <nav className="w-64 h-screen text-white flex flex-col bg-gray-500">
-                <div className="p-4 text-2xl font-bold">DLP Dashboard</div>
-                <div className="p-4 text-gray-400">Please log in</div>
-            </nav>
-        );
-    }
+    // // Loading or not authenticated
+    // if (!user) {
+    //     return (
+    //         <nav className="w-64 h-screen text-white flex flex-col bg-gray-500">
+    //             <div className="p-4 text-2xl font-bold">DLP Dashboard</div>
+    //             <div className="p-4 text-gray-400">Please log in</div>
+    //         </nav>
+    //     );
+    // }
 
     const isAdmin = user.role == 'admin';
     const isUser = user.role == 'user';
@@ -41,7 +41,7 @@ const NavBarContent = () => {
     // Show admin navigation
     if (isAdmin) {
         return (
-            <nav className="w-64 h-screen text-white flex flex-col bg-gray-500">
+            <nav className="w-64 h-screen text-white flex flex-col bg-[#0f334b]">
                 <h1 className="p-4 text-2xl font-bold">
                     Welcome, {user.display_name || user.username || 'to Admin Panel'}
                 </h1>
@@ -53,6 +53,14 @@ const NavBarContent = () => {
                                 Dashboard
                             </Link>
                         </li>
+                         <CollapsibleItem
+                            title="User Management"
+                            links={[
+                                { href: '/admin/users', label: 'Users' },
+                                { href: '/admin/user-groups', label: 'User Groups' },
+                                { href: '/user/settings', label: 'User Settings' },
+                            ]}
+                        />
                         <CollapsibleItem
                             title="Device"
                             links={[
@@ -62,14 +70,7 @@ const NavBarContent = () => {
                                 { href: '/admin/device/profile', label: 'Device Profile' },
                             ]}
                         />
-                        <CollapsibleItem
-                            title="User Management"
-                            links={[
-                                { href: '/admin/users', label: 'Users' },
-                                { href: '/admin/user-groups', label: 'User Groups' },
-                                { href: '/user/settings', label: 'User Settings' },
-                            ]}
-                        />
+                       
                         <CollapsibleItem
                             title="SSO & Security"
                             links={[
@@ -179,33 +180,48 @@ const CollapsibleItem: React.FC<CollapsibleItemProps> = ({ title, links }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Collapsible defaultOpen={false} className="group/collapsible" onOpenChange={setIsOpen}>
+        <Collapsible
+            defaultOpen={false}
+            className="group/collapsible"
+            onOpenChange={setIsOpen}
+            >
             <CollapsibleTrigger asChild>
                 <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="flex justify-between w-full text-white hover:text-gray-300 py-2"
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex justify-between w-full items-center text-white hover:text-gray-300 py-2 relative"
                 >
-                    {title}
-                    <span
-                        className={`ml-2 transform transition-transform ${
-                            isOpen ? 'rotate-90' : 'rotate-0'
-                        }`}
-                    >
-                        ▶
+                {/* Title and Arrow */}
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold transition-all duration-200">
+                    {isOpen ? '⌄' : '›'}
                     </span>
+                    <span>{title}</span>
+                </div>
+
+                {/* Divider line below trigger */}
+                <span
+                    className={`absolute bottom-0 left-0 h-[1px] bg-gray-600 transition-all duration-300 ${
+                    isOpen ? 'w-full opacity-100' : 'w-0 opacity-0'
+                    }`}
+                />
                 </button>
             </CollapsibleTrigger>
+
             <CollapsibleContent>
-                <ul className="ml-4 space-y-2">
-                    {links.map((link) => (
-                        <li key={link.href}>
-                            <Link href={link.href} className="text-white hover:text-gray-300">
-                                {link.label}
-                            </Link>
-                        </li>
-                    ))}
+                <ul className="ml-6 mt-2 space-y-2 border-l border-gray-600 pl-3">
+                {links.map((link) => (
+                    <li key={link.href}>
+                    <Link
+                        href={link.href}
+                        className="text-white hover:text-gray-300 transition-colors"
+                    >
+                        {link.label}
+                    </Link>
+                    </li>
+                ))}
                 </ul>
             </CollapsibleContent>
         </Collapsible>
+
     );
 };
