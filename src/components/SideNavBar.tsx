@@ -5,7 +5,7 @@ import { SidebarMenu, SidebarProvider } from './ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { FaUser, FaCogs, FaKey, FaLaptop, FaFolderOpen } from "react-icons/fa";
+import { FaUser, FaShieldAlt, FaKey, FaLaptop, FaFolderOpen, FaCogs } from "react-icons/fa";
 
 
 interface CollapsibleItemProps {
@@ -176,7 +176,14 @@ const NavBarContent = () => {
                             <span>Passkey</span>
                             </Link>
                         </li>
-
+                        <li>
+                            <Link 
+                                href="/user/Password-manager" 
+                                className={`flex items-center gap-2 p-2 rounded-md transition-colors ${isActive('/user/Password-manager') ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'}`}>
+                            <FaShieldAlt className="text-lg" /> 
+                            <span>Password Manager</span>
+                            </Link>
+                        </li>
                         <li>
                             <Link 
                                 href="/user/settings" 
