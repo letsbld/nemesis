@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { jwtDecode } from 'jwt-decode';
 import { apiFetch } from '@/lib/apiFetch';
@@ -22,6 +22,7 @@ export default function UserLoginPage() {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [showPasskeyPopup, setShowPasskeyPopup] = useState(false);
+  const passkeyTriggered = useRef(false);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -73,17 +74,22 @@ export default function UserLoginPage() {
 
     try {
       // ✅ Check if this user has passkey registered
-      const check = await apiFetch(`/api/passkey/authenticate/options`);
-      if (check.hasPasskey) {
-        // If passkey available, show popup
+      const response = await apiFetch(`/passkey/authenticate/options`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({username: formData.username}), // include identifier if required
+      });
+
+      // ✅ Check response and handle accordingly
+      if (response) {
         setShowPasskeyPopup(true);
       } else {
-        // No passkey → proceed to password step
         setStep(2);
       }
     } catch (err) {
       console.error('Passkey check failed:', err);
-      // Still let user continue to password step if API fails
       setStep(2);
     } finally {
       setIsLoading(false);
@@ -95,7 +101,6 @@ export default function UserLoginPage() {
     setIsLoading(true);
     try {
       const result = await loginWithPasskey(formData.username);
-
       if (result && result.token && result.user) {
         login(result.token, result.user);
         if (result.user.role === 'admin') router.replace('/admin/dashboard');
@@ -110,6 +115,18 @@ export default function UserLoginPage() {
       setShowPasskeyPopup(false);
     }
   };
+
+  // Auto-trigger passkey login when showPasskeyPopup is true, only once per trigger
+  useEffect(() => {
+    if (showPasskeyPopup && !passkeyTriggered.current) {
+      passkeyTriggered.current = true;
+      handlePasskeyLogin();
+    }
+    if (!showPasskeyPopup) {
+      passkeyTriggered.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPasskeyPopup]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,24 +175,31 @@ export default function UserLoginPage() {
 
   return (
     <div className="flex pt-3 pb-10 justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-xl rounded-2xl flex max-w-4xl w-full overflow-hidden m-10">
+      <div className="bg-white shadow-xl rounded-2xl flex flex-col md:flex-row max-w-4xl w-full overflow-hidden m-4 sm:m-6 lg:m-10">
         {/* Left Side */}
-        <div className="w-1/2 bg-white flex flex-col items-center justify-between p-6">
+        <div className="w-full md:w-1/2 bg-white flex flex-col items-center justify-between p-6 order-2 md:order-1">
           <div className="flex-grow flex mt-5 justify-center">
-            <img src="/lap-img.png" alt="Security Illustration" className="max-w-xs" />
+            <img
+              src="/lap-img.png"
+              alt="Security Illustration"
+              className="max-w-[200px] sm:max-w-xs md:max-w-sm object-contain"
+            />
           </div>
-          <div className="text-center mb-10">
-            <p className="text-md text-gray-500 mb-1">Are you an administrator?</p>
-            <Link href="/auth/admin/login" className="text-blue-600 hover:text-blue-500 text-sm font-large">
+          <div className="text-center mb-8 sm:mb-10">
+            <p className="text-sm sm:text-md text-gray-500 mb-1">Are you an administrator?</p>
+            <Link
+              href="/auth/admin/login"
+              className="text-blue-600 hover:text-blue-500 text-sm sm:text-base font-medium"
+            >
               Admin Login →
             </Link>
           </div>
         </div>
 
         {/* Right Side */}
-        <div className="w-1/2 p-8 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-center order-1 md:order-2">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-black">User Login</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-black">User Login</h1>
           </div>
 
           {/* Step 1: Enter Email */}
@@ -230,7 +254,7 @@ export default function UserLoginPage() {
                 </div>
               )}
 
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
@@ -247,38 +271,6 @@ export default function UserLoginPage() {
                 </button>
               </div>
             </form>
-          )}
-
-          {/* Passkey Popup */}
-          {showPasskeyPopup && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-xl shadow-xl text-center max-w-sm w-full">
-                <h2 className="text-lg font-semibold mb-4 text-gray-900">
-                  Passkey Available
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  You have a registered passkey for this account. Would you like to login using it?
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handlePasskeyLogin}
-                    disabled={isLoading}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md"
-                  >
-                    {isLoading ? 'Authenticating...' : 'Use Passkey'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowPasskeyPopup(false);
-                      setStep(2);
-                    }}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-md"
-                  >
-                    Use Password
-                  </button>
-                </div>
-              </div>
-            </div>
           )}
         </div>
       </div>
