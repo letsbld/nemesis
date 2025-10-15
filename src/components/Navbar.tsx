@@ -1,12 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { NavbarAdmin } from './NavbarAdmin';
+import { NavbarUser } from './NavbarUser';
+import { NavbarPublic } from './NavbarPublic';
 
-export const Navbar = () => {
-    const { user, logout } = useAuth();
-    const pathname = usePathname();
+interface NavbarProps {
+  activeTab?: string; // optional, to avoid errors when not passed
+}
 
     return (
         <nav className="fixed top-0 left-0 right-0 bg-white border border-gray-300  z-50">
@@ -20,57 +21,17 @@ export const Navbar = () => {
                         <span>Nemesis</span>
                     </Link>
 
-                    {/* Right side - Navigation Links */}
-                    <div className="flex items-center space-x-4">
-                        {!user ? (
-                            <>
-                                <Link
-                                    href="/"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    About Us
-                                </Link>
-                                <Link
-                                    href="/"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Services
-                                </Link>
-                                <Link
-                                    href="/"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Contact Us
-                                </Link>
-                                <Link
-                                    href="/auth/user/login"
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
-                                >
-                                    Login
-                                </Link>
-                            </>
-                        ) : (
-                            <div className="flex items-center space-x-4">
-                                {pathname?.startsWith('/auth/user/') && user.role === 'admin' && (
-                                    <Link
-                                        href="/auth/admin/login"
-                                        className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
-                                        title="Switch to admin dashboard"
-                                    >
-                                        Launch Admin
-                                    </Link>
-                                )}
-                                <button
-                                    onClick={logout}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-600"
-                                >
-                                    Logout
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </nav>
-    );
-};
+  if (!user) {
+    // No one is logged in → show public navbar
+    return <NavbarPublic />;
+  }
+
+  // Logged in user → show based on role
+   if (user.role === 'user') {         
+    return <NavbarUser />;
+    }
+  if (user.role === 'admin') {
+    return <NavbarAdmin activeTab={activeTab || ''} />;
+  }
+   
+  }

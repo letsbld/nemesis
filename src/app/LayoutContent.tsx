@@ -1,44 +1,39 @@
 'use client';
 
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { usePathname } from 'next/navigation';
+import { NavbarAdmin } from '@/components/NavbarAdmin';
+import { SideNavBarAdmin } from '@/components/SideNavBarAdmin';
 import { SideNavBar } from '@/components/SideNavBar';
+import { usePathname } from 'next/navigation';
+import { Footer } from '@/components/Footer';
+import { Navbar } from '@/components/Navbar';
 
-// These paths will show the sidebar
-const PROTECTED_PATHS = [
-    '/admin',
-    '/user', 
-];
+const PROTECTED_PATHS = ['/admin', '/user'];
 
 export function LayoutContent({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    const pathname = usePathname();
-    const isProtectedRoute = PROTECTED_PATHS.some(path => pathname?.startsWith(path));
+  const pathname = usePathname();
+  const isProtectedRoute = PROTECTED_PATHS.some(path => pathname?.startsWith(path));
 
-    return (
+  return (
+    <>
+      {isProtectedRoute ? (
         <>
+          <SideNavBar />
+          <div className="min-h-screen bg-gray-50 flex flex-col md:ml-64">
             <Navbar />
-            <main className="flex-grow pt-16">
-                {isProtectedRoute ? (
-                    <div className="flex flex-col md:flex-row md:overflow-hidden">
-                        <div className="w-full flex-none md:w-64">
-                            <SideNavBar />
-                        </div>
-                        <div className="flex-grow p-6">
-                            {children}
-                        </div>
-                    </div>
-                ) : (
-                    <div>
-                        {children}
-                    </div>
-                )}
-            </main>
-            {!isProtectedRoute && <Footer />}
+            <main className="flex-1 p-6 mt-16 overflow-y-auto">{children}</main>
+          </div>
         </>
-    );
+      ) : (
+        <>
+          <Navbar />
+          <main className="flex-grow pt-16">{children}</main>
+          <Footer />
+        </>
+      )}
+    </>
+  );
 }
