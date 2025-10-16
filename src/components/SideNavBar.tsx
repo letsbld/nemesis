@@ -1,4 +1,9 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { SidebarMenu, SidebarProvider } from './ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { FaUser, FaCogs, FaKey, FaLaptop, FaFolderOpen } from "react-icons/fa";
 

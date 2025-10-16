@@ -31,7 +31,7 @@ const UsersPage = () => {
         const userStr = localStorage.getItem('authUser');
         if (!token || !userStr) {
             setStatus('unauthenticated');
-            router.push('/auth/user/login');
+            router.push('/auth/login');
             return;
         }
         try {
@@ -42,14 +42,14 @@ const UsersPage = () => {
                 if (parsedUser.role === 'user') {
                     router.push('/home');
                 } else {
-                    router.push('/auth/user/login');
+                    router.push('/auth/login');
                 }
                 return;
             }
             setStatus('authenticated');
         } catch {
             setStatus('unauthenticated');
-            router.push('/auth/user/login');
+            router.push('/auth/login');
         }
     }, [router]);
 

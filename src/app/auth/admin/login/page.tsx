@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { apiFetch } from '@/lib/apiFetch';
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -41,7 +40,7 @@ export default function AdminLoginPage() {
                 if (user.role === 'admin') {
                     router.push('/admin/dashboard');
                 } else if (user.role === 'user') {
-                    router.push('/user/applications');
+                    router.push('/user/home');
                 }
             } catch {
                 localStorage.removeItem('authToken');
@@ -64,7 +63,7 @@ export default function AdminLoginPage() {
     }
 
   return (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50 ">
+  <div className="flex items-center justify-center min-h-screen bg-gray-50 min-h-[600px]">
     {/* Card */}
     <div className="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 space-y-8">
       <div className="text-center">

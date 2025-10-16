@@ -1,7 +1,7 @@
 export async function apiFetch(endpoint: string, options?: RequestInit): Promise<any> {
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api`;
     const url = endpoint.startsWith('/') ? `${apiUrl}${endpoint}` : `${apiUrl}/${endpoint}`;
-    console.log(url, 'Url here');
+    console.log(url, 'Urll here');
 
     // Attach Authorization header if token exists
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
