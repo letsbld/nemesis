@@ -12,6 +12,7 @@ import {
   FaChevronDown,
   FaChevronRight,
 } from 'react-icons/fa';
+import { FileText, FileSearch, Settings as SettingsIcon,Terminal,Rocket } from 'lucide-react';
 
 export const SideNavBarAdmin = () => {
   const pathname = usePathname();
@@ -29,6 +30,18 @@ export const SideNavBarAdmin = () => {
       <div className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1">
           {/* Dashboard */}
+          <li>
+            <Link
+              href="/admin/get-started"
+              className={`flex items-center px-5 py-2.5 text-sm rounded-md ${
+                isActive('/admin/get-started')
+                  ? 'bg-blue-600 text-white'
+                  : 'hover:bg-[#2C3E6E] hover:text-white'
+              }`}
+            >
+              <Rocket className="w-4 h-4 mr-3" /> Get started
+            </Link>
+          </li>
           <li>
             <Link
               href="/admin/dashboard"
@@ -76,7 +89,43 @@ export const SideNavBarAdmin = () => {
                         : 'hover:bg-[#2C3E6E]'
                     }`}
                   >
-                    <FaKey className="w-4 h-4 mr-2" /> Device Commands
+                    <Terminal className="w-4 h-4 mr-2" /> Device Commands
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/device/report"
+                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
+                      isActive('/admin/device/commands')
+                        ? 'bg-blue-600 text-white'
+                        : 'hover:bg-[#2C3E6E]'
+                    }`}
+                  >
+                    <FileText className="w-4 h-4 mr-2" /> Report
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/device/logs"
+                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
+                      isActive('/admin/device/commands')
+                        ? 'bg-blue-600 text-white'
+                        : 'hover:bg-[#2C3E6E]'
+                    }`}
+                  >
+                    <FileSearch className="w-4 h-4 mr-2" /> Logs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/device/settings"
+                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
+                      isActive('/admin/device/commands')
+                        ? 'bg-blue-600 text-white'
+                        : 'hover:bg-[#2C3E6E]'
+                    }`}
+                  >
+                    <SettingsIcon className="w-4 h-4 mr-2" /> Settings
                   </Link>
                 </li>
               </ul>

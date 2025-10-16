@@ -28,17 +28,16 @@ export function UserGroupList({ groups, onCreateGroup, isLoading = false }: User
           <h1 className="text-3xl font-bold text-gray-900">User Group Management</h1>
         </div>
         <CustomButton
-          name={
-            <span className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Create New Group
-            </span>
-          }
           onClick={onCreateGroup}
           btnType="button"
           style="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow-sm"
           loading={isLoading}
-        />
+        >
+          <span className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Create New Group
+          </span>
+        </CustomButton>
       </div>
 
       {/* Empty State */}
@@ -47,15 +46,14 @@ export function UserGroupList({ groups, onCreateGroup, isLoading = false }: User
           <Users className="w-12 h-12 mx-auto text-gray-400 mb-4" />
           <p className="text-gray-500 text-lg mb-6">No user groups found yet</p>
           <CustomButton
-            name={
-              <span className="flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Create First Group
-              </span>
-            }
             onClick={onCreateGroup}
             btnType="button"
             style="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
-          />
+          >
+            <span className="flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Create First Group
+            </span>
+          </CustomButton>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

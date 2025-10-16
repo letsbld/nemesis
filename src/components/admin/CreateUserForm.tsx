@@ -29,6 +29,7 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
         password: '',
         description: '',
         manager_id: '', // new field
+        totp_enabled: false, // TOTP is disabled by default for new users
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [users, setUsers] = useState<UserOption[]>([]);
