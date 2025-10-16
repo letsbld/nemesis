@@ -6,6 +6,7 @@ import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 import CustomButton from '@/components/ui/customButton';
 import UserModal from './UserModal';
+import { Users, Plus } from 'lucide-react';
 
 interface UserListProps {
   users: UserData[];
@@ -82,7 +83,11 @@ export function UserList({
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">User Management</h1>
+        <div className="flex items-center gap-3">
+            <Users className="text-blue-600 w-7 h-7" />
+            <h1 className="text-3xl font-bold">User Management</h1>
+        </div>
+       
         <div className="flex gap-3">
           <CustomButton
             name="Import CSV"

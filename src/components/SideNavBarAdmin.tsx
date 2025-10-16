@@ -139,7 +139,7 @@ export const SideNavBarAdmin = () => {
               <ul className="ml-8 mt-1 space-y-1">
                 <li>
                   <Link
-                    href="/dashboard/sso-management"
+                    href="/admin/sso-management"
                     className={`flex items-center px-3 py-2 text-sm rounded-md ${
                       isActive('/dashboard/sso-management')
                         ? 'bg-blue-600 text-white'

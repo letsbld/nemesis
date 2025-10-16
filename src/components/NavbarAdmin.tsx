@@ -32,7 +32,7 @@ export const NavbarAdmin = ({ activeTab }: { activeTab?: string }) => {
   return (
     <nav className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-6">
       {/* Left section - Page Title */}
-      <div className="text-lg font-semibold text-gray-800 tracking-tight">
+      <div className="text-lg font-semibold text-blue-600 tracking-tight">
         {currentTitle}
       </div>
 
