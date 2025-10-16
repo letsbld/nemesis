@@ -8,6 +8,7 @@ import { UserGroupList } from '@/components/admin/UserGroupList';
 import { CreateUserGroupForm } from '@/components/admin/CreateUserGroupForm';
 import { UserGroupData, CreateUserGroupData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
+import { Commet } from 'react-loading-indicators';
 
 const UserGroupsPage = () => {
     const { user, status } = useAuth();
@@ -58,8 +59,8 @@ const UserGroupsPage = () => {
     // Show loading state while checking authentication
     if (status === 'loading') {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-lg">Loading...</div>
+            <div className="flex justify-center py-6">
+                <Commet color="#318bcc" size="small" text="" textColor="" />
             </div>
         );
     }
