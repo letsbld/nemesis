@@ -64,6 +64,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
     const [options, setOptions] = useState<Options>(defaultOptions);
     const [generatedCredential, setGeneratedCredential] = useState('');
     const [website, setWebsite] = useState('');
+    const [customUsername, setCustomUsername] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -82,32 +83,44 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
     const handleOptionChange = (type: CredentialType, key: string, value: any) => { setOptions(prev => ({ ...prev, [type]: { ...prev[type], [key]: value } })); };
 
     const handleSave = async () => {
-        if (!website || !generatedCredential) { alert('Please provide a Website name.'); return; }
+        if (!website || !generatedCredential) {
+            alert('Please provide a Website name.');
+            return;
+        }
         const token = localStorage.getItem('authToken');
-        if (!token) { alert('Authentication error. Please log in again.'); return; }
+        if (!token) {
+            alert('Authentication error. Please log in again.');
+            return;
+        }
 
         setIsSaving(true);
         try {
             const response = await fetch('http://localhost:5002/api/save-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ website: website, password: generatedCredential })
+                body: JSON.stringify({
+                    website: website,
+                    password: generatedCredential,
+                    custom_username: customUsername,
+                })
             });
             if (!response.ok) {
-                const errorData = await response.json(); throw new Error(errorData.error || 'Failed to save credential.');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to save credential.');
             }
             
-            setSavedCredentialDetails({ 
-                username: user?.display_name || user?.username || 'Your Account', 
-                website: website, 
-                password: generatedCredential 
+            setSavedCredentialDetails({
+                username: customUsername || user?.display_name || user?.username || 'Your Account',
+                website: website,
+                password: generatedCredential
             });
-
             setShowSuccessModal(true);
             setWebsite('');
-            onCredentialChange(); // Trigger a refresh on the parent
+            setCustomUsername('');
+            onCredentialChange();
         } catch (error) {
-            console.error("Save Error:", error); alert(`Error: ${(error as Error).message}`);
+            console.error("Save Error:", error);
+            alert(`Error: ${(error as Error).message}`);
         } finally {
             setIsSaving(false);
         }
@@ -124,6 +137,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
                 <div className="w-full lg:w-1/2 flex-shrink-0 space-y-6">
                     <Panel className="p-6 bg-white border border-gray-200 shadow-md">
                         <div className="flex flex-col gap-4">
+                            <input type="text" value={customUsername} onChange={(e) => setCustomUsername(e.target.value)} placeholder="Name for this password (optional)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500"/>
                             <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500" />
                             <motion.button onClick={handleSave} disabled={isSaving} className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold disabled:bg-blue-400">{isSaving ? 'Saving...' : 'Save Securely'}</motion.button>
                         </div>
