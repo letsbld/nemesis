@@ -1,4 +1,3 @@
-// FILE: src/app/user/password-generator/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -19,14 +18,16 @@ export default function PasswordVaultPage() {
     const fetchStats = useCallback(async () => {
         setIsLoadingStats(true);
         setStatsError(null);
+        
         const token = localStorage.getItem('authToken');
         if (!token) {
-            setStatsError('Authentication token not found.');
+            setStatsError('Authentication required. Please log in.');
             setIsLoadingStats(false);
             return;
         }
+
         try {
-            const response = await fetch('http://localhost:5002/api/password-stats', {
+            const response = await fetch('http://localhost:5000/password-generator/api/password-stats', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {

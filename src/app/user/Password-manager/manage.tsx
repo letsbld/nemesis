@@ -84,7 +84,7 @@ const ShareModal = ({ user, credential, onClose, onShare }: { user: any, credent
         setIsVerifying(true);
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://localhost:5002/api/users/find?email=${encodeURIComponent(emailInput)}`, {
+            const response = await fetch(`http://localhost:5000/password-generator/api/users/find?email=${encodeURIComponent(emailInput)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -186,10 +186,18 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
     const fetchCredentials = useCallback(async () => {
         setIsLoading(true); setError(null);
         const token = localStorage.getItem('authToken');
-        if (!token) { setError('You are not logged in.'); setIsLoading(false); return; }
+        if (!token) {
+            setError('Authentication required. Please log in.');
+            setIsLoading(false);
+            return;
+        }
         try {
-            const response = await fetch('http://localhost:5002/api/get-passwords', { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || 'Failed to fetch credentials.'); }
+            const response = await fetch('http://localhost:5000/password-generator/api/get-passwords', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const errorData = await response.json(); throw new Error(errorData.error || 'Failed to fetch credentials.');
+            }
             const data = await response.json();
             if (Array.isArray(data)) { setCredentials(data); }
             else { setCredentials([]); throw new Error("Received invalid data from server."); }
@@ -215,20 +223,29 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         if (!window.confirm('Are you sure you want to permanently delete this credential?')) return;
         const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://localhost:5002/api/delete-password/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || 'Failed to delete credential.'); }
-            setCredentials(prev => prev.filter(c => c.id !== id)); onCredentialChange();
-        } catch (err) {
-            setDeleteError((err as Error).message); setTimeout(() => setDeleteError(null), 5000);
+             const response = await fetch(`http://localhost:5000/password-generator/api/delete-password/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                 const errorData = await response.json(); throw new Error(errorData.error || 'Failed to delete credential.');
+            }
+            setCredentials(prev => prev.filter(c => c.id !== id));
+            onCredentialChange();
+        } catch(err) {
+            setDeleteError((err as Error).message);
+            setTimeout(() => setDeleteError(null), 5000);
         }
     };
 
     const handleShareSubmit = async (credentialId: number, recipientEmails: string[], durationHours: number) => {
         const token = localStorage.getItem('authToken');
-        if (!token) { throw new Error("Authentication failed."); }
-        const response = await fetch('http://localhost:5002/api/share-password', {
+        const response = await fetch('http://localhost:5000/password-generator/api/share-password', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ credentialId, recipientEmails, durationHours })
         });
         if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || "Failed to share password."); }
@@ -248,7 +265,6 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             </AnimatePresence>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    {/* MODIFIED: This entire header section is new, cleaner, and better aligned. */}
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900">Your Password Vault</h2>

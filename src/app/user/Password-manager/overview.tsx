@@ -2,7 +2,11 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+<<<<<<< Updated upstream:src/app/user/Password-manager/overview.tsx
 import { PlusCircle, Trash2, ShieldCheck, BarChart2, AlertTriangle, Share2, Download } from 'lucide-react';
+=======
+import { PlusCircle, Trash2, BarChart2, AlertTriangle, Share2, Download } from 'lucide-react';
+>>>>>>> Stashed changes:src/app/user/password-manager/overview.tsx
 
 const StatCard = ({ title, value, icon: Icon, iconBgColor }: { title: string; value: any; icon: React.ElementType; iconBgColor: string; }) => (
     <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center gap-4">
@@ -32,8 +36,11 @@ const ActivityItem = ({ action, website, created_at }: { action: string; website
         return 'bg-green-100';
     };
     const getText = () => {
+<<<<<<< Updated upstream:src/app/user/Password-manager/overview.tsx
         if (isSent) return <>Password <span className="font-bold">sent</span> to {website}</>;
         if (isReceived) return <>Password <span className="font-bold">received</span> from {website}</>;
+=======
+>>>>>>> Stashed changes:src/app/user/password-manager/overview.tsx
         return <>Password <span className="font-bold">{action}</span> for {website}</>;
     };
 
@@ -119,6 +126,7 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
         </div>
     );
 };
+
 
 export default function OverviewPage({ stats, isLoading, error, retryFetch }: { stats: any, isLoading: boolean, error: string | null, retryFetch: () => void }) {
     if (isLoading) {
