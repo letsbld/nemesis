@@ -178,9 +178,9 @@ const NavBarContent = () => {
                         </li>
                         <li>
                             <Link 
-                                href="/user/Password-manager" 
-                                className={`flex items-center gap-2 p-2 rounded-md transition-colors ${isActive('/user/Password-manager') ? 'bg-gray-100 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'}`}>
-                            <FaShieldAlt className="text-lg" /> 
+                                href="/user/password-manager" 
+                                className={`flex items-center gap-2 p-2 rounded-md transition-colors ${pathname === '/user/password-manager' ? 'bg-gray-100 text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}>
+                            <FaCogs className="text-lg" />
                             <span>Password Manager</span>
                             </Link>
                         </li>
