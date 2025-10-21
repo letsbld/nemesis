@@ -100,36 +100,25 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
             alert('Please provide a Website name.');
             return;
         }
-<<<<<<< Updated upstream:src/app/user/Password-manager/create.tsx
+        
         const token = localStorage.getItem('authToken');
         if (!token) {
             alert('Authentication error. Please log in again.');
             return;
         }
 
-=======
->>>>>>> Stashed changes:src/app/user/password-manager/create.tsx
         setIsSaving(true);
-        const token = localStorage.getItem('authToken');
         try {
             const response = await fetch('http://localhost:5000/password-generator/api/save-password', {
                 method: 'POST',
-<<<<<<< Updated upstream:src/app/user/Password-manager/create.tsx
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    website: website,
-                    password: generatedCredential,
-                    custom_username: customUsername,
-=======
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ 
-                    website: website, 
+                body: JSON.stringify({
+                    website: website,
                     password: generatedCredential,
-                    custom_username: customUsername 
->>>>>>> Stashed changes:src/app/user/password-manager/create.tsx
+                    custom_username: customUsername
                 })
             });
             if (!response.ok) {
@@ -137,17 +126,10 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
                 throw new Error(errorData.error || 'Failed to save credential.');
             }
             
-<<<<<<< Updated upstream:src/app/user/Password-manager/create.tsx
             setSavedCredentialDetails({
                 username: customUsername || user?.display_name || user?.username || 'Your Account',
                 website: website,
                 password: generatedCredential
-=======
-            setSavedCredentialDetails({ 
-                username: customUsername || user?.display_name || user?.username || 'Your Account', 
-                website: website, 
-                password: generatedCredential 
->>>>>>> Stashed changes:src/app/user/password-manager/create.tsx
             });
             setShowSuccessModal(true);
             setWebsite('');
@@ -172,13 +154,8 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
                 <div className="w-full lg:w-1/2 flex-shrink-0 space-y-6">
                     <Panel className="p-6 bg-white border border-gray-200 shadow-md">
                         <div className="flex flex-col gap-4">
-<<<<<<< Updated upstream:src/app/user/Password-manager/create.tsx
-                            <input type="text" value={customUsername} onChange={(e) => setCustomUsername(e.target.value)} placeholder="Name for this password (optional)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500"/>
-                            <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500" />
-=======
                             <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base" />
                             <input type="text" value={customUsername} onChange={(e) => setCustomUsername(e.target.value)} placeholder="Custom Username (optional)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base" />
->>>>>>> Stashed changes:src/app/user/password-manager/create.tsx
                             <motion.button onClick={handleSave} disabled={isSaving} className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold disabled:bg-blue-400">{isSaving ? 'Saving...' : 'Save Securely'}</motion.button>
                         </div>
                     </Panel>
