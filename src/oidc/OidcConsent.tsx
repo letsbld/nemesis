@@ -5,9 +5,8 @@ import { getConsent } from './oidcApi';
 /*
 What you see in the browser:
 - Hydra redirects here: /oidc/consent?consent_challenge=ABC
-- Page shows "Processing consent…" briefly, then redirects to Hydra's redirect_to.
+- Page shows "Processing consent…" briefly, then redirects to Hydra's redirect_to immediately.
 - If something fails, an error is shown with a Retry button.
-Open DevTools (F12) to see the consent challenge and redirects in console.debug logs.
 */
 
 function useQueryParam(name: string) {
@@ -25,11 +24,6 @@ export default function OidcConsent() {
     useEffect(() => {
         let cancelled = false;
         async function run() {
-            console.debug('[OIDC] /oidc/consent invoked', {
-                href: typeof window !== 'undefined' ? window.location.href : '',
-                consent_challenge,
-            });
-
             if (!consent_challenge) {
                 setError('Missing consent_challenge');
                 setLoading(false);
@@ -38,15 +32,12 @@ export default function OidcConsent() {
             try {
                 const data = await getConsent(consent_challenge);
                 if (data?.redirect_to && !cancelled) {
-                    console.debug('[OIDC] Redirecting to Hydra consent accept URL', {
-                        redirect_to: data.redirect_to,
-                    });
+                    // Immediate redirect, no delay
                     window.location.assign(data.redirect_to);
                     return;
                 }
                 setError('Missing redirect_to');
             } catch (e: any) {
-                console.debug('[OIDC] Consent error', e);
                 setError(e?.data?.error || e?.message || 'Consent failed');
             } finally {
                 if (!cancelled) setLoading(false);
@@ -58,19 +49,11 @@ export default function OidcConsent() {
         };
     }, [consent_challenge]);
 
-    if (loading)
-        return (
-            <div>
-                Processing consent… {consent_challenge ? `(challenge: ${consent_challenge})` : ''}
-            </div>
-        );
+    if (loading) return <div>Processing consent…</div>;
 
     return (
         <div>
             <div style={{ color: 'red' }}>{error}</div>
-            <div style={{ opacity: 0.7, fontSize: 12 }}>
-                {consent_challenge ? `consent_challenge: ${consent_challenge}` : null}
-            </div>
             <button onClick={() => window.location.reload()}>Retry</button>
         </div>
     );

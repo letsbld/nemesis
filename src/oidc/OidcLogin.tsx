@@ -35,12 +35,6 @@ export default function OidcLogin() {
     useEffect(() => {
         let cancelled = false;
         async function run() {
-            // Helpful debug to confirm invocation from Hydra and the received challenge
-            console.debug('[OIDC] /oidc/login invoked', {
-                href: typeof window !== 'undefined' ? window.location.href : '',
-                login_challenge,
-            });
-
             if (!login_challenge) {
                 setError('Missing login_challenge');
                 setLoading(false);
@@ -50,6 +44,7 @@ export default function OidcLogin() {
                 // Try auto-accept with existing JWT
                 const data = await getLogin(login_challenge, true);
                 if (data?.redirect_to && !cancelled) {
+                    // Immediate redirect, no delay
                     window.location.assign(data.redirect_to);
                     return;
                 }
@@ -77,6 +72,7 @@ export default function OidcLogin() {
             if (totpRequired && totpToken) payload.totpToken = totpToken;
             const data = await postAuthAccept(payload);
             if (data?.redirect_to) {
+                // Immediate redirect, no delay
                 window.location.assign(data.redirect_to);
                 return;
             }
