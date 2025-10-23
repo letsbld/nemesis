@@ -10,7 +10,7 @@ interface NavbarAdminProps {
 }
 
 
-export const NavbarAdmin = ({ activeTab }: { activeTab?: string }) => {
+export const NavbarAdmin = ({ activeTab }: NavbarAdminProps) => {
   const { user, logout } = useAuth();
   const [search, setSearch] = useState('');
   const pathname = usePathname();
@@ -18,10 +18,13 @@ export const NavbarAdmin = ({ activeTab }: { activeTab?: string }) => {
   // Map routes to page titles
   const pageTitles: { [key: string]: string } = {
     '/admin/dashboard': 'Dashboard',
-    '/admin/users': 'Users',
-    '/admin/user-groups': 'User Groups',
-    '/admin/device/overview': 'Devices',
-    '/admin/device/commands': 'Commands',
+    '/admin/users': 'User Management',
+    '/admin/user-groups': 'User Management',
+    '/admin/device/overview': 'Device Management',
+    '/admin/device/commands': 'Device Management',
+    '/admin/device/logs': 'Device Management',
+    '/admin/device/profile': 'Device Management',
+    '/admin/device/report': 'Device Management',
     '/dashboard/sso-management': 'Security',
     '/admin/get-started': 'Get Started',
   };
