@@ -37,7 +37,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             setError('You are not logged in.'); setIsLoading(false); return;
         }
         try {
-            const response = await apiFetch('/get-passwords', {
+            const response = await apiFetch('/password-generator/get-passwords', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {
@@ -72,7 +72,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         
         const token = localStorage.getItem('authToken');
         try {
-             const response = await apiFetch(`/delete-password/${id}`, {
+             const response = await apiFetch(`/password-generator/delete-password/${id}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {

@@ -27,7 +27,7 @@ export default function PasswordVaultPage() {
             return;
         }
         try {
-            const response = await apiFetch('/password-stats', {
+            const response = await apiFetch('/password-generator/password-stats', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {
