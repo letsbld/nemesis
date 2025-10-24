@@ -2,7 +2,7 @@ export async function apiFetch(endpoint: string, options?: RequestInit): Promise
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api`;
     const url = endpoint.startsWith('/') ? `${apiUrl}${endpoint}` : `${apiUrl}/${endpoint}`;
     console.log(url, 'Url here');
-
+//password-generator/api
     // Attach Authorization header if token exists
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     let fetchOptions: RequestInit;

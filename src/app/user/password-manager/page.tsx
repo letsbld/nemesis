@@ -7,7 +7,7 @@ import { LayoutDashboard, ShieldCheck, PlusCircle } from 'lucide-react';
 import OverviewPage from './overview';
 import ManagePasswordsPage from './manage';
 import CreatePasswordPage from './create';
-import {apiFetch} from '@/lib/apiFetch'
+import { apiFetch } from '@/lib/pass-manager';
 
 type Tab = 'overview' | 'manage' | 'create';
 
