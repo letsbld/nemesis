@@ -7,7 +7,8 @@ import Confetti from 'react-confetti';
 import { useAuth } from '@/context/AuthContext';
 import { characterSets, memorableWords } from '@/lib/credentials';
 import './globals.css';
-import { apiFetch } from '@/lib/apiFetch';
+import {apiFetch} from '@/lib/apiFetch'
+
 
 const containerVariants: Variants = { hidden: { opacity: 0, scale: 0.98 }, visible: { opacity: 1, scale: 1, transition: { staggerChildren: 0.08, delayChildren: 0.2 } } };
 const itemVariants: Variants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 20 } } };
