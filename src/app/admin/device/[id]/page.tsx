@@ -5,6 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { DeviceData, CreateDeviceData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
+import { Commet } from 'react-loading-indicators';
+
+
 
 const EditDevicePage = () => {
     const router = useRouter();
@@ -136,8 +139,8 @@ const EditDevicePage = () => {
     // Show loading state
     if (authStatus === 'loading' || isLoading || !deviceId) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-lg">Loading device data...</div>
+           <div className="flex justify-center py-6">
+                <Commet color="#318bcc" size="small" text="" textColor="" />
             </div>
         );
     }

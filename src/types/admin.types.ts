@@ -9,6 +9,7 @@ export interface CreateUserData {
     username: string;
     password: string;
     description?: string;
+    totp_enabled: boolean;
 }
 
 export interface UserData {
@@ -24,6 +25,8 @@ export interface UserData {
     description?: string;
     created_at: Date;
     updated_at: Date;
+    totp_enabled: boolean;
+    password: string;
 }
 
 export interface UserGroupData {
