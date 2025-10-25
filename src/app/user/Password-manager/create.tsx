@@ -5,7 +5,10 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Check, CheckCircle, Copy, RefreshCw } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useAuth } from '@/context/AuthContext';
+import { characterSets, memorableWords } from '@/lib/credentials';
 import './globals.css';
+import {apiFetch} from '@/lib/apiFetch'
+
 
 const containerVariants: Variants = { hidden: { opacity: 0, scale: 0.98 }, visible: { opacity: 1, scale: 1, transition: { staggerChildren: 0.08, delayChildren: 0.2 } } };
 const itemVariants: Variants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 20 } } };
@@ -56,8 +59,6 @@ type MemorableOptions = { words: number; separator: string; capitalize: boolean;
 type PinOptions = { length: number; };
 type Options = { smart: SmartOptions; memorable: MemorableOptions; pin: PinOptions; };
 const defaultOptions: Options = { smart: { length: 16, uppercase: true, lowercase: true, numbers: true, symbols: true }, memorable: { words: 4, separator: '-', capitalize: true }, pin: { length: 6 } };
-const characterSets = { uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', lowercase: 'abcdefghijklmnopqrstuvwxyz', numbers: '0123456789', symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?' };
-const memorableWords = ['aurora', 'cascade', 'breeze', 'comet', 'drift', 'echo', 'ember', 'fjord', 'galaxy', 'haven', 'azure', 'ivory', 'jade', 'lagoon', 'lunar', 'mist', 'nebula', 'oasis', 'orbit', 'purity', 'quartz', 'raven', 'ripple', 'serene', 'shadow', 'summit', 'terra', 'unity', 'valor', 'vortex', 'willow', 'zenith'];
 
 export default function CreatePasswordPage({ onCredentialChange }: { onCredentialChange: () => void }) {
     const { user } = useAuth();
@@ -65,29 +66,16 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
     const [options, setOptions] = useState<Options>(defaultOptions);
     const [generatedCredential, setGeneratedCredential] = useState('');
     const [website, setWebsite] = useState('');
-    const [customUsername, setCustomUsername] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [savedCredentialDetails, setSavedCredentialDetails] = useState({ username: '', website: '', password: '' });
     
     const generateCredential = useCallback(() => {
-        setIsCopied(false);
-        let newCredential = '';
-        if (credentialType === 'smart') {
-            const { length, uppercase, lowercase, numbers, symbols } = options.smart;
-            let charset = (uppercase ? characterSets.uppercase : '') + (lowercase ? characterSets.lowercase : '') + (numbers ? characterSets.numbers : '') + (symbols ? characterSets.symbols : '');
-            if (charset) { for (let i = 0; i < length; i++) newCredential += charset.charAt(Math.floor(Math.random() * charset.length)); }
-        } else if (credentialType === 'memorable') {
-            const { words, separator, capitalize } = options.memorable;
-            const selectedWords = Array.from({ length: words }, () => {
-                let word = memorableWords[Math.floor(Math.random() * memorableWords.length)];
-                return capitalize ? word.charAt(0).toUpperCase() + word.slice(1) : word;
-            });
-            newCredential = selectedWords.join(separator);
-        } else if (credentialType === 'pin') {
-            for (let i = 0; i < options.pin.length; i++) newCredential += Math.floor(Math.random() * 10);
-        }
+        setIsCopied(false); let newCredential = '';
+        if (credentialType === 'smart') { const { length, uppercase, lowercase, numbers, symbols } = options.smart; let charset = (uppercase ? characterSets.uppercase : '') + (lowercase ? characterSets.lowercase : '') + (numbers ? characterSets.numbers : '') + (symbols ? characterSets.symbols : ''); if (charset) { for (let i = 0; i < length; i++) newCredential += charset.charAt(Math.floor(Math.random() * charset.length)); } }
+        else if (credentialType === 'memorable') { const { words, separator, capitalize } = options.memorable; const selectedWords = Array.from({ length: words }, () => { let word = memorableWords[Math.floor(Math.random() * memorableWords.length)]; return capitalize ? word.charAt(0).toUpperCase() + word.slice(1) : word; }); newCredential = selectedWords.join(separator); }
+        else if (credentialType === 'pin') { for (let i = 0; i < options.pin.length; i++) newCredential += Math.floor(Math.random() * 10); }
         setGeneratedCredential(newCredential);
     }, [credentialType, options]);
 
@@ -96,48 +84,32 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
     const handleOptionChange = (type: CredentialType, key: string, value: any) => { setOptions(prev => ({ ...prev, [type]: { ...prev[type], [key]: value } })); };
 
     const handleSave = async () => {
-        if (!website || !generatedCredential) {
-            alert('Please provide a Website name.');
-            return;
-        }
-        
+        if (!website || !generatedCredential) { alert('Please provide a Website name.'); return; }
         const token = localStorage.getItem('authToken');
-        if (!token) {
-            alert('Authentication error. Please log in again.');
-            return;
-        }
+        if (!token) { alert('Authentication error. Please log in again.'); return; }
 
         setIsSaving(true);
         try {
-            const response = await fetch('http://localhost:5000/password-generator/api/save-password', {
+            const response = await apiFetch('/password-generator/save-password', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    website: website,
-                    password: generatedCredential,
-                    custom_username: customUsername
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ website: website, password: generatedCredential })
             });
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to save credential.');
+                const errorData = await response.json(); throw new Error(errorData.error || 'Failed to save credential.');
             }
             
-            setSavedCredentialDetails({
-                username: customUsername || user?.display_name || user?.username || 'Your Account',
-                website: website,
-                password: generatedCredential
+            setSavedCredentialDetails({ 
+                username: user?.display_name || user?.username || 'Your Account', 
+                website: website, 
+                password: generatedCredential 
             });
+
             setShowSuccessModal(true);
             setWebsite('');
-            setCustomUsername('');
-            onCredentialChange();
+            onCredentialChange(); // Trigger a refresh on the parent
         } catch (error) {
-            console.error("Save Error:", error);
-            alert(`Error: ${(error as Error).message}`);
+            console.error("Save Error:", error); alert(`Error: ${(error as Error).message}`);
         } finally {
             setIsSaving(false);
         }
@@ -154,8 +126,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
                 <div className="w-full lg:w-1/2 flex-shrink-0 space-y-6">
                     <Panel className="p-6 bg-white border border-gray-200 shadow-md">
                         <div className="flex flex-col gap-4">
-                            <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base" />
-                            <input type="text" value={customUsername} onChange={(e) => setCustomUsername(e.target.value)} placeholder="Custom Username (optional)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base" />
+                            <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 border-gray-300 rounded-lg py-2 px-4 focus:ring-blue-500 focus:border-blue-500" />
                             <motion.button onClick={handleSave} disabled={isSaving} className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold disabled:bg-blue-400">{isSaving ? 'Saving...' : 'Save Securely'}</motion.button>
                         </div>
                     </Panel>

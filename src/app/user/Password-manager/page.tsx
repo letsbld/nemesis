@@ -1,3 +1,4 @@
+// FILE: src/app/user/password-generator/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -6,6 +7,7 @@ import { LayoutDashboard, ShieldCheck, PlusCircle } from 'lucide-react';
 import OverviewPage from './overview';
 import ManagePasswordsPage from './manage';
 import CreatePasswordPage from './create';
+import {apiFetch} from '@/lib/apiFetch'
 
 type Tab = 'overview' | 'manage' | 'create';
 
@@ -18,16 +20,14 @@ export default function PasswordVaultPage() {
     const fetchStats = useCallback(async () => {
         setIsLoadingStats(true);
         setStatsError(null);
-        
         const token = localStorage.getItem('authToken');
         if (!token) {
-            setStatsError('Authentication required. Please log in.');
+            setStatsError('Authentication token not found.');
             setIsLoadingStats(false);
             return;
         }
-
         try {
-            const response = await fetch('http://localhost:5000/password-generator/api/password-stats', {
+            const response = await apiFetch('/password-generator/password-stats', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {
