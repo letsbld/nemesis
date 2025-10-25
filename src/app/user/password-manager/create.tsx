@@ -90,7 +90,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
 
         setIsSaving(true);
         try {
-            const response = await apiFetch('/save-password', {
+            const response = await apiFetch('/password-generator/save-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ website: website, password: generatedCredential })
