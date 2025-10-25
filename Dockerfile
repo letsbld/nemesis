@@ -8,7 +8,7 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ libc6-compat
 
 # Install pnpm globally
-RUN npm install -g pnpm && npm cache clean --force
+RUN npm install -g pnpm 
 
 
 # Copy package files
@@ -29,7 +29,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install pnpm globally
-RUN npm install -g pnpm && npm cache clean --force
+RUN npm install -g pnpm
 
 # Copy package files
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
