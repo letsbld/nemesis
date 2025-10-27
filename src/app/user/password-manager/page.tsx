@@ -7,7 +7,11 @@ import { LayoutDashboard, ShieldCheck, PlusCircle } from 'lucide-react';
 import OverviewPage from './overview';
 import ManagePasswordsPage from './manage';
 import CreatePasswordPage from './create';
+<<<<<<< Updated upstream
 import {apiFetch} from '@/lib/apiFetch'
+=======
+import { apiFetch } from '@/lib/pass-manager';
+>>>>>>> Stashed changes
 
 type Tab = 'overview' | 'manage' | 'create';
 
@@ -27,7 +31,7 @@ export default function PasswordVaultPage() {
             return;
         }
         try {
-            const response = await apiFetch('/password-generator/password-stats', {
+            const response = await apiFetch('/password-stats', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {

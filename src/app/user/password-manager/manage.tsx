@@ -3,7 +3,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
+<<<<<<< Updated upstream
 import {apiFetch} from '@/lib/apiFetch'
+=======
+import { apiFetch } from '@/lib/pass-manager';
+>>>>>>> Stashed changes
 
 
 type Credential = { id: number; website: string; username: string; password: string; created_at: string; };
@@ -37,7 +41,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             setError('You are not logged in.'); setIsLoading(false); return;
         }
         try {
-            const response = await apiFetch('/password-generator/get-passwords', {
+            const response = await apiFetch('/get-passwords', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {
@@ -72,7 +76,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         
         const token = localStorage.getItem('authToken');
         try {
-             const response = await apiFetch(`/password-generator/delete-password/${id}`, {
+             const response = await apiFetch(`/delete-password/${id}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) {
