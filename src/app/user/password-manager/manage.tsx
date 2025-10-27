@@ -4,7 +4,11 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import {apiFetch} from '@/lib/apiFetch'
+=======
+import { apiFetch } from '@/lib/pass-manager';
+>>>>>>> Stashed changes
 =======
 import { apiFetch } from '@/lib/pass-manager';
 >>>>>>> Stashed changes

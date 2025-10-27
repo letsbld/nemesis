@@ -8,9 +8,13 @@ import { useAuth } from '@/context/AuthContext';
 import { characterSets, memorableWords } from '@/lib/credentials';
 import './globals.css';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import {apiFetch} from '@/lib/apiFetch'
 // fix
 
+=======
+import { apiFetch } from '@/lib/pass-manager';
+>>>>>>> Stashed changes
 =======
 import { apiFetch } from '@/lib/pass-manager';
 >>>>>>> Stashed changes

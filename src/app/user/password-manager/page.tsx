@@ -8,7 +8,11 @@ import OverviewPage from './overview';
 import ManagePasswordsPage from './manage';
 import CreatePasswordPage from './create';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import {apiFetch} from '@/lib/apiFetch'
+=======
+import { apiFetch } from '@/lib/pass-manager';
+>>>>>>> Stashed changes
 =======
 import { apiFetch } from '@/lib/pass-manager';
 >>>>>>> Stashed changes
