@@ -7,17 +7,9 @@ import Confetti from 'react-confetti';
 import { useAuth } from '@/context/AuthContext';
 import { characterSets, memorableWords } from '@/lib/credentials';
 import './globals.css';
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-import {apiFetch} from '@/lib/apiFetch'
-// fix
 
-=======
+
 import { apiFetch } from '@/lib/pass-manager';
->>>>>>> Stashed changes
-=======
-import { apiFetch } from '@/lib/pass-manager';
->>>>>>> Stashed changes
 
 const containerVariants: Variants = { hidden: { opacity: 0, scale: 0.98 }, visible: { opacity: 1, scale: 1, transition: { staggerChildren: 0.08, delayChildren: 0.2 } } };
 const itemVariants: Variants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 20 } } };
@@ -99,7 +91,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
 
         setIsSaving(true);
         try {
-            const response = await apiFetch('/save-password', {
+            const response = await apiFetch('/password-generator/save-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ website: website, password: generatedCredential })
