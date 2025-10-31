@@ -6,6 +6,7 @@ import { SideNavBar } from '@/components/SideNavBar';
 import { usePathname } from 'next/navigation';
 import { Footer } from '@/components/Footer';
 import { Navbar } from '@/components/Navbar';
+import { SearchProvider } from '@/context/SearchContext';
 
 const PROTECTED_PATHS = ['/admin', '/user'];
 
@@ -18,7 +19,7 @@ export function LayoutContent({
   const isProtectedRoute = PROTECTED_PATHS.some(path => pathname?.startsWith(path));
 
   return (
-    <>
+    <SearchProvider>
       {isProtectedRoute ? (
         <>
           <SideNavBar />
@@ -34,6 +35,6 @@ export function LayoutContent({
           <Footer />
         </>
       )}
-    </>
+    </SearchProvider>
   );
 }

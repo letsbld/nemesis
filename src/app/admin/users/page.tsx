@@ -9,10 +9,13 @@ import { EditUserForm } from '@/components/admin/EditUserForm';
 import { CSVImportForm } from '@/components/admin/CSVImportForm';
 import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
+import { useSearch } from '@/context/SearchContext';
 
 const UsersPage = () => {
     const router = useRouter();
+    const { searchQuery } = useSearch();
     const [users, setUsers] = useState<UserData[]>([]);
+    const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
@@ -60,6 +63,25 @@ const UsersPage = () => {
         }
     }, [status, user]);
 
+    // Filter users based on search query
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredUsers(users);
+            return;
+        }
+
+        const query = searchQuery.toLowerCase();
+        const filtered = users.filter(user => 
+            user.first_name.toLowerCase().includes(query) ||
+            user.last_name.toLowerCase().includes(query) ||
+            user.display_name.toLowerCase().includes(query) ||
+            user.username.toLowerCase().includes(query) ||
+            user.company_email.toLowerCase().includes(query) ||
+            (user.description && user.description.toLowerCase().includes(query))
+        );
+        setFilteredUsers(filtered);
+    }, [searchQuery, users]);
+
     // Show loading state while checking authentication
     if (status === 'loading') {
         return (
@@ -83,6 +105,7 @@ const UsersPage = () => {
         try {
             const data = await apiFetch('/user');
             setUsers(data);
+            setFilteredUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
         } finally {
@@ -199,7 +222,7 @@ const UsersPage = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             <UserList
-                users={users}
+                users={filteredUsers}
                 onCreateUser={() => setShowCreateForm(true)}
                 onDeleteUser={handleDeleteUser}
                 onResetPassword={handleResetPassword}
