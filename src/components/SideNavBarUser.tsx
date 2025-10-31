@@ -2,9 +2,11 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaUser, FaKey, FaLaptop, FaFolderOpen } from 'react-icons/fa';
+import { FaUser, FaKey, FaLaptop, FaFolderOpen, FaCertificate } from 'react-icons/fa';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
+import { PiCertificateBold } from "react-icons/pi";
+
 
 export const SideNavBarUser = () => {
   const { user } = useAuth();
@@ -43,6 +45,13 @@ export const SideNavBarUser = () => {
           </Link>
           <Link href="/user/passkey" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${isActive('/user/passkey') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}`}>
             <FaKey className="w-5 h-5" /> <span>Security Keys</span>
+          </Link>
+          <Link href="/user/certificate" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  isActive('/user/certificate')
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}>
+                <PiCertificateBold className="w-5 h-5" /> <span>Security Certificate</span>
           </Link>
         </div>
       </div>

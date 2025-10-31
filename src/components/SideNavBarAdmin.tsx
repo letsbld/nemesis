@@ -13,6 +13,7 @@ import {
   FaChevronRight,
 } from 'react-icons/fa';
 import { FileText, FileSearch, Settings as SettingsIcon,Terminal,Rocket } from 'lucide-react';
+import { PiCertificateBold } from 'react-icons/pi';
 
 export const SideNavBarAdmin = () => {
   const pathname = usePathname();
@@ -199,7 +200,14 @@ export const SideNavBarAdmin = () => {
                   </Link>
                 </li>
               </ul>
-            )}
+              )}
+              <Link href="/admin/certificate" className={`flex items-center px-3 py-2 text-sm rounded-md ${
+                  isActive('/admin/certificate')
+                    ? 'text-white bg-blue-600'
+                    : ' hover:bg-[#2C3E6E]'
+                }`}>
+                <PiCertificateBold className="w-5 h-5" /> <span>Security Certificate</span>
+              </Link>
           </li>
         </ul>
       </div>
