@@ -1,46 +1,70 @@
-type Json = Record<string, any>;
+import { apiFetch } from '../lib/apiFetch';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-function buildUrl(path: string, params?: Record<string, string | number | undefined>) {
-    const url = new URL(path, window.location.origin);
-    if (params) {
-        for (const [k, v] of Object.entries(params)) {
-            if (v !== undefined) url.searchParams.set(k, String(v));
-        }
-    }
-    // Allow absolute API base or same-origin
-    return API_BASE ? new URL(url.pathname + url.search, API_BASE).toString() : url.toString();
-}
+// function buildTestStartUrl(opts: { client_id: string; redirect_uri: string; scope?: string }) {
+//     const scope = opts.scope || 'openid offline';
+//     const path = '/oidc/test/start';
+//     const params = new URLSearchParams({
+//         client_id: opts.client_id,
+//         redirect_uri: opts.redirect_uri,
+//         scope,
+//     });
+//     if (API_BASE) {
+//         return new URL(`${path}?${params.toString()}`, API_BASE).toString();
+//     }
+//     return `${window.location.origin}${path}?${params.toString()}`;
+// }
 
-function getAuthToken(): string | null {
-    // Adjust if your app stores JWT elsewhere
-    return localStorage.getItem('authToken') || localStorage.getItem('token') || null;
-}
+export async function startTestAuth(opts: {
+    client_id: string;
+    redirect_uri: string;
+    scope?: string;
+}) {
+    // Instead of navigating the browser to the backend `/oidc/test/start` endpoint (which would
+    // cause a redirect through the backend port), call the backend via XHR to obtain the
+    // provider authorization URL and then navigate the browser directly to that URL.
+    const scope = opts.scope || 'openid offline';
+    const params = new URLSearchParams({
+        client_id: opts.client_id,
+        redirect_uri: opts.redirect_uri,
+        scope,
+        // redirect: 'true',
+    });
+    const qs = `?${params.toString()}`;
 
-async function handleJson(res: Response) {
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        const err = new Error(data?.error || 'Request failed');
-        (err as any).status = res.status;
-        (err as any).data = data;
-        throw err;
+    // Call backend to build the provider URL. We don't want apiFetch to attach Authorization here.
+    const data = await apiFetch(`/oidc/test/start${qs}`, {
+        method: 'GET',
+        followRedirects: true,
+    });
+
+    // apiFetch returns either parsed JSON or { redirect_to } when backend responded with a Location header
+    const redirect = (data && (data.redirect_to || (data as any).url)) as string | undefined;
+    if (redirect) {
+        window.location.assign(redirect);
+        return;
     }
-    return data as Json;
+
+    // If backend returned something unexpected, fallback to constructing a direct URL if API_BASE is set
+    if (API_BASE) {
+        const url = new URL(`/api/oidc/test/start${qs}`, API_BASE).toString();
+        window.location.assign(url);
+        return;
+    }
+
+    // As a final fallback, navigate same-origin path (this will hit the backend)
+    window.location.assign(`${window.location.origin}/api/oidc/test/start${qs}`);
 }
 
 export async function getLogin(login_challenge: string, withAuth = true) {
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (withAuth) {
-        const token = getAuthToken();
-        if (token) headers.Authorization = `Bearer ${token}`;
-    }
-    const res = await fetch(buildUrl('/oidc/login', { login_challenge }), {
+    const qs = `?login_challenge=${encodeURIComponent(login_challenge)}`;
+    return apiFetch(`/oidc/login${qs}`, {
         method: 'GET',
-        headers,
         credentials: 'include',
+        skipAuth: !withAuth,
+        followRedirects: false,
     });
-    return handleJson(res);
 }
 
 export async function postAuthAccept(payload: {
@@ -49,61 +73,32 @@ export async function postAuthAccept(payload: {
     password: string;
     totpToken?: string;
 }) {
-    const res = await fetch(buildUrl('/oidc/auth/accept'), {
+    return apiFetch('/oidc/auth/accept', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        followRedirects: false,
     });
-    return handleJson(res);
 }
 
 export async function getConsent(consent_challenge: string) {
-    const res = await fetch(buildUrl('/oidc/consent', { consent_challenge }), {
+    const qs = `?consent_challenge=${encodeURIComponent(consent_challenge)}`;
+    return apiFetch(`/oidc/consent${qs}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        followRedirects: false,
     });
-    return handleJson(res);
 }
 
 export async function getDiscovery() {
-    const res = await fetch(buildUrl('/oidc/.well-known/openid-configuration'), {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-    });
-    return handleJson(res);
+    return apiFetch('/oidc/.well-known/openid-configuration', { method: 'GET' });
 }
 
-// OIDC health (GET /oidc/health)
 export async function getOidcHealth() {
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    const token = getAuthToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const res = await fetch(buildUrl('/oidc/health'), {
+    return apiFetch('/oidc/health', {
         method: 'GET',
-        headers,
         credentials: 'include',
+        followRedirects: false,
     });
-    return handleJson(res);
-}
-
-// Build test-start URL (GET /oidc/test/start?client_id=...&redirect_uri=...&scope=...)
-export function buildTestStartUrl(opts: {
-    client_id: string;
-    redirect_uri: string;
-    scope?: string;
-}) {
-    const scope = opts.scope || 'openid offline';
-    return buildUrl('/oidc/test/start', {
-        client_id: opts.client_id,
-        redirect_uri: opts.redirect_uri,
-        scope,
-    });
-}
-
-// Navigate browser to backend test-start (lets backend redirect to Hydra)
-export function startTestAuth(opts: { client_id: string; redirect_uri: string; scope?: string }) {
-    const url = buildTestStartUrl(opts);
-    window.location.assign(url);
 }

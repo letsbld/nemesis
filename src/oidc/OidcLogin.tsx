@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { getLogin, postAuthAccept } from './oidcApi';
+import { loginWithPasskey } from '../components/user/passkey';
 
 /*
 How this page is called:
@@ -49,9 +50,18 @@ export default function OidcLogin() {
                     return;
                 }
             } catch (e: any) {
+                // Log full error for debugging
+                console.error('getLogin error:', e);
                 // Expect 401 when auth is required
                 if (e?.status !== 401) {
-                    setError(e?.data?.error || e?.message || 'Login failed');
+                    // Prefer structured error fields, fall back to full object so user can see details
+                    setError(
+                        e?.data?.error ||
+                            e?.error ||
+                            e?.message ||
+                            JSON.stringify(e) ||
+                            'Login failed'
+                    );
                 }
             } finally {
                 if (!cancelled) setLoading(false);
@@ -78,16 +88,57 @@ export default function OidcLogin() {
             }
             setError('Missing redirect_to');
         } catch (e: any) {
-            if (e?.data?.error === 'TOTP_REQUIRED') {
+            console.error('postAuthAccept error:', e);
+            const errCode = e?.data?.error || e?.error || e?.message;
+            if (errCode === 'TOTP_REQUIRED' || e?.data?.error === 'TOTP_REQUIRED') {
                 setTotpRequired(true);
                 setError('TOTP code required');
-            } else if (e?.data?.error === 'INVALID_TOTP') {
+            } else if (errCode === 'INVALID_TOTP' || e?.data?.error === 'INVALID_TOTP') {
                 setError('Invalid TOTP code');
             } else if (e?.status === 401) {
                 setError('Invalid credentials');
             } else {
-                setError(e?.data?.error || e?.message || 'Login failed');
+                setError(errCode || JSON.stringify(e) || 'Login failed');
             }
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    async function onPasskey(e?: React.MouseEvent) {
+        if (e) e.preventDefault();
+        setSubmitting(true);
+        setError('');
+        try {
+            if (!username) {
+                setError('Enter username for passkey login');
+                return;
+            }
+            const resp = await loginWithPasskey(username);
+            // If backend returned a token, store it for subsequent calls
+            if (resp && resp.token) {
+                try {
+                    localStorage.setItem('authToken', resp.token);
+                } catch {}
+            }
+
+            // If backend directly returned a redirect URL, navigate there
+            if (resp && (resp.redirect_to || resp.url)) {
+                const to = resp.redirect_to || resp.url;
+                window.location.assign(to);
+                return;
+            }
+
+            // Otherwise, try the standard getLogin flow which should now succeed with the session/token set
+            const data = await getLogin(login_challenge, true);
+            if (data?.redirect_to) {
+                window.location.assign(data.redirect_to);
+                return;
+            }
+            setError('Passkey login succeeded but no redirect returned');
+        } catch (err: any) {
+            console.error('passkey login error:', err);
+            setError(err?.data?.error || err?.message || String(err) || 'Passkey login failed');
         } finally {
             setSubmitting(false);
         }
@@ -131,9 +182,19 @@ export default function OidcLogin() {
                         />
                     </div>
                 )}
-                <button type="submit" disabled={submitting}>
-                    {submitting ? 'Signing in...' : 'Sign in'}
-                </button>
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button type="submit" disabled={submitting}>
+                        {submitting ? 'Signing in...' : 'Sign in'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onPasskey}
+                        disabled={submitting}
+                        style={{ padding: '6px 10px', borderRadius: 6 }}
+                    >
+                        Sign in with passkey
+                    </button>
+                </div>
             </form>
         </div>
     );
