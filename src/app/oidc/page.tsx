@@ -7,13 +7,9 @@ export default function Page() {
     const [health, setHealth] = useState<string>('');
     const [error, setError] = useState<string>('');
 
-    const defaultClientId =
-        process.env.NEXT_PUBLIC_OIDC_CLIENT_ID || '6a6210ad-3f6b-4b7e-92ef-ecafb6877784';
-    const defaultRedirectUri =
-        process.env.NEXT_PUBLIC_OIDC_REDIRECT_URI || 'http://localhost:3030/oauth2/callback';
-
-    const [clientId, setClientId] = useState(defaultClientId);
-    const [redirectUri, setRedirectUri] = useState(defaultRedirectUri);
+    // Do not inject a hard-coded default client id. Start empty unless an env var is provided.
+    const [clientId, setClientId] = useState(process.env.NEXT_PUBLIC_OIDC_CLIENT_ID ?? '');
+    const [redirectUri, setRedirectUri] = useState(process.env.NEXT_PUBLIC_OIDC_REDIRECT_URI ?? '');
     const [scope, setScope] = useState('openid offline');
 
     const authHint = useMemo(
@@ -39,34 +35,56 @@ export default function Page() {
     }
 
     return (
-        <div style={{ maxWidth: 720, padding: 16 }}>
-            <h3>OIDC Tester</h3>
-            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 12 }}>{authHint}</div>
+        <div className="max-w-[720px] p-4">
+            <h3 className="text-lg font-semibold mb-2">OIDC Tester</h3>
+            <div className="text-sm text-gray-600 mb-3">{authHint}</div>
 
-            <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid gap-2 grid-cols-2">
                 <label style={{ display: 'grid', gap: 4 }}>
-                    <span>Client ID</span>
-                    <input value={clientId} onChange={(e) => setClientId(e.target.value)} />
+                    <span className="text-sm font-medium text-gray-700">Client ID</span>
+                    <input
+                        placeholder="Enter your client id"
+                        className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        value={clientId}
+                        onChange={(e) => setClientId(e.target.value)}
+                    />
                 </label>
                 <label style={{ display: 'grid', gap: 4 }}>
-                    <span>Redirect URI</span>
-                    <input value={redirectUri} onChange={(e) => setRedirectUri(e.target.value)} />
+                    <span className="text-sm font-medium text-gray-700">Redirect URI</span>
+                    <input
+                        placeholder="Enter your redirect uri"
+                        className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        value={redirectUri}
+                        onChange={(e) => setRedirectUri(e.target.value)}
+                    />
                 </label>
                 <label style={{ display: 'grid', gap: 4 }}>
-                    <span>Scope</span>
-                    <input value={scope} onChange={(e) => setScope(e.target.value)} />
+                    <span className="text-sm font-medium text-gray-700">Scope</span>
+                    <input
+                        className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        value={scope}
+                        onChange={(e) => setScope(e.target.value)}
+                    />
                 </label>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button onClick={onHealth}>Call /oidc/health</button>
-                <button onClick={onStart}>Start OIDC Test Auth</button>
+            <div className="flex gap-2 mt-3">
+                <button
+                    onClick={onHealth}
+                    className="bg-teal-500 text-white px-3 py-2 rounded-md hover:bg-teal-600"
+                >
+                    Call /oidc/health
+                </button>
+                <button
+                    onClick={onStart}
+                    className="bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700"
+                >
+                    Start OIDC Test Auth
+                </button>
             </div>
 
-            {error ? <div style={{ color: 'red', marginTop: 12 }}>{error}</div> : null}
-            {health ? (
-                <pre style={{ marginTop: 12, background: '#f5f5f5', padding: 12 }}>{health}</pre>
-            ) : null}
+            {error ? <div className="text-red-600 mt-3">{error}</div> : null}
+            {health ? <pre className="mt-3 bg-gray-100 p-3 rounded">{health}</pre> : null}
         </div>
     );
 }
