@@ -4,24 +4,11 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Copy, Check, Trash2, AlertTriangle, Share2, X, Clock, UserPlus, UserCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { pmApiFetch } from '@/lib/pmApiFetch';
+import { Commet } from 'react-loading-indicators';
 
-type Credential = {
-    id: number;
-    user_id: string;
-    website: string;
-    username: string;
-    password: string;
-    created_at: string;
-    custom_username: string | null;
-    shared_with_user_ids: string[] | null;
-    expires_at: string | null;
-};
-
-type VerifiedUser = {
-    id: string;
-    display_name: string;
-    company_email: string;
-};
+type Credential = { id: number; user_id: string; website: string; username: string; password: string; created_at: string; custom_username: string | null; shared_with_user_ids: string[] | null; expires_at: string | null; };
+type VerifiedUser = { id: string; display_name: string; company_email: string; };
 
 const CountdownTimer = ({ expiresAt }: { expiresAt: string }) => {
     const calculateRemainingTime = useCallback(() => {
@@ -75,20 +62,12 @@ const ShareModal = ({ user, credential, onClose, onShare }: { user: any, credent
     const handleAddRecipient = async () => {
         setError('');
         if (!emailInput) { setError('Please enter an email.'); return; }
-        if (emailInput === user?.company_email) {
-            setError('You cannot share a password with yourself.');
-            return;
-        }
+        if (emailInput === user?.company_email) { setError('You cannot share a password with yourself.'); return; }
         if (recipients.some(r => r.company_email === emailInput)) { setError('This user has already been added.'); return; }
         
         setIsVerifying(true);
-        const token = localStorage.getItem('authToken');
         try {
-            const response = await fetch(`http://localhost:5000/password-generator/api/users/find?email=${encodeURIComponent(emailInput)}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to find user.');
+            const data = await pmApiFetch(`/user/find-user?email=${encodeURIComponent(emailInput)}`);
             setRecipients(prev => [...prev, data]);
             setEmailInput('');
         } catch (err) {
@@ -98,9 +77,7 @@ const ShareModal = ({ user, credential, onClose, onShare }: { user: any, credent
         }
     };
 
-    const handleRemoveRecipient = (email: string) => {
-        setRecipients(prev => prev.filter(r => r.company_email !== email));
-    };
+    const handleRemoveRecipient = (email: string) => { setRecipients(prev => prev.filter(r => r.company_email !== email)); };
 
     const handleShare = async () => {
         if (recipients.length === 0) { setError('Please add at least one recipient.'); return; }
@@ -117,7 +94,7 @@ const ShareModal = ({ user, credential, onClose, onShare }: { user: any, credent
     };
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4" onClick={onClose}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
                 <div className="p-6 border-b border-gray-200">
                     <h2 className="text-xl font-bold text-gray-800">Share '{credential.website}'</h2>
@@ -134,7 +111,7 @@ const ShareModal = ({ user, credential, onClose, onShare }: { user: any, credent
                     <div>
                         <label htmlFor="recipient-email" className="text-sm font-medium text-gray-600 mb-2 block">Recipient's Company Email:</label>
                         <div className="flex gap-2">
-                            <input id="recipient-email" type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="user@company.com" className="flex-grow bg-gray-50 border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500" />
+                            <input id="recipient-email" type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="user@company.com" className="flex-grow bg-gray-50 border border-gray-300 rounded-lg py-2.5 px-4 focus:ring-blue-500 focus:border-blue-500" />
                             <button onClick={handleAddRecipient} disabled={isVerifying} className="px-4 py-2 text-sm font-semibold bg-gray-800 text-white rounded-lg hover:bg-gray-900 disabled:opacity-50 flex items-center gap-2">
                                 <UserPlus size={16} /> {isVerifying ? 'Adding...' : 'Add'}
                             </button>
@@ -172,33 +149,80 @@ const ShareModal = ({ user, credential, onClose, onShare }: { user: any, credent
     );
 };
 
+const DeleteConfirmationModal = ({ credential, onClose, onDelete }: { 
+    credential: Credential; 
+    onClose: () => void; 
+    onDelete: (id: number) => Promise<void>; 
+}) => {
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleConfirm = async () => {
+        setIsDeleting(true);
+        await onDelete(credential.id);
+    };
+
+    return (
+        <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+            onClick={onClose}
+        >
+            <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }} 
+                exit={{ scale: 0.9, opacity: 0 }} 
+                className="bg-white rounded-xl shadow-xl w-full max-w-md" 
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="p-6 text-center">
+                    <div className="w-16 h-16 mx-auto flex items-center justify-center bg-red-100 rounded-full">
+                        <AlertTriangle size={40} className="text-red-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800 mt-4">Are you sure?</h2>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Do you really want to delete the password for <strong>{credential.website}</strong>?
+                    </p>
+                    <p className="text-sm text-red-600 font-medium mt-2">
+                        This action cannot be undone and will be permanently lost.
+                    </p>
+                </div>
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-end gap-3">
+                    <button 
+                        onClick={onClose} 
+                        disabled={isDeleting}
+                        className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={handleConfirm} 
+                        disabled={isDeleting}
+                        className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-300">
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 export default function ManagePasswordsPage({ onCredentialChange }: { onCredentialChange: () => void }) {
     const { user } = useAuth();
     const [credentials, setCredentials] = useState<Credential[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [apiError, setApiError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [visiblePasswordId, setVisiblePasswordId] = useState<number | null>(null);
     const [copiedPasswordId, setCopiedPasswordId] = useState<number | null>(null);
     const [showShareModal, setShowShareModal] = useState<Credential | null>(null);
+    const [showDeleteModal, setShowDeleteModal] = useState<Credential | null>(null);
 
     const fetchCredentials = useCallback(async () => {
         setIsLoading(true); setError(null);
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            setError('Authentication required. Please log in.');
-            setIsLoading(false);
-            return;
-        }
         try {
-            const response = await fetch('http://localhost:5000/password-generator/api/get-passwords', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                const errorData = await response.json(); throw new Error(errorData.error || 'Failed to fetch credentials.');
-            }
-            const data = await response.json();
+            const data = await pmApiFetch('/user/passwords');
             if (Array.isArray(data)) { setCredentials(data); }
             else { setCredentials([]); throw new Error("Received invalid data from server."); }
         } catch (err) {
@@ -219,49 +243,44 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
 
     const handleCopyToClipboard = (password: string, id: number) => { navigator.clipboard.writeText(password); setCopiedPasswordId(id); setTimeout(() => setCopiedPasswordId(null), 2000); };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('Are you sure you want to permanently delete this credential?')) return;
-        const token = localStorage.getItem('authToken');
+    const handleConfirmDelete = async (id: number) => {
+        setApiError(null);
         try {
-             const response = await fetch(`http://localhost:5000/password-generator/api/delete-password/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                 const errorData = await response.json(); throw new Error(errorData.error || 'Failed to delete credential.');
-            }
+            await pmApiFetch(`/user/passwords/${id}`, { method: 'DELETE' });
             setCredentials(prev => prev.filter(c => c.id !== id));
             onCredentialChange();
         } catch(err) {
-            setDeleteError((err as Error).message);
-            setTimeout(() => setDeleteError(null), 5000);
+            setApiError((err as Error).message);
+            setTimeout(() => setApiError(null), 5000);
+        } finally {
+            setShowDeleteModal(null);
         }
     };
 
     const handleShareSubmit = async (credentialId: number, recipientEmails: string[], durationHours: number) => {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5000/password-generator/api/share-password', {
+        await pmApiFetch('/user/share', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
             body: JSON.stringify({ credentialId, recipientEmails, durationHours })
         });
-        if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || "Failed to share password."); }
-
         fetchCredentials();
         onCredentialChange();
     };
 
-    if (isLoading) { return (<div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 animate-pulse"> <div className="h-8 w-1/3 bg-gray-200 rounded mb-4"></div><div className="w-full h-72 bg-gray-200 rounded-lg"></div> </div>); }
+    if (isLoading) { return (<div className="flex justify-center items-center h-96"><Commet color="#2563eb" size="medium" text="" /></div>); }
     if (error) { return (<div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center"> <AlertTriangle className="mx-auto text-red-400 mb-4" size={40} /> <h3 className="text-lg font-semibold text-red-600">Could not load credentials</h3> <p className="text-sm text-gray-500 mt-1">{error}</p> <button onClick={fetchCredentials} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Retry</button> </div>); }
 
     return (
         <>
             <AnimatePresence>
-                {deleteError && <ErrorPopup message={deleteError} onClose={() => setDeleteError(null)} />}
+                {apiError && <ErrorPopup message={apiError} onClose={() => setApiError(null)} />}
                 {showShareModal && <ShareModal user={user} credential={showShareModal} onClose={() => setShowShareModal(null)} onShare={handleShareSubmit} />}
+                {showDeleteModal && (
+                    <DeleteConfirmationModal
+                        credential={showDeleteModal}
+                        onClose={() => setShowDeleteModal(null)}
+                        onDelete={handleConfirmDelete}
+                    />
+                )}
             </AnimatePresence>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -325,7 +344,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
                                                             <button onClick={() => setShowShareModal(cred)} className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-gray-800 transition-colors" title="Share Password">
                                                                 <Share2 size={18} />
                                                             </button>
-                                                            <button onClick={() => handleDelete(cred.id)} className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-red-600 transition-colors" title="Delete">
+                                                            <button onClick={() => setShowDeleteModal(cred)} className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-red-600 transition-colors" title="Delete">
                                                                 <Trash2 size={18} />
                                                             </button>
                                                         </>

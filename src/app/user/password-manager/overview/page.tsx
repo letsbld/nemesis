@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircle, Trash2, BarChart2, AlertTriangle, Share2, Download } from 'lucide-react';
+import { Commet } from 'react-loading-indicators';
 
 const StatCard = ({ title, value, icon: Icon, iconBgColor }: { title: string; value: any; icon: React.ElementType; iconBgColor: string; }) => (
     <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center gap-4">
@@ -50,7 +51,7 @@ const ActivityItem = ({ action, website, created_at }: { action: string; website
 const DonutChart = ({ data }: { data: { name: string, count: number, color: string }[] }) => {
     const total = data.reduce((sum, item) => sum + item.count, 0);
 
-    if (total === 0) {
+    if (!data || data.length === 0 || total === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full py-8">
                 <div className="relative w-40 h-40">
@@ -109,6 +110,7 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
             </div>
             <div className="flex flex-wrap justify-center gap-3 w-full pt-2">
                 {segments.map((item) => (
+                    item.count > 0 && 
                     <div key={item.name} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
                         <span className="text-gray-600">{item.name}</span>
@@ -120,18 +122,11 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
     );
 };
 
-
 export default function OverviewPage({ stats, isLoading, error, retryFetch }: { stats: any, isLoading: boolean, error: string | null, retryFetch: () => void }) {
     if (isLoading) {
         return (
-            <div className="animate-pulse">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                    <div className="h-24 bg-gray-200 rounded-lg"></div><div className="h-24 bg-gray-200 rounded-lg"></div>
-                    <div className="h-24 bg-gray-200 rounded-lg"></div><div className="h-24 bg-gray-200 rounded-lg"></div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div className="lg:col-span-2 h-64 bg-gray-200 rounded-lg"></div><div className="lg:col-span-3 h-64 bg-gray-200 rounded-lg"></div>
-                </div>
+            <div className="flex justify-center items-center h-96">
+                <Commet color="#2563eb" size="medium" text="" />
             </div>
         );
     }
@@ -167,7 +162,7 @@ export default function OverviewPage({ stats, isLoading, error, retryFetch }: { 
                         <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {stats.recentActivity.length > 0 ? (
+                        {stats.recentActivity && stats.recentActivity.length > 0 ? (
                             stats.recentActivity.map((item: any) => <ActivityItem key={item.id} {...item} />)
                         ) : (
                             <p className="text-center text-gray-500 py-8">No recent activity.</p>

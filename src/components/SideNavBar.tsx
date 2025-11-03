@@ -11,7 +11,7 @@ import { FaUser, FaShieldAlt, FaKey, FaLaptop, FaFolderOpen, FaCogs } from "reac
 interface CollapsibleItemProps {
     title: string;
     links: { href: string; label: string }[];
-    href?: string; // Optional href for the title itself
+    href?: string;
 }
 
 export const SideNavBar = () => {
@@ -26,22 +26,18 @@ const NavBarContent = () => {
     const { user } = useAuth();
     const pathname = usePathname();
 
-    // Helper function to check if a path is active
     const isActive = (href: string) => {
         if (href.includes('?')) {
-            // Handle query parameters
             const basePath = href.split('?')[0];
             return pathname === basePath || pathname.startsWith(basePath + '/');
         }
         return pathname === href || pathname.startsWith(href + '/');
     };
 
-    // Helper function to check if any child link is active
     const hasActiveChild = (links: { href: string; label: string }[]) => {
         return links.some(link => isActive(link.href));
     };
 
-    // Loading or not authenticated
     if (!user) {
         return (
             <nav className="w-64 h-screen text-white flex flex-col bg-gray-500">
@@ -54,7 +50,6 @@ const NavBarContent = () => {
     const isAdmin = user.role == 'admin';
     const isUser = user.role == 'user';
 
-    // Show admin navigation
     if (isAdmin) {
         return (
             <nav className="w-64 h-screen text-white flex flex-col bg-gray-500">
@@ -75,12 +70,7 @@ const NavBarContent = () => {
                             href="/admin/device/overview"
                             links={[
                                  { href: '/admin/device/overview', label: 'Devices' },
-                                //{ href: '/admin/device', label: 'All Devices' },
                              { href: '/admin/device/commands', label: 'Commands' },
-
-                                //{ href: '/admin/device/command', label: 'Device Logs' },
-                                //{ href: '/admin/device/report', label: 'Device Report' },
-                              //  { href: '/admin/device/profile', label: 'Device Profile' },
                             ]}
                             isActive={isActive}
                             hasActiveChild={hasActiveChild}
@@ -112,10 +102,20 @@ const NavBarContent = () => {
                             isActive={isActive}
                             hasActiveChild={hasActiveChild}
                         />
+                        <CollapsibleItem
+                            title="Password Manager"
+                            href="/admin/password-manager/dashboard"
+                            links={[
+                                { href: '/admin/password-manager/dashboard', label: 'Dashboard' },
+                                { href: '/admin/password-manager/users', label: 'Users' },
+                                // REMOVED: { href: '/admin/password-manager/passwords', label: 'All Passwords' },
+                            ]}
+                            isActive={isActive}
+                            hasActiveChild={hasActiveChild}
+                        />
                     </ul>
                 </SidebarMenu>
 
-                {/* logo at the bottom */}
                 <div className="p-4 text-center text-sm">
                     <p className="text-xs text-white">
                         powered by <span className="text-base font-semibold text-gray-300">DLP Dashboard</span>
@@ -125,13 +125,9 @@ const NavBarContent = () => {
         );
     }
 
-    // Show user navigation
     if (isUser) {
         return (
             <nav className="w-64 h-screen text-black flex flex-col bg-white  border border-gray-300 shadow-lg">
-                {/* <h1 className=" font-bold ">
-                    DLP Dashboard
-                </h1> */}
                 <div className="p-4 px-4 pb-2">
                     <h1 className="text-lg  text-green-600 font-bold">
                         Welcome, {user.display_name || user.username || 'User'}
@@ -180,7 +176,7 @@ const NavBarContent = () => {
                             <Link 
                                 href="/user/password-manager" 
                                 className={`flex items-center gap-2 p-2 rounded-md transition-colors ${pathname === '/user/password-manager' ? 'bg-gray-100 text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}>
-                            <FaCogs className="text-lg" />
+                            <FaShieldAlt className="text-lg" />
                             <span>Password Manager</span>
                             </Link>
                         </li>
@@ -196,7 +192,6 @@ const NavBarContent = () => {
 
                 </SidebarMenu>
 
-                {/* logo at the bottom */}
                 <div className="p-4 text-center text-sm text-gray-500 ">
                     <p className="text-xs text-gray-500">
                         powered by <span className="text-base font-semibold text-gray-800">DLP Dashboard</span>
@@ -214,11 +209,9 @@ const CollapsibleItem: React.FC<CollapsibleItemProps & { isActive?: (href: strin
     const [isOpen, setIsOpen] = useState(false);
 
     const handleTitleClick = () => {
-        // Always toggle the collapsible when title is clicked
         setIsOpen(!isOpen);
     };
 
-    // Check if this item or any of its children are active
     const isItemActive = href && isActive ? isActive(href) : false;
     const hasActiveChildren = hasActiveChild ? hasActiveChild(links) : false;
     const shouldShowActive = isItemActive || hasActiveChildren;
