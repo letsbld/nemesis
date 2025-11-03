@@ -6,6 +6,7 @@ import { Plus, Search, Filter, Play, Edit, Trash2, Clock, CheckCircle, XCircle, 
 import { DeviceCommandData, CreateDeviceCommandData, CommandGroupData, CreateCommandGroupData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 import toast from 'react-hot-toast';
+import {Commet} from 'react-loading-indicators';
 
 const DeviceCommandsPage = () => {
     const router = useRouter();
@@ -235,8 +236,8 @@ const DeviceCommandsPage = () => {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg">Loading commands...</div>
+            <div className="flex justify-center py-6">
+                <Commet color="#318bcc" size="small" text="" textColor="" />
             </div>
         );
     }

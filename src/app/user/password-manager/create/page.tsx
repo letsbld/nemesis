@@ -151,7 +151,6 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
     const [options, setOptions] = useState<Options>(defaultOptions);
     const [generatedCredential, setGeneratedCredential] = useState('');
     const [website, setWebsite] = useState('');
-    const [customUsername, setCustomUsername] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -199,6 +198,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
                 website: website, 
                 password: generatedCredential 
             });
+
             setShowSuccessModal(true);
             setWebsite('');
             setCustomUsername('');

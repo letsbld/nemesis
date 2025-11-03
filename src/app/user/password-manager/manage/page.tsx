@@ -43,7 +43,12 @@ const CountdownTimer = ({ expiresAt }: { expiresAt: string }) => {
 };
 
 const ErrorPopup = ({ message, onClose }: { message: string; onClose: () => void; }) => (
-    <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -50, opacity: 0 }} className="fixed top-5 right-5 bg-red-500 text-white p-4 rounded-lg shadow-lg flex items-center gap-3 z-50">
+    <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -50, opacity: 0 }}
+        className="fixed top-5 right-5 bg-red-500 text-white p-4 rounded-lg shadow-lg flex items-center gap-3 z-50"
+    >
         <AlertTriangle size={20} />
         <span>{message}</span>
         <button onClick={onClose} className="ml-4 font-bold opacity-70 hover:opacity-100">X</button>
@@ -208,7 +213,6 @@ const DeleteConfirmationModal = ({ credential, onClose, onDelete }: {
 };
 
 export default function ManagePasswordsPage({ onCredentialChange }: { onCredentialChange: () => void }) {
-    const { user } = useAuth();
     const [credentials, setCredentials] = useState<Credential[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -226,7 +230,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             if (Array.isArray(data)) { setCredentials(data); }
             else { setCredentials([]); throw new Error("Received invalid data from server."); }
         } catch (err) {
-            setError((err as Error).message); setCredentials([]); console.error(err);
+            setError((err as Error).message); console.error(err);
         } finally {
             setIsLoading(false);
         }
@@ -235,10 +239,12 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
     useEffect(() => { fetchCredentials(); }, [fetchCredentials]);
 
     const filteredCredentials = useMemo(() => {
-        if (!credentials) return [];
         const lowercasedTerm = searchTerm.toLowerCase();
         if (!lowercasedTerm) return credentials;
-        return credentials.filter(cred => cred.website.toLowerCase().includes(lowercasedTerm) || (cred.custom_username || cred.username || '').toLowerCase().includes(lowercasedTerm));
+        return credentials.filter(cred =>
+            cred.website.toLowerCase().includes(lowercasedTerm) ||
+            cred.username.toLowerCase().includes(lowercasedTerm)
+        );
     }, [credentials, searchTerm]);
 
     const handleCopyToClipboard = (password: string, id: number) => { navigator.clipboard.writeText(password); setCopiedPasswordId(id); setTimeout(() => setCopiedPasswordId(null), 2000); };
@@ -248,7 +254,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         try {
             await pmApiFetch(`/user/passwords/${id}`, { method: 'DELETE' });
             setCredentials(prev => prev.filter(c => c.id !== id));
-            onCredentialChange();
+            onCredentialChange(); // Trigger a refresh on the parent
         } catch(err) {
             setApiError((err as Error).message);
             setTimeout(() => setApiError(null), 5000);
@@ -284,31 +290,22 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             </AnimatePresence>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900">Your Password Vault</h2>
-                            <p className="text-sm text-gray-500 mt-1">Securely manage, share, and access your credentials.</p>
-                        </div>
-                        <div className="relative w-full sm:w-72">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search your vault..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                        <h2 className="text-lg font-bold text-gray-800">Manage Passwords</h2>
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input type="text" placeholder="Search by website..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full table-fixed divide-y divide-gray-200">
+                        <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="w-[20%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
-                                    <th scope="col" className="w-[20%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                    <th scope="col" className="w-[20%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
-                                    <th scope="col" className="w-[20%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                                    <th scope="col" className="w-[20%] px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">

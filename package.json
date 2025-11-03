@@ -37,6 +37,7 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-loading-indicators": "^1.0.1",
+    "recharts": "^3.2.1",
     "reflect-metadata": "^0.2.2",
     "saml2-js": "^4.0.4",
     "tailwind-merge": "^2.6.0",

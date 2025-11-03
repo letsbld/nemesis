@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { UserGroupMembership } from '@/components/admin/UserGroupMembership';
 import { UserGroupData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
+import { Commet } from 'react-loading-indicators';
+
 
 const GroupMembersPage = () => {
     const params = useParams();
@@ -41,8 +43,8 @@ const GroupMembersPage = () => {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Loading group details...</div>
+            <div className="flex justify-center py-6">
+                <Commet color="#318bcc" size="small" text="" textColor="" />
             </div>
         );
     }
