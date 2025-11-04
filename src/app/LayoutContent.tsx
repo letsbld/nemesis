@@ -1,7 +1,5 @@
 'use client';
 
-import { NavbarAdmin } from '@/components/NavbarAdmin';
-import { SideNavBarAdmin } from '@/components/SideNavBarAdmin';
 import { SideNavBar } from '@/components/SideNavBar';
 import { usePathname } from 'next/navigation';
 import { Footer } from '@/components/Footer';
@@ -23,15 +21,20 @@ export function LayoutContent({
       {isProtectedRoute ? (
         <>
           <SideNavBar />
-          <div className="min-h-screen bg-gray-50 flex flex-col md:ml-64">
-            <Navbar />
+          <div className="min-h-screen bg-white dark:bg-[#101828] flex flex-col md:ml-64">
+          <Navbar />
+          {pathname?.startsWith("/admin") ? (
+            <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+          ) : (
             <main className="flex-1 p-6 mt-16 overflow-y-auto">{children}</main>
-          </div>
+          )}
+        </div>
+
         </>
       ) : (
         <>
           <Navbar />
-          <main className="flex-grow pt-16">{children}</main>
+          <main className="flex-grow pt-16 bg-white dark:bg-[#101828]">{children}</main>
           <Footer />
         </>
       )}

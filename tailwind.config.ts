@@ -1,12 +1,16 @@
 import type { Config } from "tailwindcss";
+import flowbiteReact from "flowbite-react/plugin/tailwindcss";
 
 export default {
     darkMode: ["class"],
     content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+        "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./node_modules/flowbite/**/*.js",
+        "./node_modules/flowbite-react/**/*.js",
+        ".flowbite-react/class-list.json"
+    ],
   theme: {
   	extend: {
   		colors: {
@@ -69,5 +73,5 @@ export default {
   	}
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("flowbite/plugin"), flowbiteReact],
 } satisfies Config;

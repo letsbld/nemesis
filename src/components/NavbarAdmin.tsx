@@ -1,112 +1,80 @@
-'use client';
+// 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { useSearch } from '@/context/SearchContext';
-import { FiSearch, FiBell, FiLogOut } from 'react-icons/fi';
-import { usePathname } from 'next/navigation';
+// import React, { useState, useEffect, useRef } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { useAuth } from '@/context/AuthContext';
+// import { useSearch } from '@/context/SearchContext';
+// import { FiSearch, FiBell, FiLogOut } from 'react-icons/fi';
+// import { usePathname } from 'next/navigation';
+// import { Navbar } from 'flowbite-react';
 
-export const NavbarAdmin: React.FC = () => {
-  const { user } = useAuth();
-  const { setSearchQuery } = useSearch();
-  const router = useRouter();
-  const [search, setSearch] = useState('');
-  const pathname = usePathname();
-  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  // Clear search when pathname changes
-  useEffect(() => {
-    setSearch('');
-    setSearchQuery('');
-  }, [pathname, setSearchQuery]);
 
-  // Debounced search callback
-  useEffect(() => {
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+// export const NavbarAdmin: React.FC = () => {
+//   const { user } = useAuth();
+//   const { setSearchQuery } = useSearch();
+//   const router = useRouter();
+//   const [search, setSearch] = useState('');
+//   const pathname = usePathname();
+//   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-    // Set new timeout
-    debounceRef.current = setTimeout(() => {
-      setSearchQuery(search);
-    }, 300); // 300ms debounce delay
+//   // Clear search when pathname changes
+//   useEffect(() => {
+//     setSearch('');
+//     setSearchQuery('');
+//   }, [pathname, setSearchQuery]);
 
-    // Cleanup
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [search, setSearchQuery]);
+//   // Debounced search callback
+//   useEffect(() => {
+//     // Clear previous timeout
+//     if (debounceRef.current) {
+//       clearTimeout(debounceRef.current);
+//     }
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    router.push('/auth/admin/login');
-  };
+//     // Set new timeout
+//     debounceRef.current = setTimeout(() => {
+//       setSearchQuery(search);
+//     }, 300); // 300ms debounce delay
 
-  // Map routes to page titles
-  const pageTitles: { [key: string]: string } = {
-    '/admin/dashboard': 'Dashboard',
-    '/admin/users': 'User Management',
-    '/admin/user-groups': 'User Management',
-    '/admin/device/overview': 'Device Management',
-    '/admin/device/commands': 'Device Management',
-    '/admin/device/logs': 'Device Management',
-    '/admin/device/profile': 'Device Management',
-    '/admin/device/report': 'Device Management',
-    '/dashboard/sso-management': 'Security',
-    '/admin/get-started': 'Get Started',
-    '/admin/certificate': ' Security Certificate ',
-  };
+//     // Cleanup
+//     return () => {
+//       if (debounceRef.current) {
+//         clearTimeout(debounceRef.current);
+//       }
+//     };
+//   }, [search, setSearchQuery]);
 
-  // Find the best match for the current path
-  const currentTitle = Object.entries(pageTitles).find(([route]) => pathname === route || pathname.startsWith(route + '/'))?.[1] || 'Dashboard';
+//   // Logout function
+//   const logout = () => {
+//     localStorage.removeItem('authToken');
+//     localStorage.removeItem('authUser');
+//     router.push('/auth/admin/login');
+//   };
 
-  return (
-    <nav className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-6">
-      {/* Left section - Page Title */}
-      <div className="text-lg font-semibold text-blue-600 tracking-tight">
-        {currentTitle}
-      </div>
+//   // Map routes to page titles
+//   const pageTitles: { [key: string]: string } = {
+//     '/admin/dashboard': 'Dashboard',
+//     '/admin/users': 'User Management',
+//     '/admin/user-groups': 'User Management',
+//     '/admin/device/overview': 'Device Management',
+//     '/admin/device/commands': 'Device Management',
+//     '/admin/device/logs': 'Device Management',
+//     '/admin/device/profile': 'Device Management',
+//     '/admin/device/report': 'Device Management',
+//     '/dashboard/sso-management': 'Security',
+//     '/admin/certificate': ' Security Certificate ',
+//   };
 
-      {/* Middle - Search bar */}
-      <div className="relative flex-1 max-w-md mx-8 hidden md:block">
-        <FiSearch className="absolute left-3 top-2.5 text-gray-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search..."
-          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-        />
-      </div>
+//   // Find the best match for the current path
+//   const currentTitle = Object.entries(pageTitles).find(([route]) => pathname === route || pathname.startsWith(route + '/'))?.[1] || 'Dashboard';
+//   return (
+//     <Navbar className="fixed top-0 left-64 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-40 flex items-center justify-between px-6">
+//       {/* Left section - Page Title */}
+//       <div className="text-xl font-[600] text-blue-600 dark:text-blue-400 tracking-tight">
+//         {currentTitle}
+//       </div>
 
-      {/* Right section */}
-      <div className="flex items-center space-x-6">
-        <button className="relative text-gray-600 hover:text-blue-600">
-          <FiBell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-3 h-3 flex items-center justify-center" />
-        </button>
-
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center font-semibold">
-            {user?.username?.[0]?.toUpperCase() || 'A'}
-          </div>
-          <span className="text-gray-800 text-sm font-medium">{user?.display_name || user?.username}</span>
-        </div>
-
-        <button
-          onClick={logout}
-          className="flex items-center space-x-1 text-sm font-medium text-gray-600 hover:text-red-500 transition-colors"
-        >
-          <FiLogOut className="w-4 h-4" />
-          <span>Logout</span>
-        </button>
-      </div>
-    </nav>
-  );
-};
+      
+//     </Navbar>
+//   );
+// };

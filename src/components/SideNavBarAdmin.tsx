@@ -1,221 +1,346 @@
 'use client';
-import React from 'react';
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+
+import React, { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
-  FaTachometerAlt,
-  FaUsers,
-  FaMicrochip,
-  FaUserShield,
-  FaKey,
-  FaChevronDown,
-  FaChevronRight,
-} from 'react-icons/fa';
-import { FileText, FileSearch, Settings as SettingsIcon,Terminal,Rocket } from 'lucide-react';
+  SquareTerminal,
+  LayoutGrid,
+  BookUser,
+  ChevronsUpDown,
+  Inbox
+} from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 import { PiCertificateBold } from 'react-icons/pi';
+import {
+  Sidebar,
+  SidebarItem,
+  SidebarItemGroup,
+  SidebarItems,
+  SidebarLogo,
+  Dropdown,
+  DropdownItem,
+  DropdownDivider,
+  Avatar,
+  Spinner
+} from 'flowbite-react';
+import {
+  HiChartPie,
+  HiClipboardList,
+  HiDocumentReport,
+  HiCog,
+  HiUsers,
+  HiShieldCheck,
+} from 'react-icons/hi';
+
+const customTheme = {
+  root: {
+    base: 'h-full',
+    inner: 'h-full overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-800 py-4 px-3',
+  },
+  item: {
+    base: 'flex items-center justify-center rounded-lg p-2 text-base font-normal text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 group transition-colors',
+    active: 'text-blue-600 dark:text-blue-400',
+    icon: {
+      base: 'h-5 w-5 flex-shrink-0 text-gray-500 dark:text-gray-400 transition duration-75 group-hover:text-blue-600 dark:group-hover:text-blue-400',
+      active: 'text-blue-600 dark:text-blue-400',
+    },
+  },
+};
 
 export const SideNavBarAdmin = () => {
+  const router = useRouter();
   const pathname = usePathname();
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
-  const [open, setOpen] = useState({ device: true, user: true, security: false });
+  const [loadingItem, setLoadingItem] = useState<string | null>(null);
+
+  const userdetails = localStorage.getItem('authUser');
+  const user = userdetails ? JSON.parse(userdetails) : null;
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    router.push('/auth/admin/login');
+  };
+
+  const handleNavigation = (path: string) => {
+    if (pathname === path) return;
+    setLoadingItem(path);
+    router.push(path);
+  };
+
+  // Stop spinner once the route changes
+  useEffect(() => {
+    setLoadingItem(null);
+  }, [pathname]);
+
+  
 
   return (
-    <nav className="fixed left-0 top-0 h-screen w-64 bg-[#1B2A4E] text-gray-200 flex flex-col border-r border-gray-700">
-      {/* Header */}
-      <div className="h-16 flex items-center px-6 border-b border-gray-700">
-        <h1 className="text-lg font-semibold tracking-wide text-white">Admin Console</h1>
-      </div>
+    <Sidebar
+      aria-label="Admin Sidebar"
+      theme={customTheme}
+      className="fixed left-0 top-0 w-64 h-screen border-r border-gray-200 dark:border-gray-700"
+    >
+      <SidebarItems>
+        <SidebarItemGroup>
+          <SidebarLogo
+            href="/admin/dashboard"
+            img="/main_logo.svg"
+            imgAlt="Company logo"
+            className="w-[28px] h-[28px] mr-0"
+          >
+            <span className="text-lg font-semibold lowercase text-gray-900 dark:text-white">
+              The Secure Company
+            </span>
+          </SidebarLogo>
+        </SidebarItemGroup>
 
-      {/* Scrollable Menu */}
-      <div className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1">
-          {/* Dashboard */}
-          <li>
-            <Link
-              href="/admin/get-started"
-              className={`flex items-center px-5 py-2.5 text-sm rounded-md ${
-                isActive('/admin/get-started')
-                  ? 'bg-blue-600 text-white'
-                  : 'hover:bg-[#2C3E6E] hover:text-white'
-              }`}
-            >
-              <Rocket className="w-4 h-4 mr-3" /> Get started
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/admin/dashboard"
-              className={`flex items-center px-5 py-2.5 text-sm rounded-md ${
-                isActive('/admin/dashboard')
-                  ? 'bg-blue-600 text-white'
-                  : 'hover:bg-[#2C3E6E] hover:text-white'
-              }`}
-            >
-              <FaTachometerAlt className="w-4 h-4 mr-3" /> Dashboard
-            </Link>
-          </li>
+        <SidebarItemGroup>
+          {/* General Section */}
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/dashboard')}
+            icon={() =>
+              loadingItem === '/admin/dashboard' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiChartPie className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/dashboard' ||
+              pathname.startsWith('/admin/dashboard/')
+            }
+          >
+            Dashboard
+          </SidebarItem>
 
-          {/* Device Management */}
-          <li>
-            <button
-              onClick={() => setOpen(o => ({ ...o, device: !o.device }))}
-              className="w-full flex items-center justify-between px-5 py-2.5 text-sm font-medium hover:bg-[#2C3E6E] hover:text-white focus:outline-none"
-            >
-              <span className="flex items-center">
-                {open.device ? <FaChevronDown className="w-3 h-3 mr-2" /> : <FaChevronRight className="w-3 h-3 mr-2" />}
-                Device Management
-              </span>
-            </button>
-            {open.device && (
-              <ul className="ml-8 mt-1 space-y-1">
-                <li>
-                  <Link
-                    href="/admin/device/overview"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/device/overview')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <FaMicrochip className="w-4 h-4 mr-2" /> Devices Overview
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/device/commands"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/device/commands')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <Terminal className="w-4 h-4 mr-2" /> Device Commands
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/device/report"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/device/commands')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4 mr-2" /> Report
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/device/logs"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/device/commands')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <FileSearch className="w-4 h-4 mr-2" /> Logs
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/device/settings"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/device/commands')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <SettingsIcon className="w-4 h-4 mr-2" /> Settings
-                  </Link>
-                </li>
-              </ul>
-            )}
-          </li>
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/inbox')}
+            icon={() =>
+              loadingItem === '/admin/inbox' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <Inbox className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/inbox' || pathname.startsWith('/admin/inbox/')
+            }
+          >
+            Inbox
+          </SidebarItem>
 
-          {/* User Management */}
-          <li>
-            <button
-              onClick={() => setOpen(o => ({ ...o, user: !o.user }))}
-              className="w-full flex items-center justify-between px-5 py-2.5 text-sm font-medium hover:bg-[#2C3E6E] hover:text-white focus:outline-none"
-            >
-              <span className="flex items-center">
-                {open.user ? <FaChevronDown className="w-3 h-3 mr-2" /> : <FaChevronRight className="w-3 h-3 mr-2" />}
-                User Management
-              </span>
-            </button>
-            {open.user && (
-              <ul className="ml-8 mt-1 space-y-1">
-                <li>
-                  <Link
-                    href="/admin/users"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/users')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <FaUsers className="w-4 h-4 mr-2" /> Users
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/user-groups"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/admin/user-groups')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <FaUserShield className="w-4 h-4 mr-2" /> User Groups
-                  </Link>
-                </li>
-              </ul>
-            )}
-          </li>
+          {/* Device Management Section */}
+          <div className="px-3 py-2 mt-4 text-sm font-[300] text-[#6a7282] dark:text-gray-400 uppercase tracking-wider">
+            Device Management
+          </div>
 
-          {/* Security */}
-          <li>
-            <button
-              onClick={() => setOpen(o => ({ ...o, security: !o.security }))}
-              className="w-full flex items-center justify-between px-5 py-2.5 text-sm font-medium hover:bg-[#2C3E6E] hover:text-white focus:outline-none"
-            >
-              <span className="flex items-center">
-                {open.security ? <FaChevronDown className="w-3 h-3 mr-2" /> : <FaChevronRight className="w-3 h-3 mr-2" />}
-                Security
-              </span>
-            </button>
-            {open.security && (
-              <ul className="ml-8 mt-1 space-y-1">
-                <li>
-                  <Link
-                    href="/admin/sso-management"
-                    className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                      isActive('/dashboard/sso-management')
-                        ? 'bg-blue-600 text-white'
-                        : 'hover:bg-[#2C3E6E]'
-                    }`}
-                  >
-                    <FaKey className="w-4 h-4 mr-2" /> SSO Management
-                  </Link>
-                </li>
-              </ul>
-              )}
-              <Link href="/admin/certificate" className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                  isActive('/admin/certificate')
-                    ? 'text-white bg-blue-600'
-                    : ' hover:bg-[#2C3E6E]'
-                }`}>
-                <PiCertificateBold className="w-5 h-5" /> <span>Security Certificate</span>
-              </Link>
-          </li>
-        </ul>
-      </div>
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/device/overview')}
+            icon={() =>
+              loadingItem === '/admin/device/overview' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <LayoutGrid className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/device/overview' ||
+              pathname.startsWith('/admin/device/overview/')
+            }
+          >
+            Overview
+          </SidebarItem>
 
-      {/* Footer section */}
-      <div className="p-4 border-t border-gray-700 text-xs text-gray-400">
-        © {new Date().getFullYear()} Admin Console
-      </div>
-    </nav>
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/device/commands')}
+            icon={() =>
+              loadingItem === '/admin/device/commands' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <SquareTerminal className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/device/commands' ||
+              pathname.startsWith('/admin/device/commands/')
+            }
+          >
+            Commands
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/device/report')}
+            icon={() =>
+              loadingItem === '/admin/device/report' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiDocumentReport className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/device/report' ||
+              pathname.startsWith('/admin/device/report/')
+            }
+          >
+            Reports
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/device/logs')}
+            icon={() =>
+              loadingItem === '/admin/device/logs' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiClipboardList className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/device/logs' ||
+              pathname.startsWith('/admin/device/logs/')
+            }
+          >
+            Logs
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/device/settings')}
+            icon={() =>
+              loadingItem === '/admin/device/settings' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiCog className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/device/settings' ||
+              pathname.startsWith('/admin/device/settings/')
+            }
+          >
+            Settings
+          </SidebarItem>
+
+          {/* User Management Section */}
+          <div className="px-3 py-2 mt-4 text-sm font-[300] text-[#6a7282] dark:text-gray-400 uppercase tracking-wider">
+            User Management
+          </div>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/users')}
+            icon={() =>
+              loadingItem === '/admin/users' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <BookUser className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/users' ||
+              pathname.startsWith('/admin/users/')
+            }
+          >
+            Users
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/user-groups')}
+            icon={() =>
+              loadingItem === '/admin/user-groups' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiUsers className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/user-groups' ||
+              pathname.startsWith('/admin/user-groups/')
+            }
+          >
+            User Groups
+          </SidebarItem>
+
+          {/* Security Section */}
+          <div className="px-3 py-2 mt-4 text-sm font-[300] text-[#6a7282] dark:text-gray-400 uppercase tracking-wider">
+            Security
+          </div>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/sso-management')}
+            icon={() =>
+              loadingItem === '/admin/sso-management' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiShieldCheck className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/sso-management' ||
+              pathname.startsWith('/admin/sso-management/')
+            }
+          >
+            SSO Management
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/certificate')}
+            icon={() =>
+              loadingItem === '/admin/certificate' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <PiCertificateBold className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/certificate' ||
+              pathname.startsWith('/admin/certificate/')
+            }
+          >
+            Security Certificate
+          </SidebarItem>
+        </SidebarItemGroup>
+
+        <SidebarItemGroup>
+          <ThemeToggle />
+        </SidebarItemGroup>
+
+        <SidebarItemGroup className="px-3 py-2">
+          <Dropdown
+            inline
+            arrowIcon={false}
+            label={
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center space-x-3">
+                  <Avatar img="/user-imge.png" alt="User Avatar" rounded />
+                  <div className="flex flex-col text-left">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      Vinit Yadav
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {user?.email || '<Email>'}
+                    </span>
+                  </div>
+                </div>
+                <ChevronsUpDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </div>
+            }
+          >
+            <DropdownItem href="#">Profile</DropdownItem>
+            <DropdownItem href="#">Settings</DropdownItem>
+            <DropdownDivider />
+            <DropdownItem onClick={logout}>Logout</DropdownItem>
+          </Dropdown>
+        </SidebarItemGroup>
+      </SidebarItems>
+    </Sidebar>
   );
 };
