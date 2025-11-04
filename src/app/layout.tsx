@@ -23,18 +23,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <meta name="apple-mobile-web-app-title" content="DLP" />
-      <body
-        className={`${poppins.className} antialiased min-h-screen flex flex-col`}
-      >
-        <AuthProvider>
-          <Providers>
-            <LayoutContent>{children}</LayoutContent>
-          </Providers>
-        </AuthProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                <meta name="apple-mobile-web-app-title" content="DLP" />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            try {
+                                const theme = localStorage.getItem('theme');
+                                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                                if (theme === 'dark' || (!theme && prefersDark)) {
+                                    document.documentElement.classList.add('dark');
+                                }
+                            } catch (e) {}
+                        `,
+                    }}
+                />
+            </head>
+            <body className={`${poppins.variable} antialiased min-h-screen flex flex-col`}>
+                <AuthProvider>
+                    <Providers>
+                        <LayoutContent>{children}</LayoutContent>
+                    </Providers>
+                </AuthProvider>
+            </body>
+        </html>
+    );
 }

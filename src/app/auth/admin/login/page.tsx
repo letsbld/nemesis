@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { apiFetch } from '@/lib/apiFetch';
 
 export default function AdminLoginPage() {
     const router = useRouter();

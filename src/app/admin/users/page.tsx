@@ -10,6 +10,8 @@ import { CSVImportForm } from '@/components/admin/CSVImportForm';
 import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 import { useSearch } from '@/context/SearchContext';
+import { Commet } from 'react-loading-indicators';
+
 
 const UsersPage = () => {
     const router = useRouter();
@@ -42,11 +44,7 @@ const UsersPage = () => {
             setUser(parsedUser);
             if (parsedUser.role !== 'admin') {
                 setStatus('unauthenticated');
-                if (parsedUser.role === 'user') {
-                    router.push('/home');
-                } else {
-                    router.push('/auth/user/login');
-                }
+                router.push('/auth/user/login');
                 return;
             }
             setStatus('authenticated');
@@ -85,8 +83,8 @@ const UsersPage = () => {
     // Show loading state while checking authentication
     if (status === 'loading') {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-lg">Loading...</div>
+            <div className="flex justify-center py-6">
+                <Commet color="#318bcc" size="small" text="" textColor="" />
             </div>
         );
     }
@@ -220,7 +218,7 @@ const UsersPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             <UserList
                 users={filteredUsers}
                 onCreateUser={() => setShowCreateForm(true)}
