@@ -6,22 +6,22 @@ import { AuthProvider } from '@/context/AuthContext';
 import { LayoutContent } from './LayoutContent';
 
 const poppins = Poppins({
-    weight: ['400', '700'],
-    variable: '--font-poppins',
-    subsets: ['latin'],
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
-    title: 'Data Loss Prevention Dashboard',
-    description:
-        'A comprehensive dashboard to monitor and prevent data loss within your organization.',
-    keywords: 'DLP, Data Loss Prevention, Security, Dashboard',
+  title: 'Data Loss Prevention Dashboard',
+  description:
+    'A comprehensive dashboard to monitor and prevent data loss within your organization.',
+  keywords: 'DLP, Data Loss Prevention, Security, Dashboard',
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>

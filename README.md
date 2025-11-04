@@ -22,7 +22,7 @@ The DLP Dashboard is an enterprise-grade security platform that provides compreh
 - 🔐 **Secure Authentication** - Multi-factor authentication with TOTP, Passkeys, and OAuth
 - 👥 **User Management** - Complete lifecycle management with role-based access control
 - 📱 **Device Monitoring** - Real-time device tracking and policy enforcement
-- 📊 **Analytics & Reporting** - Comprehensive dashboards with actionable insights
+- 📊 **Analytics & Reporting** - Comprehensive dashboards with actionable insights.
 - 🔒 **Data Protection** - Advanced DLP policies to prevent unauthorized data exfiltration
 
 ---

@@ -1,34 +1,51 @@
-export async function apiFetch(endpoint: string, options?: RequestInit): Promise<any> {
+export type ApiFetchOptions = RequestInit & { skipAuth?: boolean; followRedirects?: boolean };
+
+export async function apiFetch(endpoint: string, options?: ApiFetchOptions): Promise<any> {
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api`;
     const url = endpoint.startsWith('/') ? `${apiUrl}${endpoint}` : `${apiUrl}/${endpoint}`;
-    console.log(url, 'Url here');
+    // console.debug(url, 'apiFetch URL');
 
     // Attach Authorization header if token exists
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-    let fetchOptions: RequestInit;
+    const token =
+        typeof window !== 'undefined'
+            ? localStorage.getItem('authToken') || localStorage.getItem('token')
+            : null;
 
-    if (token) {
-        const headers = new Headers(options?.headers || {});
-        headers.set('Authorization', `Bearer ${token}`);
-        fetchOptions = {
-            ...options,
-            headers,
-        };
-    } else {
-        fetchOptions = options || {};
+    const skipAuth = Boolean(options?.skipAuth === true);
+    const followRedirects = options?.followRedirects !== false; // default true
+
+    // Merge headers
+    const headers = new Headers(options?.headers || {});
+    if (!skipAuth && token) headers.set('Authorization', `Bearer ${token}`);
+
+    const fetchOptions: RequestInit = {
+        ...options,
+        headers,
+        redirect: followRedirects ? (options?.redirect as RequestRedirect) || 'follow' : 'manual',
+    };
+
+    let response: Response;
+    try {
+        response = await fetch(url, fetchOptions);
+    } catch (err) {
+        throw { error: 'Network error', details: err };
     }
 
-    const response = await fetch(url, fetchOptions);
+    // If we disabled following redirects and server returned a 3xx, expose the Location header to caller
+    if (!followRedirects && response.status >= 300 && response.status < 400) {
+        const loc = response.headers.get('location');
+        if (loc) return { redirect_to: loc };
+    }
 
-    let data;
+    let data: any = null;
     try {
         data = await response.json();
-    } catch {
+    } catch (_) {
         data = null;
     }
 
     if (!response.ok) {
-        throw data || { error: 'API request failed' };
+        throw data || { error: 'API request failed', status: response.status };
     }
     return data;
 }
