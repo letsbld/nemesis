@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
-import {apiFetch} from '@/lib/apiFetch'
+
+import { apiFetch } from '@/lib/pass-manager';
+
 
 
 type Credential = { id: number; website: string; username: string; password: string; created_at: string; };
