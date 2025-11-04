@@ -1,9 +1,9 @@
-// FILE: src/app/user/password-generator/overview.tsx
 'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PlusCircle, Trash2, ShieldCheck, BarChart2, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Trash2, BarChart2, AlertTriangle, Share2, Download, ShieldCheck } from 'lucide-react';
+import { Commet } from 'react-loading-indicators';
 
 const StatCard = ({ title, value, icon: Icon, iconBgColor }: { title: string; value: any; icon: React.ElementType; iconBgColor: string; }) => (
     <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center gap-4">
@@ -35,7 +35,26 @@ const ActivityItem = ({ action, website, created_at }: { action: string; website
 
 const DonutChart = ({ data }: { data: { name: string, count: number, color: string }[] }) => {
     const total = data.reduce((sum, item) => sum + item.count, 0);
-    if (total === 0) return <div className="flex items-center justify-center h-full text-gray-500">No strength data available</div>;
+
+    if (!data || data.length === 0 || total === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full py-8">
+                <div className="relative w-40 h-40">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="transparent" stroke="#f3f4f6" strokeWidth="10" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <BarChart2 className="text-gray-300" size={40} />
+                    </div>
+                </div>
+                <p className="mt-4 text-sm text-gray-500">No strength data available</p>
+            </div>
+        );
+    }
+
+    const radius = 60;
+    const strokeWidth = 16;
+    const circumference = 2 * Math.PI * radius;
     let cumulativePercent = 0;
     const segments = data.map(item => {
         const percent = total > 0 ? (item.count / total) * 100 : 0;
@@ -58,7 +77,8 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
             </div>
             <div className="flex flex-col gap-3">
                 {segments.map((item) => (
-                    <div key={item.name} className="flex items-center gap-2 text-sm">
+                    item.count > 0 && 
+                    <div key={item.name} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
                         <span className="text-gray-600">{item.name}</span>
                         <span className="font-semibold text-gray-800">({Math.round(item.percent)}%)</span>
@@ -72,13 +92,8 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
 export default function OverviewPage({ stats, isLoading, error, retryFetch }: { stats: any, isLoading: boolean, error: string | null, retryFetch: () => void }) {
     if (isLoading) {
         return (
-            <div className="animate-pulse">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div className="h-24 bg-gray-200 rounded-lg"></div><div className="h-24 bg-gray-200 rounded-lg"></div><div className="h-24 bg-gray-200 rounded-lg"></div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div className="lg:col-span-2 h-64 bg-gray-200 rounded-lg"></div><div className="lg:col-span-3 h-64 bg-gray-200 rounded-lg"></div>
-                </div>
+            <div className="flex justify-center items-center h-96">
+                <Commet color="#2563eb" size="medium" text="" />
             </div>
         );
     }
@@ -113,7 +128,7 @@ export default function OverviewPage({ stats, isLoading, error, retryFetch }: { 
                         <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
                     </div>
                     <div className="divide-y divide-gray-100">
-                        {stats.recentActivity.length > 0 ? (
+                        {stats.recentActivity && stats.recentActivity.length > 0 ? (
                             stats.recentActivity.map((item: any) => <ActivityItem key={item.id} {...item} />)
                         ) : (
                             <p className="text-center text-gray-500 py-8">No recent activity.</p>
