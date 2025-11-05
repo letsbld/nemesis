@@ -22,9 +22,9 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, loading }) => (
     transition={{ duration: 0.5 }}
     className="bg-white dark:bg-[#101828] rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 dark:border-gray-700"
   >
-    <div className="flex items-center justify-between">
+    <div className="flex items-center  dark:bg-[#101828] justify-between">
       <div>
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-500dark:bg-[#101828] uppercase tracking-wide">{title}</h3>
         {loading ? (
           <div className="flex justify-center py-6">
             <Commet color="#2563eb" size="small" text="" textColor="" />
@@ -78,7 +78,7 @@ const DashboardPage = () => {
   return (
     <PrivateRoute allowedRoles={['admin']}>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:bg-[#101828]">
-        <div className="max-w-7xl mx-auto py-10 px-6 sm:px-8 lg:px-12">
+        <div className="min-h-screen mx-auto py-10 px-6 sm:px-8 lg:px-12 dark:bg-[#101828]">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
@@ -126,15 +126,7 @@ const DashboardPage = () => {
             </div>
           )}
 
-          {/* Drawer */}
-          <SideDrawer
-            isOpen={isDrawerOpen}
-            handleClose={handleDrawerClose}
-            heading="Dashboard Settings"
-            description="System configuration and settings."
-            component={<div>Settings Content</div>}
-            side="right"
-          />
+         
         </div>
       </div>
     </PrivateRoute>

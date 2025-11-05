@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -11,11 +10,15 @@ import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 import { useSearch } from '@/context/SearchContext';
 import { Commet } from 'react-loading-indicators';
+import { Input} from '@/components/ui/input';
+import CustomButton from '@/components/ui/customButton';
+import { CirclePlus } from 'lucide-react';
+
 
 
 const UsersPage = () => {
     const router = useRouter();
-    const { searchQuery } = useSearch();
+    const { searchQuery, setSearchQuery } = useSearch();
     const [users, setUsers] = useState<UserData[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -218,7 +221,62 @@ const UsersPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white dark:bg-[#101828] ">
+            <div className="m-1">
+            <div className="flex flex-row justify-between">
+                <h1 className="text-4xl font-bold text-[#101828] dark:text-white">Users</h1>
+                    {users.length !== 0 && (
+                    <div className="flex gap-3">
+                        <CustomButton
+                            startIcon={<CirclePlus className="w-4 h-4" />}
+                            name="Import CSV"
+                            onClick={() => setShowCSVImport(true)}
+                            btnType="button"
+                            style="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+                            loading={isLoading}
+                        />
+                        <CustomButton
+                            startIcon={<CirclePlus className="w-4 h-4" />}
+                            name="New User"
+                            onClick={() => setShowCreateForm(true)}
+                            btnType="button"
+                            style="bg-[#1447E6] hover:bg-blue-700 text-md font-[300] text-white px-4 py-2"
+                            loading={isLoading}
+                        />
+                
+                </div>
+                )}
+
+            </div>
+            <div className="flex flex-row ">
+
+            <Input 
+                type="search" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="mt-4 p-2 border h-[36px] border-[#333e4f] shadow-sm w-full max-w-sm dark:text-gray-300 dark:bg-[#101828]" 
+                placeholder=" Search users..." />
+
+            <CustomButton 
+                startIcon={<CirclePlus className="w-4 h-4" />}
+                name="Password Reset"
+                btnType="button"
+                style="border-dashed border-[#333e4f] text-[#99a1af] h-[28px] ml-3 mt-5"
+            />
+            <CustomButton 
+                name="Creation date"
+                startIcon={<CirclePlus className="w-4 h-4" />}
+                btnType="button"
+                style=" border-dashed border-[#333e4f] text-[#99a1af] h-[28px] ml-3 mt-5"
+            />
+            <CustomButton 
+                name="MFA"
+                startIcon={<CirclePlus className="w-4 h-4" />}
+                btnType="button"
+                style="border-dashed border-[#333e4f]  text-[#99a1af] h-[28px] ml-3 mt-5"
+            />
+            </div>
+            </div>
             <UserList
                 users={filteredUsers}
                 onCreateUser={() => setShowCreateForm(true)}
@@ -226,6 +284,7 @@ const UsersPage = () => {
                 onResetPassword={handleResetPassword}
                 onImportCSV={() => setShowCSVImport(true)}
                 isLoading={isLoading}
+                
             />
         </div>
     );

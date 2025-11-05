@@ -174,10 +174,10 @@ export default function UserLoginPage() {
   };
 
   return (
-    <div className="flex pt-3 pb-10 justify-center min-h-screen bg-gray-100">
+    <div className="flex pt-3 pb-10 justify-center min-h-screen bg-gray-100 dark:bg-[#101828]">
       <div className="bg-white shadow-xl rounded-2xl flex flex-col md:flex-row max-w-4xl w-full overflow-hidden m-4 sm:m-6 lg:m-10">
         {/* Left Side */}
-        <div className="w-full md:w-1/2 bg-white flex flex-col items-center justify-between p-6 order-2 md:order-1">
+        <div className="w-full md:w-1/2 bg-white flex  flex-col items-center justify-between p-6 order-2 md:order-1">
           <div className="flex-grow flex mt-5 justify-center">
             <img
               src="/lap-img.png"
@@ -213,7 +213,7 @@ export default function UserLoginPage() {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none ${
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none dark:text-gray-600 ${
                     errors.username ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
@@ -241,7 +241,7 @@ export default function UserLoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none ${
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none dark:text-gray-600 ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />

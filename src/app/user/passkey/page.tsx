@@ -52,7 +52,7 @@ const Page = () => {
     return (
         <div className="max-w-5xl mx-auto mt-16 p-8 bg-white rounded-lg shadow-md">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">My Passkeys</h1>
+                <h1 className="text-2xl font-bold dark:text-gray-900">My Passkeys</h1>
                 <button
                     onClick={handleRegister}
                     className="py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-semibold"
@@ -67,42 +67,42 @@ const Page = () => {
                     <Commet color="#318bcc" size="small" text="" textColor="" />
                 </div>
             ) : devices.length === 0 ? (
-                <p>No passkeys registered yet.</p>
+                <p className="text-center text-gray-900">No passkeys registered yet.</p>
             ) : (
                 <div className="overflow-x-auto">
                     
                     <table className="w-full border-collapse border border-gray-300 text-sm">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="border px-4 py-2">#</th>
-                                <th className="border px-4 py-2">Credential ID</th>
-                                <th className="border px-4 py-2">Device Type</th>
-                                <th className="border px-4 py-2">Registered At</th>
-                                <th className="border px-4 py-2">Last Used</th>
-                                <th className="border px-4 py-2">Action</th>
+                                <th className="border px-4 py-2 dark:text-gray-900">#</th>
+                                <th className="border px-4 py-2 dark:text-gray-900">Credential ID</th>
+                                <th className="border px-4 py-2 dark:text-gray-900">Device Type</th>
+                                <th className="border px-4 py-2 dark:text-gray-900">Registered At</th>
+                                <th className="border px-4 py-2 dark:text-gray-900">Last Used</th>
+                                <th className="border px-4 py-2 dark:text-gray-900">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {devices.map((d, index) => (
                                 <tr key={d.id} className="hover:bg-gray-50">
-                                    <td className="border px-4 py-2 text-center">
+                                    <td className="border px-4 py-2 text-center dark:text-gray-900">
                                         {index + 1}
                                     </td>
-                                    <td className="border px-4 py-2 font-mono">
+                                    <td className="border px-4 py-2 font-mono dark:text-gray-900">
                                         {d.credential_id
                                             ? `${d.credential_id.slice(0, 6)}...${d.credential_id.slice(-6)}`
                                             : 'N/A'}
                                     </td>
-                                    <td className="border px-4 py-2">
+                                    <td className="border px-4 py-2 dark:text-gray-900">
                                         {d.transports || 'Unknown'}
                                     </td>
-                                    <td className="border px-4 py-2">
+                                    <td className="border px-4 py-2 dark:text-gray-900">
                                         {new Date(d.created_at).toLocaleDateString()}
                                     </td>
-                                    <td className="border px-4 py-2">
+                                    <td className="border px-4 py-2 dark:text-gray-900">
                                         {new Date(d.updated_at).toLocaleDateString()}
                                     </td>
-                                    <td className="border px-4 py-2 text-center">
+                                    <td className="border px-4 py-2 text-center dark:text-gray-900">
                                         <button
                                             onClick={() => handleDelete(d.id)}
                                             className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"

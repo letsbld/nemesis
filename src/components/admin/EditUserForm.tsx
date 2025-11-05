@@ -52,7 +52,7 @@ export function EditUserForm({ user, onSubmit, onCancel, isLoading }: EditUserFo
     return (
         <div className="max-w-2xl mx-auto px-4">
             <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit User</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit User this is the user</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
