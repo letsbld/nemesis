@@ -247,7 +247,7 @@ const DeviceCommandsPage = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-3">
-                    <h1 className="text-2xl font-bold text-gray-900">Device Commands</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Device Commands</h1>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {commands.length} commands
                     </span>
@@ -280,13 +280,13 @@ const DeviceCommandsPage = () => {
                             placeholder="Search commands..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="pl-10 pr-4 py-2 border dark:text-gray-600 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="px-3 py-2 border dark:text-gray-600  border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
@@ -298,18 +298,18 @@ const DeviceCommandsPage = () => {
             </div>
 
             {/* Commands List */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-medium text-gray-900">Commands</h3>
+            <div className="bg-white shadow rounded-lg overflow-hidden dark:bg-[#101828] dark:border dark:border-[#333e4f]">
+                <div className="px-6 py-4 divide-y border-b border-[#333e4f]">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-500">Commands</h3>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto ">
                     {filteredCommands.length === 0 ? (
                         <div className="text-center py-8">
                             <p className="text-gray-500">No commands found</p>
                         </div>
                     ) : (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-[#333e4f]  dark:text-gray-300 ">
+                            <thead className="bg-gray-50 dark:bg-[#101828]">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Device ID
@@ -328,10 +328,10 @@ const DeviceCommandsPage = () => {
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white divide-y divide-[#333e4f] dark:bg-[#101828]">
                                 {filteredCommands.map((command) => (
-                                    <tr key={command.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <tr key={command.id} className="hover:bg-[#0a1120]">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
                                             {command.device_id || 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

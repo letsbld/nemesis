@@ -31,11 +31,12 @@ import {
   HiUsers,
   HiShieldCheck,
 } from 'react-icons/hi';
+import { useAuth } from '@/context/AuthContext';
 
 const customTheme = {
   root: {
     base: 'h-full',
-    inner: 'h-full overflow-y-auto overflow-x-hidden bg-white dark:bg-gray-800 py-4 px-3',
+    inner: 'h-full overflow-y-auto overflow-x-hidden bg-white dark:bg-[#101828] py-4 px-3',
   },
   item: {
     base: 'flex items-center justify-center rounded-lg p-2 text-base font-normal text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 group transition-colors',
@@ -54,12 +55,8 @@ export const SideNavBarAdmin = () => {
 
   const userdetails = localStorage.getItem('authUser');
   const user = userdetails ? JSON.parse(userdetails) : null;
+  const { logout } = useAuth();
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    router.push('/auth/admin/login');
-  };
 
   const handleNavigation = (path: string) => {
     if (pathname === path) return;
@@ -78,20 +75,18 @@ export const SideNavBarAdmin = () => {
     <Sidebar
       aria-label="Admin Sidebar"
       theme={customTheme}
-      className="fixed left-0 top-0 w-64 h-screen border-r border-gray-200 dark:border-gray-700"
+      className="fixed left-0 top-0 w-64 h-screen border-r border-[#e5e7eb] dark:border-[#333e4f]"
     >
       <SidebarItems>
         <SidebarItemGroup>
-          <SidebarLogo
-            href="/admin/dashboard"
-            img="/main_logo.svg"
-            imgAlt="Company logo"
-            className="w-[28px] h-[28px] mr-0"
-          >
-            <span className="text-lg font-semibold lowercase text-gray-900 dark:text-white">
+          <div className="flex flex-row items-center mb-1">
+            <img src="/main_logo.svg" alt="Company Logo" className="w-[24px] h-[24px] mx-auto mb-2" />
+            <span className="text-lg font-semibold lowercase text-gray-900 dark:text-white ml-2">
               The Secure Company
             </span>
-          </SidebarLogo>
+
+          </div>
+          
         </SidebarItemGroup>
 
         <SidebarItemGroup>

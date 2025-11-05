@@ -8,7 +8,7 @@ interface CreateUserGroupFormProps {
     onSubmit: (groupData: CreateUserGroupData) => void;
     onCancel: () => void;
     isLoading?: boolean;
-}
+} 
 
 export function CreateUserGroupForm({
     onSubmit,
