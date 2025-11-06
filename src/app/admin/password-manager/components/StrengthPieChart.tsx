@@ -1,142 +1,160 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Sector, Cell, ResponsiveContainer } from 'recharts';
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
+import { ResponsivePie } from '@nivo/pie';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-// A custom component to render the "active" or hovered pie segment
-const ActiveShape = (props: any) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+const CenterScore = ({ score, centerX, centerY }: { score: number, centerX: number, centerY: number }) => {
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, latest => Math.round(latest));
+
+    useEffect(() => {
+        const targetScore = typeof score === 'number' ? score : 0;
+        const animation = animate(count, targetScore, { 
+            duration: 1.5, 
+            ease: "easeOut" 
+        });
+        return () => animation.stop();
+    }, [score, count]);
+
     return (
-        // Adding outline: 'none' here is critical to prevent the focus border on SVG elements.
-        <g style={{ outline: 'none' }}>
-            <Sector
-                cx={cx}
-                cy={cy}
-                innerRadius={innerRadius}
-                outerRadius={outerRadius + 8}
-                startAngle={startAngle}
-                endAngle={endAngle}
-                fill={fill}
-                cornerRadius={8}
-                style={{ outline: 'none' }}
-            />
+        <g transform={`translate(${centerX}, ${centerY})`}>
+            <motion.text
+                x={0}
+                y={-5}
+                textAnchor="middle"
+                dominantBaseline="central"
+                className="text-6xl font-extrabold text-indigo-600"
+            >
+                {rounded}
+            </motion.text>
+            <text
+                x={0}
+                y={30}
+                textAnchor="middle"
+                dominantBaseline="central"
+                className="text-base font-semibold text-slate-500"
+            >
+                Overall Health
+            </text>
         </g>
     );
 };
 
 export default function StrengthPieChart({ data, score }: { data: { name: string, count: number, color: string }[], score: number }) {
     const [isClient, setIsClient] = useState(false);
-    const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
-    const count = useMotionValue(0);
-    const rounded = useTransform(count, latest => Math.round(latest));
 
     useEffect(() => {
         setIsClient(true);
-        const animation = animate(count, score || 0, { duration: 1.5, ease: "easeOut" });
-        return animation.stop;
-    }, [score, count]);
+    }, []);
 
-    const chartData = data.filter(item => item.count > 0);
-    const activeData = activeIndex !== null ? chartData[activeIndex] : null;
-
-    const onPieEnter = (_: any, index: number) => {
-        setActiveIndex(index);
-    };
-
-    const onPieLeave = () => {
-        setActiveIndex(null);
-    };
+    const chartData = data
+        .filter(item => item.count > 0)
+        .map(item => ({
+            id: item.name,
+            label: item.name,
+            value: item.count,
+            color: item.color,
+        }));
 
     if (!isClient) {
         return <div className="h-full w-full animate-pulse bg-gray-200 rounded-lg" />;
     }
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center select-none">
-            {/* DEFINITIVE FIX FOR SHAPE: Using aspect-square ensures a perfect circle. */}
-            <div className="w-full max-w-60 aspect-square relative">
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <AnimatePresence mode="wait">
-                        {activeData ? (
-                            <motion.div
-                                key={activeData.name}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                transition={{ duration: 0.2 }}
-                                className="text-center"
-                            >
-                                <p className="text-5xl font-extrabold" style={{ color: activeData.color }}>
-                                    {activeData.count}
-                                </p>
-                                <p className="text-lg font-semibold text-slate-600">{activeData.name}</p>
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="health-score"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                transition={{ duration: 0.2 }}
-                                className="text-center"
-                            >
-                                <motion.p className="text-6xl font-extrabold text-indigo-600">{rounded}</motion.p>
-                                <p className="text-sm font-semibold text-slate-500 mt-1">Overall Health</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            activeIndex={activeIndex ?? -1}
-                            activeShape={<ActiveShape />}
-                            data={chartData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={"80%"}
-                            outerRadius={"100%"}
-                            dataKey="count"
-                            onMouseEnter={onPieEnter}
-                            onMouseLeave={onPieLeave}
-                            // DEFINITIVE FIX FOR CLICK: Disabling the click handler prevents focus.
-                            onClick={() => {}}
-                            cornerRadius={8}
-                            paddingAngle={2}
-                        >
-                            {chartData.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${entry.name}`}
-                                    fill={entry.color}
-                                    stroke="none"
-                                    style={{
-                                        transition: 'opacity 0.2s ease',
-                                        opacity: activeIndex === null || activeIndex === index ? 1 : 0.3,
-                                    }}
-                                />
-                            ))}
-                        </Pie>
-                    </PieChart>
-                </ResponsiveContainer>
-            </div>
-            <div className="flex justify-center items-center gap-4 mt-6">
-                {chartData.map((entry, index) => (
-                    <motion.div
-                        key={`legend-${entry.name}`}
-                        className="flex items-center gap-2 cursor-pointer p-2 rounded-lg"
-                        onMouseEnter={() => onPieEnter(null, index)}
-                        onMouseLeave={onPieLeave}
-                        animate={{
-                            backgroundColor: activeIndex === index ? `${entry.color}20` : 'transparent',
+        <div className="w-full h-full" style={{ height: '400px' }}>
+            <ResponsivePie
+                data={chartData}
+                margin={{ top: 30, right: 40, bottom: 80, left: 40 }}
+                innerRadius={0.7}
+                padAngle={1}
+                cornerRadius={4}
+                activeOuterRadiusOffset={10}
+                colors={{ datum: 'data.color' }}
+                borderWidth={1}
+                borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+                
+                arcLinkLabelsSkipAngle={15}
+                arcLinkLabelsTextColor="#333333"
+                arcLinkLabelsThickness={2}
+                arcLinkLabelsColor={{ from: 'color' }}
+                arcLinkLabelsDiagonalLength={16}
+                arcLinkLabelsStraightLength={24}
+
+                arcLabelsSkipAngle={15}
+                arcLabelsRadiusOffset={0.4}
+                arcLabelsTextColor="white"
+
+                theme={{
+                    labels: {
+                        text: {
+                            fontSize: 14,
+                            fontWeight: 'bold',
+                        },
+                    },
+                    legends: {
+                        text: {
+                            fontSize: 14,
+                        },
+                    },
+                    tooltip: {
+                        container: {
+                            background: '#ffffff',
+                            borderRadius: '4px',
+                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                        },
+                    },
+                }}
+
+                tooltip={({ datum }) => (
+                    <div
+                        style={{
+                            padding: '8px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                         }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
                     >
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                        <span className="font-medium text-sm text-slate-600">{entry.name}</span>
-                    </motion.div>
-                ))}
-            </div>
+                        <div style={{ width: '12px', height: '12px', backgroundColor: datum.color, borderRadius: '50%' }} />
+                        <strong className="text-sm font-semibold text-gray-900">{datum.label}:</strong>
+                        <span className="text-sm text-gray-700">{datum.value}</span>
+                    </div>
+                )}
+                
+                motionConfig="wobbly"
+                transitionMode="innerRadius"
+
+                layers={['arcs', 'arcLabels', 'arcLinkLabels', 'legends', 
+                    (props: { centerX: number, centerY: number }) => (
+                        <CenterScore score={score} centerX={props.centerX} centerY={props.centerY} />
+                    )
+                ]}
+
+                legends={[
+                    {
+                        anchor: 'bottom',
+                        direction: 'row',
+                        justify: false,
+                        translateX: 0,
+                        translateY: 60,
+                        itemsSpacing: 20,
+                        itemWidth: 80,
+                        itemHeight: 20,
+                        itemTextColor: '#555',
+                        itemDirection: 'left-to-right',
+                        itemOpacity: 1,
+                        symbolSize: 14,
+                        symbolShape: 'circle',
+                        effects: [
+                            {
+                                on: 'hover',
+                                style: {
+                                    itemTextColor: '#000',
+                                },
+                            },
+                        ],
+                    },
+                ]}
+            />
         </div>
     );
 }

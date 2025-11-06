@@ -1,8 +1,13 @@
 'use client';
 import React from 'react';
 import { motion } from 'framer-motion';
-// FIX: Imported FaTrash with correct capitalization (FaTrash, not Fatrash)
-import { FaPlusCircle, FaTrash, FaShareAlt, FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
+import { 
+    FaPlusCircle, 
+    FaTrash, 
+    FaArrowCircleRight, 
+    FaArrowCircleLeft, 
+    FaExclamationTriangle 
+} from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
 
 const containerVariants = {
@@ -28,25 +33,27 @@ const itemVariants = {
 
 const actionIcons: { [key: string]: React.ElementType } = {
     created: FaPlusCircle,
-    deleted: FaTrash, // FIXED: Changed Fatrash to FaTrash
-    sent: FaArrowCircleRight, // Changed to show direction
-    received: FaArrowCircleLeft, // Added for clarity
+    deleted: FaTrash,
+    sent: FaArrowCircleRight,
+    received: FaArrowCircleLeft,
+    expired: FaExclamationTriangle,
 };
 
 const actionColors: { [key: string]: string } = {
     created: 'text-green-500',
     deleted: 'text-red-500',
     sent: 'text-blue-500',
-    received: 'text-indigo-500', // Using a different color for receiving
+    received: 'text-indigo-500',
+    expired: 'text-yellow-600',
 };
 
 interface Activity {
     id: string;
-    action: 'created' | 'deleted' | 'sent' | 'received';
+    action: 'created' | 'deleted' | 'sent' | 'received' | 'expired';
     credential_website: string;
     created_at: string;
-    primary_user_name: string; // The user who performed the action (sender/creator/deleter/receiver)
-    related_user_name: string | null; // The other user involved (receiver/sender)
+    primary_user_name: string;
+    related_user_name: string | null;
 }
 
 export default function RecentActivity({ activities }: { activities: Activity[] }) {
@@ -71,7 +78,6 @@ export default function RecentActivity({ activities }: { activities: Activity[] 
                     </>
                 );
             case 'sent':
-                // primary_user_name is the sender, related_user_name is the receiver
                 return (
                     <>
                         <span className="font-bold">{primary_user_name}</span>
@@ -82,7 +88,6 @@ export default function RecentActivity({ activities }: { activities: Activity[] 
                     </>
                 );
             case 'received':
-                // primary_user_name is the receiver, related_user_name is the sender
                 return (
                     <>
                         <span className="font-bold">{primary_user_name}</span>
@@ -90,6 +95,16 @@ export default function RecentActivity({ activities }: { activities: Activity[] 
                         <span className="font-bold">{credential_website}</span>
                         <span className="font-normal text-gray-500"> from </span>
                         <span className="font-bold text-indigo-700">{related_user_name || 'an unknown user'}</span>
+                    </>
+                );
+            case 'expired':
+                return (
+                    <>
+                        <span className="font-normal text-gray-500">A shared password for </span>
+                        <span className="font-bold">{credential_website}</span>
+                        <span className="font-normal text-gray-500"> from </span>
+                        <span className="font-bold text-indigo-700">{related_user_name || 'an unknown user'}</span>
+                        <span className="font-normal text-gray-500"> expired.</span>
                     </>
                 );
             default:

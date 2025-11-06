@@ -265,7 +265,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
     };
 
     const handleShareSubmit = async (credentialId: number, recipientEmails: string[], durationHours: number) => {
-        // FIX 1: Explicitly define Content-Type and custom headers for share endpoint
+        
         const customHeaders = {
             'Content-Type': 'application/json',
             'x-user-id': user?.id,
@@ -275,7 +275,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         await apiFetch('/password-generator/user/share', {
             method: 'POST',
             body: JSON.stringify({ credentialId, recipientEmails, durationHours }),
-            headers: customHeaders, // Inject merged headers
+            headers: customHeaders, 
         });
         fetchCredentials();
         onCredentialChange();

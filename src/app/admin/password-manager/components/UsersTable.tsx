@@ -3,8 +3,6 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FaChevronRight, FaUserCircle, FaShieldAlt, FaListAlt } from 'react-icons/fa';
-
-// Animation variants for container and items
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -29,8 +27,6 @@ interface UserData {
   company_email?: string | null;
   password_count?: number | null;
 }
-
-// Motion-wrapped Next Link
 const MotionLink = motion(Link);
 
 export default function UsersTable({ users }: { users: UserData[] }) {
@@ -58,8 +54,6 @@ export default function UsersTable({ users }: { users: UserData[] }) {
         const name = user.display_name ?? 'Unknown User';
         const email = user.company_email ?? '';
         const pwdCount = user.password_count ?? 0;
-
-        // safe href fallback
         const userHref = id ? `/admin/password-manager/users/${id}` : '#';
 
         return (

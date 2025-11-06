@@ -15,26 +15,30 @@ const StatCard = ({ title, value, icon: Icon, iconBgColor }: { title: string; va
     </div>
 );
 
-const ActivityItem = ({ action, website, created_at }: { action: string; website: string; created_at: string; }) => {
+const ActivityItem = ({ action, website, created_at, related_user_name }: { action: string; website: string; created_at: string; related_user_name?: string | null; }) => {
     const isDeleted = action === 'deleted';
     const isSent = action === 'sent';
     const isReceived = action === 'received';
+    const isExpired = action === 'expired';
 
     const getIcon = () => {
         if (isDeleted) return <Trash2 className="text-red-600" size={16} />;
         if (isSent) return <Share2 className="text-purple-600" size={16} />;
         if (isReceived) return <Download className="text-yellow-600" size={16} />;
+        if (isExpired) return <AlertTriangle className="text-yellow-600" size={16} />;
         return <PlusCircle className="text-green-600" size={16} />;
     };
     const getBgColor = () => {
         if (isDeleted) return 'bg-red-100';
         if (isSent) return 'bg-purple-100';
         if (isReceived) return 'bg-yellow-100';
+        if (isExpired) return 'bg-yellow-100';
         return 'bg-green-100';
     };
     const getText = () => {
         if (isSent) return <>Password <span className="font-bold">sent</span> to {website}</>;
         if (isReceived) return <>Password <span className="font-bold">received</span> from {website}</>;
+        if (isExpired) return <>Shared password for <span className="font-bold">{website}</span> {related_user_name ? <>from <span className="font-bold">{related_user_name}</span></> : ''} expired</>;
         return <>Password <span className="font-bold">{action}</span> for {website}</>;
     };
 
@@ -107,7 +111,7 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
                     <span className="text-5xl font-bold text-gray-800">{total}</span>
                     <span className="text-sm text-gray-500">Total</span>
                 </div>
-            </div>
+             </div>
             <div className="flex flex-wrap justify-center gap-3 w-full pt-2">
                 {segments.map((item) => (
                     item.count > 0 && 

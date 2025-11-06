@@ -41,7 +41,7 @@ export default function PasswordManagerPage() {
             fetchOverviewData();
         }
         if (activeTab === 'manage') {
-            // Logic to trigger refetch in manage page if it's active
+            
         }
     };
 
@@ -71,7 +71,7 @@ export default function PasswordManagerPage() {
                     ))}
                 </nav>
             </div>
-            {/* FIX: Removed h-screen and overflow-y-auto to allow browser scrolling */}
+            
             <div className="p-8"> 
                 <AnimatePresence mode="wait">
                     <motion.div

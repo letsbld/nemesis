@@ -30,6 +30,7 @@ import {
   HiCog,
   HiUsers,
   HiShieldCheck,
+  HiLockClosed,
 } from 'react-icons/hi';
 
 const customTheme = {
@@ -266,7 +267,23 @@ export const SideNavBarAdmin = () => {
           >
             User Groups
           </SidebarItem>
-
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/password-manager')}
+            icon={() =>
+              loadingItem === '/admin/password-manager' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiLockClosed className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/password-manager' ||
+              pathname.startsWith('/admin/password-manager/')
+            }
+          >
+            Password Manager
+          </SidebarItem>
           {/* Security Section */}
           <div className="px-3 py-2 mt-4 text-sm font-[300] text-[#6a7282] dark:text-gray-400 uppercase tracking-wider">
             Security
