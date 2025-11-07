@@ -31,13 +31,13 @@ export function ThemeToggle() {
     >
       {theme === 'light' ? (
         <>
-          <HiMoon className="w-5 h-5 text-gray-600 dark:text-gray-300 mr-5" />
+          <HiMoon className="w-5 h-5 text-gray-600 dark:text-gray-300 " />
           <span className=" ml-5 font-lg text-gray-700 dark:text-gray-200">Dark</span>
         </>
       ) : (
         <>
-          <HiSun className="w-5 h-5 text-gray-600 dark:text-gray-300 mr-5" />
-          <span className="ml-5 font-lg text-gray-700 dark:text-gray-200">Light</span>
+          <HiSun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <span className="ml-5 font-lg text-gray-700 dark:text-gray-400">Light</span>
         </>
       )}
     </button>

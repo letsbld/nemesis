@@ -7,7 +7,7 @@ import { apiFetch } from '@/lib/apiFetch';
 import CustomButton from '@/components/ui/customButton';
 import UserModal from './UserModal';
 import { ChevronsUpDown } from 'lucide-react';
-import { CirclePlus } from 'lucide-react';
+import { CirclePlus,FileUp } from 'lucide-react';
 
 
 interface UserListProps {
@@ -17,6 +17,8 @@ interface UserListProps {
   onResetPassword: (userId: string) => Promise<void>;
   onImportCSV: () => void;
   isLoading?: boolean;
+  selectedUserIds: string[];
+  onSelectionChange: (ids: string[]) => void;
 }
 
 export function UserList({
@@ -26,6 +28,8 @@ export function UserList({
   onResetPassword,
   onImportCSV,
   isLoading = false,
+  selectedUserIds,
+  onSelectionChange,
 }: UserListProps) {
   const router = useRouter();
 
@@ -46,15 +50,21 @@ export function UserList({
   };
 
   // ----------------------------
-  // Checkbox selection (optional feature)
+  // Checkbox selection
   // ----------------------------
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const handleCheckboxChange = (userId: string) => {
-    setSelectedUserIds((prev) =>
-      prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
-    );
+    const newSelection = selectedUserIds.includes(userId)
+      ? selectedUserIds.filter((id) => id !== userId)
+      : [...selectedUserIds, userId];
+    onSelectionChange(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUserIds.length === users.length) {
+      onSelectionChange([]);
+    } else {
+      onSelectionChange(users.map(u => u.id));
+    }
   };
 
   // ----------------------------
@@ -88,7 +98,12 @@ export function UserList({
             <thead className="bg-[#f9fafb] dark:bg-[#101828] h-[44px]">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {/* Checkbox header (optional for select all) */}
+                  <input
+                    type="checkbox"
+                    checked={users.length > 0 && selectedUserIds.length === users.length}
+                    onChange={handleSelectAll}
+                    className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
+                  />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Name
@@ -122,7 +137,7 @@ export function UserList({
                   <p className="mb-6">No users found</p>
                   <div className="flex justify-center gap-4">
                     <CustomButton
-                      startIcon={<CirclePlus className="w-4 h-4" />}
+                      startIcon={<FileUp className="w-4 h-4" />}
                       name="Import CSV"
                       onClick={onImportCSV}
                       btnType="button"
