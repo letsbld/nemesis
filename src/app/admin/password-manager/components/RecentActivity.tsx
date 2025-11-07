@@ -1,13 +1,7 @@
 'use client';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-    FaPlusCircle, 
-    FaTrash, 
-    FaArrowCircleRight, 
-    FaArrowCircleLeft, 
-    FaExclamationTriangle 
-} from 'react-icons/fa';
+import { FaPlusCircle, FaTrash, FaArrowCircleRight, FaArrowCircleLeft, FaExclamationTriangle, FaClock } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
 
 const containerVariants = {
@@ -36,7 +30,7 @@ const actionIcons: { [key: string]: React.ElementType } = {
     deleted: FaTrash,
     sent: FaArrowCircleRight,
     received: FaArrowCircleLeft,
-    expired: FaExclamationTriangle,
+    expired: FaClock,
 };
 
 const actionColors: { [key: string]: string } = {
@@ -44,7 +38,7 @@ const actionColors: { [key: string]: string } = {
     deleted: 'text-red-500',
     sent: 'text-blue-500',
     received: 'text-indigo-500',
-    expired: 'text-yellow-600',
+    expired: 'text-orange-500',
 };
 
 interface Activity {
@@ -97,13 +91,15 @@ export default function RecentActivity({ activities }: { activities: Activity[] 
                         <span className="font-bold text-indigo-700">{related_user_name || 'an unknown user'}</span>
                     </>
                 );
-            case 'expired':
+             case 'expired':
                 return (
                     <>
-                        <span className="font-normal text-gray-500">A shared password for </span>
+                        <span className="font-normal text-gray-500">Shared password for </span>
                         <span className="font-bold">{credential_website}</span>
                         <span className="font-normal text-gray-500"> from </span>
-                        <span className="font-bold text-indigo-700">{related_user_name || 'an unknown user'}</span>
+                        <span className="font-bold">{primary_user_name}</span>
+                        <span className="font-normal text-gray-500"> to </span>
+                        <span className="font-bold text-indigo-700">{related_user_name}</span>
                         <span className="font-normal text-gray-500"> expired.</span>
                     </>
                 );

@@ -16,7 +16,7 @@ const CountdownTimer = ({ expiresAt }: { expiresAt: string }) => {
         const expirationTime = new Date(expiresAt).getTime();
         const distance = expirationTime - now;
 
-        if (distance < 0) { return "Expired"; }
+        if (distance < 0) { return null; }
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
@@ -27,12 +27,12 @@ const CountdownTimer = ({ expiresAt }: { expiresAt: string }) => {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const newTime = calculateRemainingTime();
-            if (newTime === "Expired") { clearInterval(interval); }
-            setRemainingTime(newTime);
+            setRemainingTime(calculateRemainingTime());
         }, 1000);
         return () => clearInterval(interval);
     }, [calculateRemainingTime]);
+
+    if (!remainingTime) return null;
 
     return (
         <div className="flex items-center gap-1.5 text-orange-600 font-medium" title={`Expires: ${new Date(expiresAt).toLocaleString()}`}>
@@ -212,7 +212,7 @@ const DeleteConfirmationModal = ({ credential, onClose, onDelete }: {
     );
 };
 
-export default function ManagePasswordsPage({ onCredentialChange }: { onCredentialChange: () => void }) {
+export default function ManagePasswordsPage({ onCredentialChange }: { onCredentialChange?: () => void }) {
     const { user } = useAuth();
     const [credentials, setCredentials] = useState<Credential[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -240,13 +240,27 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
     useEffect(() => { fetchCredentials(); }, [fetchCredentials]);
 
     const filteredCredentials = useMemo(() => {
+        const now = new Date();
+        let filtered = credentials;
+
+        // Filter out expired passwords ONLY for receivers
+        filtered = filtered.filter(cred => {
+            const isOwner = user?.id === cred.user_id;
+            // If NOT owner AND it's expired, hide it.
+            if (!isOwner && cred.expires_at && new Date(cred.expires_at) < now) {
+                return false;
+            }
+            return true;
+        });
+
         const lowercasedTerm = searchTerm.toLowerCase();
-        if (!lowercasedTerm) return credentials;
-        return credentials.filter(cred =>
+        if (!lowercasedTerm) return filtered;
+        
+        return filtered.filter(cred =>
             cred.website.toLowerCase().includes(lowercasedTerm) ||
             cred.username.toLowerCase().includes(lowercasedTerm)
         );
-    }, [credentials, searchTerm]);
+    }, [credentials, searchTerm, user?.id]);
 
     const handleCopyToClipboard = (password: string, id: number) => { navigator.clipboard.writeText(password); setCopiedPasswordId(id); setTimeout(() => setCopiedPasswordId(null), 2000); };
 
@@ -255,7 +269,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         try {
             await apiFetch(`/password-generator/user/passwords/${id}`, { method: 'DELETE' });
             setCredentials(prev => prev.filter(c => c.id !== id));
-            onCredentialChange();
+            if (onCredentialChange) onCredentialChange();
         } catch(err) {
             setApiError((err as Error).message);
             setTimeout(() => setApiError(null), 5000);
@@ -265,7 +279,6 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
     };
 
     const handleShareSubmit = async (credentialId: number, recipientEmails: string[], durationHours: number) => {
-        
         const customHeaders = {
             'Content-Type': 'application/json',
             'x-user-id': user?.id,
@@ -278,7 +291,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             headers: customHeaders, 
         });
         fetchCredentials();
-        onCredentialChange();
+        if (onCredentialChange) onCredentialChange();
     };
 
     if (isLoading) { return (<div className="flex justify-center items-center h-96"><Commet color="#2563eb" size="medium" text="" /></div>); }
