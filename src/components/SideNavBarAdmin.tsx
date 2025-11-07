@@ -315,10 +315,10 @@ export const SideNavBarAdmin = () => {
             label={
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center space-x-3">
-                  <Avatar img="/user-imge.png" alt="User Avatar" rounded />
+                  <Avatar rounded />
                   <div className="flex flex-col text-left">
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      Vinit Yadav
+                      {user?.email.slice(0, user?.email.indexOf('@')) || '<Name>'}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {user?.email || '<Email>'}
