@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { PiCertificateBold } from 'react-icons/pi';
+import{HiLockClosed} from 'react-icons/hi';
 import {
   Sidebar,
   SidebarItem,
@@ -260,6 +261,23 @@ export const SideNavBarAdmin = () => {
             }
           >
             User Groups
+          </SidebarItem>
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/password-manager')}
+            icon={() =>
+              loadingItem === '/admin/password-manager' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiLockClosed className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/password-manager' ||
+              pathname.startsWith('/admin/password-manager/')
+            }
+          >
+            Password Manager
           </SidebarItem>
 
           {/* Security Section */}
