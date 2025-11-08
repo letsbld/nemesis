@@ -1,4 +1,8 @@
-export type ApiFetchOptions = RequestInit & { skipAuth?: boolean; followRedirects?: boolean };
+export type ApiFetchOptions = RequestInit & {
+    skipAuth?: boolean;
+    followRedirects?: boolean;
+    responseType?: 'json' | 'text';
+};
 
 export async function apiFetch(endpoint: string, options?: ApiFetchOptions): Promise<any> {
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api`;
@@ -35,6 +39,16 @@ export async function apiFetch(endpoint: string, options?: ApiFetchOptions): Pro
     if (!followRedirects && response.status >= 300 && response.status < 400) {
         const loc = response.headers.get('location');
         if (loc) return { redirect_to: loc };
+    }
+
+    const respType = options?.responseType || 'json';
+
+    if (respType === 'text') {
+        const text = await response.text();
+        if (!response.ok) {
+            throw { error: text || 'API request failed', status: response.status };
+        }
+        return text;
     }
 
     let data: any = null;
