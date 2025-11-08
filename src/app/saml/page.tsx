@@ -123,22 +123,30 @@ export default function IdpSsoPage() {
     };
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                minHeight: '100vh',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: '#f6f7fb',
-            }}
-        >
-            <LoginCard
-                spName={parsed?.issuer || null}
-                acsHint={parsed?.acsUrl || null}
-                onSubmit={handleAuthSubmit}
-                loading={loading}
-                error={error}
-            />
+        <div className="flex min-h-screen items-center justify-center bg-gray-100">
+            {rawSAMLRequest ? (
+                <LoginCard
+                    spName={parsed?.issuer || null}
+                    acsHint={parsed?.acsUrl || null}
+                    onSubmit={handleAuthSubmit}
+                    loading={loading}
+                    error={error}
+                />
+            ) : (
+                <div className="bg-white p-8 rounded-lg shadow-md max-w-lg text-center">
+                    <h3 className="text-lg font-semibold text-gray-900">No SAML request</h3>
+                    <p className="text-gray-600 mt-2">
+                        This page expects a SAMLRequest in the query string (SP-initiated flow). If
+                        you reached this page directly, use the IdP tester or initiate SSO from your
+                        Service Provider.
+                    </p>
+                    {/* <div className="mt-4">
+                        <a href="/idp" className="text-indigo-600 hover:underline">
+                            Open IdP Tester
+                        </a>
+                    </div> */}
+                </div>
+            )}
         </div>
     );
 }

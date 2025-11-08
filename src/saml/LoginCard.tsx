@@ -1,6 +1,7 @@
 // components/saml/LoginCard.tsx
 'use client';
 import React, { useState } from 'react';
+import CustomButton from '@/components/ui/customButton';
 
 export type LoginCardProps = {
     spName?: string | null;
@@ -15,37 +16,15 @@ export default function LoginCard({ spName, acsHint, onSubmit, loading, error }:
     const [password, setPassword] = useState('');
 
     return (
-        <div
-            style={{
-                width: 420,
-                padding: 28,
-                borderRadius: 12,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
-                background: '#fff',
-            }}
-        >
-            <header style={{ marginBottom: 12 }}>
-                <h2 style={{ margin: 0, fontSize: 20 }}>
+        <div className="w-full max-w-md p-8 rounded-xl shadow-2xl bg-white text-gray-800">
+            <header className="mb-3">
+                <h2 className="m-0 text-lg font-semibold text-gray-900">
                     {spName ? `Sign in to ${spName}` : 'Sign in to Company IdP'}
                 </h2>
-                <p style={{ color: '#666', marginTop: 6, marginBottom: 0 }}>
-                    Use your company credentials to continue
-                </p>
+                <p className="text-gray-600 mt-1 mb-0">Use your company credentials to continue</p>
             </header>
 
-            {error && (
-                <div
-                    style={{
-                        background: '#fee',
-                        color: '#c33',
-                        padding: 12,
-                        borderRadius: 8,
-                        marginBottom: 12,
-                    }}
-                >
-                    {error}
-                </div>
-            )}
+            {error && <div className="bg-red-50 text-red-700 p-3 rounded-md mb-3">{error}</div>}
 
             <form
                 onSubmit={async (e) => {
@@ -59,13 +38,7 @@ export default function LoginCard({ spName, acsHint, onSubmit, loading, error }:
                     placeholder="Username or email"
                     required
                     autoFocus
-                    style={{
-                        width: '100%',
-                        padding: 12,
-                        marginBottom: 10,
-                        borderRadius: 8,
-                        border: '1px solid #ddd',
-                    }}
+                    className="w-full px-4 py-3 mb-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-500"
                 />
                 <input
                     value={password}
@@ -73,41 +46,31 @@ export default function LoginCard({ spName, acsHint, onSubmit, loading, error }:
                     type="password"
                     placeholder="Password"
                     required
-                    style={{
-                        width: '100%',
-                        padding: 12,
-                        marginBottom: 12,
-                        borderRadius: 8,
-                        border: '1px solid #ddd',
-                    }}
+                    className="w-full px-4 py-3 mb-4 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-500"
                 />
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                        width: '100%',
-                        padding: 12,
-                        borderRadius: 8,
-                        border: 'none',
-                        background: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-                        color: '#fff',
-                        fontWeight: 600,
-                    }}
+                {/* use customButton here */}
+
+                <CustomButton
+                    btnType="submit"
+                    loading={loading}
+                    style={`w-full h-12 mt-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold bg-black text-white hover:from-indigo-600 hover:to-purple-700`}
                 >
                     {loading ? 'Signing in...' : 'Sign in'}
-                </button>
+                </CustomButton>
             </form>
 
-            <div style={{ marginTop: 12, fontSize: 13, color: '#888' }}>
+            <div className="mt-3 text-sm text-gray-500">
                 {acsHint ? (
-                    <div style={{ wordBreak: 'break-all' }}>ACS: {acsHint}</div>
+                    <div className="break-words">ACS: {acsHint}</div>
                 ) : (
                     <div>Waiting for SAMLRequest...</div>
                 )}
             </div>
-            <div style={{ marginTop: 8, fontSize: 12, color: '#999' }}>
-                <a href="/support">Need help?</a>
+            <div className="mt-2 text-xs text-gray-400">
+                <a href="/support" className="text-indigo-600 hover:underline">
+                    Need help?
+                </a>
             </div>
         </div>
     );
