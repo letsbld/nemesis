@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { PiCertificateBold } from 'react-icons/pi';
+import{HiLockClosed} from 'react-icons/hi';
 import {
   Sidebar,
   SidebarItem,
@@ -261,6 +262,23 @@ export const SideNavBarAdmin = () => {
           >
             User Groups
           </SidebarItem>
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/password-manager')}
+            icon={() =>
+              loadingItem === '/admin/password-manager' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiLockClosed className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/password-manager' ||
+              pathname.startsWith('/admin/password-manager/')
+            }
+          >
+            Password Manager
+          </SidebarItem>
 
           {/* Security Section */}
           <div className="px-3 py-2 mt-4 text-sm font-[300] text-[#6a7282] dark:text-gray-400 uppercase tracking-wider">
@@ -315,10 +333,10 @@ export const SideNavBarAdmin = () => {
             label={
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center space-x-3">
-                  <Avatar img="/user-imge.png" alt="User Avatar" rounded />
+                  <Avatar rounded />
                   <div className="flex flex-col text-left">
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      Vinit Yadav
+                      {user?.email.slice(0, user?.email.indexOf('@')) || '<Name>'}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {user?.email || '<Email>'}

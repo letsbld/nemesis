@@ -2,6 +2,8 @@
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { ThemeToggle } from './ThemeToggle';
+
 
 export const NavbarPublic = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,12 +20,12 @@ export const NavbarPublic = () => {
   }, [isMenuOpen]);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 dark:border-gray-700 shadow-sm z-50 dark:bg-[#101828]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left: Brand */}
           <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700">
-            <span>DLP Dashboard</span>
+            <span className="dark:text-gray-300">The Secure Company</span>
           </Link>
 
           {/* Hamburger for mobile */}
@@ -43,12 +45,14 @@ export const NavbarPublic = () => {
               </svg>
             )}
           </button>
+          
 
           {/* Desktop Nav */}
           <div className="hidden md:flex md:items-center md:space-x-6">
-            <Link href="/products" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Products</Link>
-            <Link href="/about" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About Us</Link>
-            <Link href="/contact" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact Us</Link>
+            <Link href="/products" className="text-gray-600 hover:text-blue-600 px-3 py-2 dark:text-gray-300 rounded-md text-sm font-medium">Products</Link>
+            <Link href="/about" className="text-gray-600 hover:text-blue-600 px-3 py-2 dark:text-gray-300 rounded-md text-sm font-medium">About Us</Link>
+            <Link href="/contact" className="text-gray-600 hover:text-blue-600 px-3 py-2  dark:text-gray-300 rounded-md text-sm font-medium">Contact Us</Link>
+            <ThemeToggle/>
             <Link href="/auth/user/login" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">Login</Link>
           </div>
         </div>
@@ -58,9 +62,12 @@ export const NavbarPublic = () => {
             <Link href="/products" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Products</Link>
             <Link href="/about" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>About Us</Link>
             <Link href="/contact" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>Contact Us</Link>
+            <ThemeToggle/>
             <Link href="/auth/user/login" className="block w-full text-center px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors mt-4" onClick={() => setIsMenuOpen(false)}>Login</Link>
           </div>
+          
         </div>
+        
       </div>
     </nav>
   );
