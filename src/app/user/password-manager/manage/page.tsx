@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Copy, Check, Trash2, AlertTriangle, Share2, X, Clock, UserPlus, UserCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/apiFetch';
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 
 type Credential = { id: number; user_id: string; website: string; username: string; password: string; created_at: string; custom_username: string | null; shared_with_user_ids: string[] | null; expires_at: string | null; };
 type VerifiedUser = { id: string; display_name: string; company_email: string; };
@@ -279,7 +279,7 @@ export default function ManagePasswordsPage() {
         fetchCredentials();
     };
 
-    if (isLoading) { return (<div className="flex justify-center items-center h-96"><Commet color="#2563eb" size="medium" text="" /></div>); }
+    if (isLoading) { return (<div className="flex justify-center items-center h-96"><Loader /></div>); }
     if (error) { return (<div className="bg-white dark:bg-[#1a2332] p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center"> <AlertTriangle className="mx-auto text-red-400 mb-4" size={40} /> <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Could not load credentials</h3> <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{error}</p> <button onClick={fetchCredentials} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Retry</button> </div>); }
 
     return (

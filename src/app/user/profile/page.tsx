@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 import { apiFetch } from '@/lib/apiFetch';
 import { UserData } from "@/types/user.types";
 
@@ -94,7 +94,7 @@ export default function UserProfile() {
   if (loading || !user){ 
     return( 
             <div className="flex justify-center py-6">
-                <Commet color="#318bcc" size="small" text="" textColor="" />
+                <Loader />
             </div>
         )
     };

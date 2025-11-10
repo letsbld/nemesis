@@ -13,7 +13,7 @@ import { Input} from '@/components/ui/input';
 import CustomButton from '@/components/ui/customButton';
 import { CiCirclePlus } from "react-icons/ci";
 import { TbFileImport } from "react-icons/tb";
-import Loader from '@/components/ui/loader';
+import { Loader } from '@/components/ui/loader';
 import { MdDeleteForever } from "react-icons/md";
 
 

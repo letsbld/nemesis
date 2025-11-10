@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { DeviceData, CreateDeviceData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 
 
 
@@ -140,7 +140,7 @@ const EditDevicePage = () => {
     if (authStatus === 'loading' || isLoading || !deviceId) {
         return (
            <div className="flex justify-center py-6">
-                <Commet color="#318bcc" size="small" text="" textColor="" />
+                <Loader />
             </div>
         );
     }

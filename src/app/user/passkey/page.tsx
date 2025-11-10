@@ -2,7 +2,7 @@
 
 import { registerPasskey, getUserDevices, deletePasskey } from '@/components/user/passkey';
 import React, { useEffect, useState } from 'react';
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 import toast from "react-hot-toast";
 
 
@@ -64,7 +64,7 @@ const Page = () => {
 
             {loading ? (
                 <div className="flex justify-center py-6">
-                    <Commet color="#318bcc" size="small" text="" textColor="" />
+                    <Loader />
                 </div>
             ) : devices.length === 0 ? (
                 <p className="text-center text-gray-900 dark:text-gray-300">No passkeys registered yet.</p>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import SideDrawer from '@/common/SideDrawer';
 import { PrivateRoute } from '@/components/PrivateRoute';
 import { apiFetch } from '@/lib/apiFetch';
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 import { motion } from 'framer-motion';
 import { FaUsers, FaMicrochip, FaLayerGroup } from 'react-icons/fa';
 
@@ -27,7 +27,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, loading }) => (
         <h3 className="text-sm font-medium text-gray-500dark:bg-[#101828] uppercase tracking-wide">{title}</h3>
         {loading ? (
           <div className="flex justify-center py-6">
-            <Commet color="#2563eb" size="small" text="" textColor="" />
+            <Loader />
           </div>
         ) : (
           <p className="mt-3 text-4xl font-extrabold text-gray-900 dark:text-white">{value}</p>

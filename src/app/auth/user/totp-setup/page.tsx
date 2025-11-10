@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/apiFetch'; // Adjust path to your apiFetch utility
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 
 
 export default function TotpSetupPage() {
@@ -97,7 +97,7 @@ export default function TotpSetupPage() {
     if (isLoading) {
         return( 
             <div className="flex justify-center py-6 min-h-screen bg-gray-50 dark:bg-[#101828] items-center">
-                <Commet color="#318bcc" size="small" text="" textColor="" />
+                <Loader />
             </div>
             ) 
         }
