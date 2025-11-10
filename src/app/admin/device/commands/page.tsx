@@ -330,7 +330,7 @@ const DeviceCommandsPage = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-[#333e4f] dark:bg-[#101828]">
                                 {filteredCommands.map((command) => (
-                                    <tr key={command.id} className="hover:bg-[#0a1120]">
+                                    <tr key={command.id} className="hover:bg-gray-300">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
                                             {command.device_id || 'N/A'}
                                         </td>
