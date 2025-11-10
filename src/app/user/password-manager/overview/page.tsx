@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircle, Trash2, BarChart2, AlertTriangle, Share2, Download } from 'lucide-react';
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 import { apiFetch } from '@/lib/apiFetch';
 
 const StatCard = ({ title, value, icon: Icon, iconBgColor }: { title: string; value: any; icon: React.ElementType; iconBgColor: string; }) => (
@@ -152,7 +152,7 @@ export default function OverviewPage() {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-96">
-                <Commet color="#2563eb" size="medium" text="" />
+                <Loader />
             </div>
         );
     }

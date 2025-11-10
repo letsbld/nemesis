@@ -10,7 +10,7 @@ import { DeviceList } from '@/components/admin/DeviceList';
 import { CreateDeviceForm } from '@/components/admin/CreateDeviceForm';
 import { EditDeviceForm } from '@/components/admin/EditDeviceForm';
 import toast from 'react-hot-toast';
-import { Commet } from 'react-loading-indicators';
+import { Loader } from '@/components/ui/loader';
 
 // Types for the overview data
 interface DeviceStats {
@@ -288,7 +288,7 @@ const DeviceOverviewContent = () => {
     if (isLoading) {
         return (
             <div className="flex justify-center py-6">
-                <Commet color="#318bcc" size="small" text="" textColor="" />
+                <Loader />
             </div>
         );
     }
