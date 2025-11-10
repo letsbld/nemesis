@@ -53,14 +53,14 @@ export default function ApplicationsPage() {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 md:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#101828] p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Applications</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Applications</h1>
 
         {/* ✅ NEW: Search Bar */}
         <div className="relative mb-6">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
             size={20}
           />
           <input
@@ -68,18 +68,18 @@ export default function ApplicationsPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search applications..."
-            className="w-full pl-10 pr-4 py-2 dark:text-gray-600 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 text-gray-900 dark:text-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400"
           />
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-6">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
           <button
             onClick={() => setActiveTab("all")}
             className={`px-4 py-2 font-medium text-sm transition-colors ${
               activeTab === "all"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-blue-600 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
             All Applications ({apps.length})
@@ -88,8 +88,8 @@ export default function ApplicationsPage() {
             onClick={() => setActiveTab("favorites")}
             className={`px-4 py-2 font-medium text-sm transition-colors ${
               activeTab === "favorites"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-blue-600 text-blue-600 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
             Favorites ({favorites.length})
@@ -101,12 +101,12 @@ export default function ApplicationsPage() {
           {displayedApps.map((app) => (
             <div
               key={app.id}
-              className="relative border rounded-lg bg-white px-5 py-10 flex flex-col items-center justify-center text-center transition-shadow duration-300 hover:shadow-lg group"
+              className="relative border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-[#1a2332] px-5 py-10 flex flex-col items-center justify-center text-center transition-shadow duration-300 hover:shadow-lg group"
             >
               {/* Favorite Star */}
               <button
                 onClick={() => toggleFavorite(app.id)}
-                className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 aria-label={`Favorite ${app.name}`}
               >
                 <Star
@@ -114,7 +114,7 @@ export default function ApplicationsPage() {
                   className={`transition-colors ${
                     favorites.includes(app.id)
                       ? "fill-yellow-400 text-yellow-500"
-                      : "text-gray-300 group-hover:text-gray-400"
+                      : "text-gray-300 dark:text-gray-600 group-hover:text-gray-400 dark:group-hover:text-gray-500"
                   }`}
                 />
               </button>
@@ -132,14 +132,14 @@ export default function ApplicationsPage() {
                         onError={(e) => (e.currentTarget.src = 'https://placehold.co/64x64/E2E8F0/A0AEC0?text=?')}
                     />
                 ) : (
-                    <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xl font-bold">
+                    <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xl font-bold">
                         {app.initial}
                     </div>
                 )}
               </div>
 
               {/* Name */}
-              <p className="text-sm font-semibold text-gray-700">{app.name}</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{app.name}</p>
             </div>
           ))}
         </div>
@@ -147,8 +147,8 @@ export default function ApplicationsPage() {
         {/* Empty State for Search */}
         {displayedApps.length === 0 && searchTerm && (
             <div className="text-center py-16">
-                <h3 className="text-lg font-semibold text-gray-700">No applications found</h3>
-                <p className="text-gray-500 mt-2">Try adjusting your search term.</p>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">No applications found</h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">Try adjusting your search term.</p>
             </div>
         )}
       </div>

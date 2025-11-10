@@ -55,20 +55,20 @@ export default function AdminLoginPage() {
         const userStr = localStorage.getItem('authUser');
         if (token && userStr) {
             return (
-                <div className="flex items-center justify-center min-h-screen">
-                    <div className="text-lg">Redirecting...</div>
+                <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#101828]">
+                    <div className="text-lg text-gray-900 dark:text-white">Redirecting...</div>
                 </div>
             );
         }
     }
 
   return (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50 ">
+  <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#101828]">
     {/* Card */}
-    <div className="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 space-y-8">
+    <div className="bg-white dark:bg-[#1a2332] shadow-xl rounded-2xl max-w-md w-full p-8 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Login</h1>
-        <p className="text-gray-600 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Admin Login</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">
           Sign in with your Google account to access the admin dashboard
         </p>
       </div>
@@ -101,16 +101,16 @@ export default function AdminLoginPage() {
       </div>
 
       <div className="text-center">
-        <p className="text-sm text-gray-500 mb-2">Not an admin?</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Not an admin?</p>
         <Link
           href="/auth/user/login"
-          className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm font-medium"
         >
           User Login →
         </Link>
       </div>
 
-      <div className="text-center text-sm text-gray-500">
+      <div className="text-center text-sm text-gray-500 dark:text-gray-400">
         <p>Admin access is restricted to authorized personnel only.</p>
         <p className="mt-1">Contact your system administrator if you need access.</p>
       </div>

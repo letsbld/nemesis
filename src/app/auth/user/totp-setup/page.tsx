@@ -96,61 +96,61 @@ export default function TotpSetupPage() {
 
     if (isLoading) {
         return( 
-            <div className="flex justify-center py-6">
+            <div className="flex justify-center py-6 min-h-screen bg-gray-50 dark:bg-[#101828] items-center">
                 <Commet color="#318bcc" size="small" text="" textColor="" />
             </div>
             ) 
         }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xl">
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#101828]">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-[#1a2332] rounded-lg shadow-xl">
                 <div className="text-center">
                     {/* ... existing code ... */}
-                    <h2 className="text-2xl font-bold">Set Up Two-Factor Authentication</h2>
-                    <p className="mt-2 text-gray-600">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Set Up Two-Factor Authentication</h2>
+                    <p className="mt-2 text-gray-600 dark:text-gray-300">
                         Scan the image below with your authenticator
                         <br /> (like Google Authenticator or Authy).
                     </p>
                 </div>
 
                 {error && (
-                    <div className="p-3 text-sm text-red-800 bg-red-100 border border-red-200 rounded-md">
+                    <div className="p-3 text-sm text-red-800 dark:text-red-300 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md">
                         {error}
                     </div>
                 )}
                 
                 {qrCode ? (
-                    <div className="flex flex-col items-center p-4 border rounded-lg bg-gray-50">
+                    <div className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
                         <img src={qrCode} alt="TOTP QR Code" className="w-48 h-48" />
                         
                         <div className="mt-4 text-center w-full">
                             {/* ✅ MODIFIED: Added a flex container and a show/hide button */}
-                            <div className="flex items-center justify-center text-sm text-gray-500">
+                            <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                                 <p>Can't scan? Enter this key manually:</p>
                                 <button 
                                     type="button"
                                     onClick={() => setIsManualKeyVisible(!isManualKeyVisible)}
-                                    className="ml-2 px-2 py-1 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded hover:bg-indigo-200"
+                                    className="ml-2 px-2 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 rounded hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
                                 >
                                     {isManualKeyVisible ? 'Hide' : 'Show'}
                                 </button>
                             </div>
                             
                             {/* ✅ MODIFIED: Conditionally render the key or dots */}
-                            <p className="p-2 mt-1 font-mono text-sm sm:text-lg break-all text-gray-800 bg-gray-200 rounded-md">
+                            <p className="p-2 mt-1 font-mono text-sm sm:text-lg break-all text-gray-800 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 rounded-md">
                                 {isManualKeyVisible ? manualEntryKey : '••••••••••••••••••••••••••••••••'}
                             </p>
                         </div>
                     </div>
                 ) : (
-                    !error && <p className="text-center">Generating QR Code...</p>
+                    !error && <p className="text-center text-gray-600 dark:text-gray-300">Generating QR Code...</p>
                 )}
 
                 <form onSubmit={handleVerifySubmit} className="space-y-4">
                     {/* ... existing code ... */}
                     <div>
-                        <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Verification Code
                         </label>
                         <input
@@ -160,7 +160,7 @@ export default function TotpSetupPage() {
                             onChange={(e) => setVerificationCode(e.target.value)}
                             required
                             maxLength={6}
-                            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full px-3 py-2 mt-1 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-gray-200 dark:bg-gray-800 dark:placeholder-gray-400"
                             placeholder="6-digit code from app"
                         />
                     </div>

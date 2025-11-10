@@ -75,24 +75,24 @@ export default function VerifyTotpPage() {
     // If we haven't loaded the pendingUserId from sessionStorage yet or if it's not present
     if (!pendingUserId) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                    <p className="text-center text-gray-600">Verifying session...</p>
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#101828]">
+                <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-[#1a2332] rounded-lg shadow-md">
+                    <p className="text-center text-gray-600 dark:text-gray-300">Verifying session...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-center dark:text-black">Two-Factor Authentication</h2>
-                <p className="text-center text-gray-600">
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#101828]">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-[#1a2332] rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold text-center text-black dark:text-white">Two-Factor Authentication</h2>
+                <p className="text-center text-gray-600 dark:text-gray-300">
                     Enter the 6-digit code from your authenticator app.
                 </p>
                 <form onSubmit={handleVerifySubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="totpToken" className="block text-sm font-medium text-gray-700 ">
+                        <label htmlFor="totpToken" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Verification Code
                         </label>
                         <input
@@ -104,12 +104,12 @@ export default function VerifyTotpPage() {
                             required
                             maxLength={6}
                             pattern="\d{6}"
-                            className="w-full  dark:text-gray-900 px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full text-gray-900 dark:text-gray-200 dark:bg-gray-800 dark:placeholder-gray-400 px-3 py-2 mt-1 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             autoComplete="one-time-code"
                         />
                     </div>
                     
-                    {error && <p className="text-sm text-red-600">{error}</p>}
+                    {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
                     <div>
                         <button
