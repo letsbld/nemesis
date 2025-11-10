@@ -130,7 +130,7 @@ export function CreateUserForm({ onSubmit, onCancel, isLoading = false }: Create
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Create New User</h2>
+            <h2 className="text-2xl font-bold mb-6">New User</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name Fields */}
