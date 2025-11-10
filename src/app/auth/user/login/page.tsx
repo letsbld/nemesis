@@ -107,9 +107,25 @@ export default function UserLoginPage() {
         else router.replace('/user/applications');
       } else {
         setErrors({ general: 'Authenticated, but no session info returned.' });
+        setStep(2); // Move to password step on error
       }
     } catch (err: any) {
-      setErrors({ general: err?.message || 'Passkey login failed' });
+      console.error('Passkey login error:', err);
+      // Check if user cancelled the passkey prompt
+      const errorMessage = err?.message || err?.toString() || '';
+      const isCancelled = errorMessage.includes('cancel') || 
+                         errorMessage.includes('abort') || 
+                         errorMessage.includes('NotAllowedError') ||
+                         err?.name === 'NotAllowedError';
+      
+      if (isCancelled) {
+        // User cancelled, proceed to password login
+        setStep(2);
+      } else {
+        // Other errors, show message and allow password fallback
+        setErrors({ general: errorMessage || 'Passkey login failed. You can use password instead.' });
+        setStep(2);
+      }
     } finally {
       setIsLoading(false);
       setShowPasskeyPopup(false);
@@ -175,9 +191,9 @@ export default function UserLoginPage() {
 
   return (
     <div className="flex pt-3 pb-10 justify-center min-h-screen bg-gray-100 dark:bg-[#101828]">
-      <div className="bg-white shadow-xl rounded-2xl flex flex-col md:flex-row max-w-4xl w-full overflow-hidden m-4 sm:m-6 lg:m-10">
+      <div className="bg-white dark:bg-[#1a2332] shadow-xl rounded-2xl flex flex-col md:flex-row max-w-4xl w-full overflow-hidden m-4 sm:m-6 lg:m-10">
         {/* Left Side */}
-        <div className="w-full md:w-1/2 bg-white flex  flex-col items-center justify-between p-6 order-2 md:order-1">
+        <div className="w-full md:w-1/2 bg-white dark:bg-[#1a2332] flex  flex-col items-center justify-between p-6 order-2 md:order-1">
           <div className="flex-grow flex mt-5 justify-center">
             <img
               src="/lap-img.png"
@@ -186,10 +202,10 @@ export default function UserLoginPage() {
             />
           </div>
           <div className="text-center mb-8 sm:mb-10">
-            <p className="text-sm sm:text-md text-gray-500 mb-1">Are you an administrator?</p>
+            <p className="text-sm sm:text-md text-gray-500 dark:text-gray-400 mb-1">Are you an administrator?</p>
             <Link
               href="/auth/admin/login"
-              className="text-blue-600 hover:text-blue-500 text-sm sm:text-base font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm sm:text-base font-medium"
             >
               Admin Login →
             </Link>
@@ -199,25 +215,25 @@ export default function UserLoginPage() {
         {/* Right Side */}
         <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-center order-1 md:order-2">
           <div className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-black">User Login</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">User Login</h1>
           </div>
 
           {/* Step 1: Enter Email */}
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                 <input
                   name="username"
                   type="text"
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none dark:text-gray-600 ${
-                    errors.username ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none text-gray-900 dark:text-gray-200 dark:bg-gray-800 dark:placeholder-gray-400 ${
+                    errors.username ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-700'
                   }`}
                 />
-                {errors.username && <p className="text-sm text-red-600 mt-1">{errors.username}</p>}
+                {errors.username && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.username}</p>}
               </div>
 
               <button
@@ -234,22 +250,22 @@ export default function UserLoginPage() {
           {step === 2 && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
                 <input
                   name="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none dark:text-gray-600 ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none text-gray-900 dark:text-gray-200 dark:bg-gray-800 dark:placeholder-gray-400 ${
+                    errors.password ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-700'
                   }`}
                 />
-                {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password}</p>}
+                {errors.password && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.password}</p>}
               </div>
 
               {errors.general && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md text-sm">
                   {errors.general}
                 </div>
               )}

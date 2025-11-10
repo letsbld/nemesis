@@ -54,8 +54,8 @@ export default function DashboardView() {
 
     if (error) {
         return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
-                <p className="text-sm text-red-700">{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-600 p-4 rounded-md">
+                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
         );
     }
@@ -63,7 +63,7 @@ export default function DashboardView() {
     if (!stats) return <Spinner />;
 
     return (
-        <div className="bg-gray-100 -m-6 p-6 min-h-full flex flex-col">
+        <div className="bg-gray-100 dark:bg-[#101828] -m-6 p-6 min-h-full flex flex-col">
             <motion.div
                 className="space-y-6 flex-1"
                 variants={containerVariants}
@@ -74,7 +74,7 @@ export default function DashboardView() {
                     className="flex justify-between items-center"
                     variants={itemVariants}
                 >
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                         Dashboard Overview
                     </h1>
                     <Link href="/admin/password-manager/users">
@@ -101,15 +101,15 @@ export default function DashboardView() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                     <motion.div className="lg:col-span-1" variants={itemVariants}>
                         <Card className="h-full">
-                            <h2 className="text-lg font-semibold text-slate-800 mb-2">Password Strength Distribution</h2>
+                            <h2 className="text-lg font-semibold text-slate-800 dark:text-gray-200 mb-2">Password Strength Distribution</h2>
                             <div className="h-[460px]">
                                 {stats.totalActive > 0 ? (
                                     <DynamicStrengthPieChart data={stats.strengthDistribution} score={stats.healthScore} />
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center text-center text-gray-500 h-full">
-                                        <FaKey size={48} className="mb-4 text-gray-400" />
+                                    <div className="flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400 h-full">
+                                        <FaKey size={48} className="mb-4 text-gray-400 dark:text-gray-500" />
                                         <p className="text-lg font-semibold">No Passwords to Analyze</p>
-                                        <p className="text-sm text-gray-500">Add credentials to calculate system health.</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">Add credentials to calculate system health.</p>
                                     </div>
                                 )}
                             </div>
@@ -117,12 +117,12 @@ export default function DashboardView() {
                     </motion.div>
                     <motion.div className="lg:col-span-1" variants={itemVariants}>
                         <Card className="h-full">
-                            <h2 className="text-lg font-semibold text-slate-800 mb-4">Recent Activity</h2>
+                            <h2 className="text-lg font-semibold text-slate-800 dark:text-gray-200 mb-4">Recent Activity</h2>
                             {stats.recentActivity && stats.recentActivity.length > 0 ? (
                                 <RecentActivity activities={stats.recentActivity} />
                             ) : (
                                 <div className="flex items-center justify-center h-full">
-                                    <p className="text-sm text-slate-500">No recent activity to display.</p>
+                                    <p className="text-sm text-slate-500 dark:text-gray-400">No recent activity to display.</p>
                                 </div>
                             )}
                         </Card>
