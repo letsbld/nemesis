@@ -6,6 +6,9 @@ import { UserList } from '@/components/admin/UserList';
 import { CreateUserForm } from '@/components/admin/CreateUserForm';
 import { EditUserForm } from '@/components/admin/EditUserForm';
 import { CSVImportForm } from '@/components/admin/CSVImportForm';
+import { PasswordFilter } from '@/components/admin/PasswordFilter';
+import { CreationDateFilter } from '@/components/admin/CreationDateFilter';
+import { MFAFilter } from '@/components/admin/MFAFilter';
 import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 import { useSearch } from '@/context/SearchContext';
@@ -15,7 +18,6 @@ import { CiCirclePlus } from "react-icons/ci";
 import { TbFileImport } from "react-icons/tb";
 import { Loader } from '@/components/ui/loader';
 import { MdDeleteForever } from "react-icons/md";
-
 
 
 
@@ -44,11 +46,9 @@ const UsersPage = () => {
 
     // Filter states
     const [passwordFilter, setPasswordFilter] = useState<'all' | 'set' | 'not-set'>('all');
-    const [creationDateFilter, setCreationDateFilter] = useState<'all' | 'latest' | 'oldest'>('all');
+    const [creationDateFilter, setCreationDateFilter] = useState<'latest' | 'oldest'>('latest');
     const [mfaFilter, setMfaFilter] = useState<'all' | 'yes' | 'no'>('all');
-    const [showPasswordDropdown, setShowPasswordDropdown] = useState(false);
-    const [showCreationDateDropdown, setShowCreationDateDropdown] = useState(false);
-    const [showMfaDropdown, setShowMfaDropdown] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
     // Check authentication and admin role
     useEffect(() => {
@@ -112,6 +112,17 @@ const UsersPage = () => {
             filtered = filtered.filter(user => !user.totp_enabled);
         }
 
+        // Apply date filter
+        if (selectedDate) {
+            const selected = new Date(selectedDate).setHours(0, 0, 0, 0);
+            const selectedEnd = new Date(selectedDate).setHours(23, 59, 59, 999);
+            filtered = filtered.filter(user => {
+                if (!user.created_at) return false;
+                const userDate = new Date(user.created_at).getTime();
+                return userDate >= selected && userDate <= selectedEnd;
+            });
+        }
+
         // Apply creation date filter (sort)
         if (creationDateFilter === 'latest') {
             filtered = [...filtered].sort((a, b) => {
@@ -129,7 +140,7 @@ const UsersPage = () => {
 
         setFilteredUsers(filtered);
         setCurrentPage(1); // Reset to first page when filters change
-    }, [searchQuery, users, passwordFilter, mfaFilter, creationDateFilter]);
+    }, [searchQuery, users, passwordFilter, mfaFilter, creationDateFilter, selectedDate]);
 
     // Calculate pagination
     const indexOfLastUser = currentPage * usersPerPage;
@@ -261,7 +272,7 @@ const UsersPage = () => {
 
     if (showCreateForm) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="min-h-screen bg-gray-50 py-8 dark:bg-[#101828]">
                 <CreateUserForm
                     onSubmit={handleCreateUser}
                     onCancel={() => setShowCreateForm(false)}
@@ -273,7 +284,7 @@ const UsersPage = () => {
 
     if (showEditForm && editingUser) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="min-h-screen bg-gray-50 py-8 dark:bg-[#101828]">
                 <EditUserForm
                     user={editingUser}
                     onSubmit={(userData) => handleUpdateUser(editingUser.id, userData)}
@@ -289,7 +300,7 @@ const UsersPage = () => {
 
     if (showCSVImport) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="min-h-screen bg-gray-50 py-8 dark:bg-[#101828]">
                 <CSVImportForm
                     onImportComplete={() => {
                         fetchUsers(); // Refresh user list after import
@@ -330,7 +341,7 @@ const UsersPage = () => {
                                 name="Import CSV"
                                 onClick={() => setShowCSVImport(true)}
                                 btnType="button"
-                                style="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+                                style="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2"
                                 loading={isLoading}
                             />
                             <CustomButton
@@ -354,153 +365,21 @@ const UsersPage = () => {
                 className="mt-4 p-2 border h-[36px] border-[#333e4f] shadow-sm w-full max-w-sm dark:text-gray-300 dark:bg-[#101828]" 
                 placeholder=" Search users..." />
 
+            {/* Filters */}
+            <PasswordFilter 
+                passwordFilter={passwordFilter}
+                onFilterChange={setPasswordFilter}
+            />
 
-            {/* Password Filter Dropdown */}
-            <div className="relative ml-3 mt-5">
-                <CustomButton 
-                    startIcon={<CiCirclePlus className="w-4 h-4" />}
-                    name={passwordFilter === 'all' ? 'Password Reset' : passwordFilter === 'set' ? 'Password: Set' : 'Password: Not Set'}
-                    onClick={() => {
-                        setShowPasswordDropdown(!showPasswordDropdown);
-                        setShowCreationDateDropdown(false);
-                        setShowMfaDropdown(false);
-                    }}
-                    btnType="button"
-                    style="border-dashed border-[#333e4f] text-[#99a1af] dark:text-gray-400 h-[28px]"
-                />
-                {showPasswordDropdown && (
-                    <div className="absolute top-full mt-1 left-0 bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-10 w-40 p-2">
-                        <label className="flex items-center px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={passwordFilter === 'all'}
-                                onChange={() => {
-                                    setPasswordFilter('all');
-                                    setShowPasswordDropdown(false);
-                                }}
-                                className="mr-2 w-4 h-4"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">All</span>
-                        </label>
-                        <label className="flex items-center px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={passwordFilter === 'set'}
-                                onChange={() => {
-                                    setPasswordFilter('set');
-                                    setShowPasswordDropdown(false);
-                                }}
-                                className="mr-2 w-4 h-4"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Set</span>
-                        </label>
-                        <label className="flex items-center px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={passwordFilter === 'not-set'}
-                                onChange={() => {
-                                    setPasswordFilter('not-set');
-                                    setShowPasswordDropdown(false);
-                                }}
-                                className="mr-2 w-4 h-4"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Not Set</span>
-                        </label>
-                    </div>
-                )}
-            </div>
+            <CreationDateFilter
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+            />
 
-            {/* Creation Date Filter Dropdown */}
-            <div className="relative ml-3 mt-5">
-                <CustomButton 
-                    name={creationDateFilter === 'all' ? 'Creation date' : creationDateFilter === 'latest' ? 'Date: Latest' : 'Date: Oldest'}
-                    startIcon={<CiCirclePlus className="w-4 h-4" />}
-                    onClick={() => {
-                        setShowCreationDateDropdown(!showCreationDateDropdown);
-                        setShowPasswordDropdown(false);
-                        setShowMfaDropdown(false);
-                    }}
-                    btnType="button"
-                    style="border-dashed border-[#333e4f] text-[#99a1af] dark:text-gray-400 h-[28px]"
-                />
-                {showCreationDateDropdown && (
-                    <div className="absolute top-full mt-1 left-0 bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-10 w-40">
-                        <button
-                            onClick={() => {
-                                setCreationDateFilter('all');
-                                setShowCreationDateDropdown(false);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            All
-                        </button>
-                        <button
-                            onClick={() => {
-                                setCreationDateFilter('latest');
-                                setShowCreationDateDropdown(false);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            Latest First
-                        </button>
-                        <button
-                            onClick={() => {
-                                setCreationDateFilter('oldest');
-                                setShowCreationDateDropdown(false);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            Oldest First
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* MFA Filter Dropdown */}
-            <div className="relative ml-3 mt-5">
-                <CustomButton 
-                    name={mfaFilter === 'all' ? 'MFA' : mfaFilter === 'yes' ? 'MFA: Yes' : 'MFA: No'}
-                    startIcon={<CiCirclePlus className="w-4 h-4" />}
-                    onClick={() => {
-                        setShowMfaDropdown(!showMfaDropdown);
-                        setShowPasswordDropdown(false);
-                        setShowCreationDateDropdown(false);
-                    }}
-                    btnType="button"
-                    style="border-dashed border-[#333e4f] text-[#99a1af] dark:text-gray-400 h-[28px]"
-                />
-                {showMfaDropdown && (
-                    <div className="absolute top-full mt-1 left-0 bg-white dark:bg-[#1a2332] border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-10 w-40">
-                        <button
-                            onClick={() => {
-                                setMfaFilter('all');
-                                setShowMfaDropdown(false);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            All
-                        </button>
-                        <button
-                            onClick={() => {
-                                setMfaFilter('yes');
-                                setShowMfaDropdown(false);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            Yes
-                        </button>
-                        <button
-                            onClick={() => {
-                                setMfaFilter('no');
-                                setShowMfaDropdown(false);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            No
-                        </button>
-                    </div>
-                )}
-            </div>
+            <MFAFilter
+                mfaFilter={mfaFilter}
+                onFilterChange={setMfaFilter}
+            />
             </div>
             </div>
 
@@ -513,6 +392,10 @@ const UsersPage = () => {
                 isLoading={isLoading}
                 selectedUserIds={selectedUserIds}
                 onSelectionChange={setSelectedUserIds}
+                onCreationDateSort={() => {
+                    setCreationDateFilter(prev => prev === 'latest' ? 'oldest' : 'latest');
+                }}
+                creationDateSortOrder={creationDateFilter}
             />
 
             {/* Pagination */}

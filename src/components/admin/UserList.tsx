@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react'; 
+import { useState, useRef, useEffect } from 'react'; 
 import { useRouter } from 'next/navigation';
 import { UserData, CreateUserData } from '@/types/admin.types';
 import { apiFetch } from '@/lib/apiFetch';
 import CustomButton from '@/components/ui/customButton';
-import UserModal from './UserModal';
 import { ChevronsUpDown } from 'lucide-react';
 import { CirclePlus,FileUp } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
+import {EditUserForm} from './EditUserForm';
+
 
 
 interface UserListProps {
@@ -19,12 +21,16 @@ interface UserListProps {
   isLoading?: boolean;
   selectedUserIds: string[];
   onSelectionChange: (ids: string[]) => void;
+  onCreationDateSort?: () => void;
+  creationDateSortOrder?: 'latest' | 'oldest';
 }
 
 export function UserList({
   users,
   onCreateUser,
   onDeleteUser,
+  onCreationDateSort,
+  creationDateSortOrder,
   onResetPassword,
   onImportCSV,
   isLoading = false,
@@ -33,21 +39,12 @@ export function UserList({
 }: UserListProps) {
   const router = useRouter();
 
-  // ----------------------------
-  // Modal state
-  // ----------------------------
+ 
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openUserModal = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsModalOpen(true);
-  };
-
-  const closeUserModal = () => {
-    setSelectedUserId(null);
-    setIsModalOpen(false);
-  };
+  const [dropdownPosition, setDropdownPosition] = useState<{ [key: string]: 'top' | 'bottom' }>({});
+  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // ----------------------------
   // Checkbox selection
@@ -70,9 +67,12 @@ export function UserList({
   // ----------------------------
   // Update user handler
   // ----------------------------
-  const handleUpdateUser = async (id: string, data: Partial<CreateUserData>) => {
+  const handleUpdateUser = async (data: Partial<CreateUserData>) => {
+    if (!editingUser) return;
+    
+    setIsUpdating(true);
     try {
-      const res = await apiFetch(`/user/${id}`, {
+      const res = await apiFetch(`/user/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -80,21 +80,30 @@ export function UserList({
 
       if (res && res.id){
         alert('User updated successfully');
+        setEditingUser(null);
         router.refresh();
-      }else{ throw new Error('Failed to update user');
-
+      } else { 
+        throw new Error('Failed to update user');
       }
-       // ✅ Refresh page or data (if using Next.js dynamic route)
     } catch (error) {
       console.error(error);
       alert('Failed to update user');
+    } finally {
+      setIsUpdating(false);
     }
   };
+  if(isLoading){
+    return (
+      <div className="flex justify-center items-center h-64">
+         <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="pr-2 pl-2">
-        <div className="bg-white dark:bg-[#1a2332] rounded-lg shadow dark:shadow-lg overflow-hidden mt-4 border border-transparent dark:border-gray-700">
-          <table className="min-w-full">
+        <div className="bg-white dark:bg-[#1a2332] rounded-lg shadow dark:shadow-lg overflow-hidden mt-4 border border-transparent dark:border-gray-700 overflow-x-auto">
+          <table className="min-w-full ">
             <thead className="bg-[#f9fafb] dark:bg-[#101828] h-[44px]">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -114,9 +123,14 @@ export function UserList({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Password
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                <span className="flex flex-row">Creation Date <ChevronsUpDown className="w-5 h-5 text-gray-500 dark:text-gray-400" /></span>
-                  
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  onClick={onCreationDateSort}
+                >
+                  <span className="flex flex-row items-center gap-1">
+                    Creation Date 
+                    <ChevronsUpDown className={`w-4 h-4 transition-transform ${creationDateSortOrder === 'oldest' ? 'rotate-180' : ''}`} />
+                  </span>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   MFA
@@ -141,8 +155,7 @@ export function UserList({
                       name="Import CSV"
                       onClick={onImportCSV}
                       btnType="button"
-                      style="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
-                      loading={isLoading}
+                      style="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2"
                     />
                     <CustomButton
                       startIcon={<CirclePlus className="w-4 h-4" />}
@@ -150,13 +163,12 @@ export function UserList({
                       onClick={onCreateUser}
                       btnType="button"
                       style="bg-[#1447E6] hover:bg-blue-700 text-md font-[300] text-white px-4 py-2"
-                      loading={isLoading}
                     />
                   </div>
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
+              users.map((user, index) => (
                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-[#101828]">
                   <td className="px-4 py-4 whitespace-nowrap">
                     <input
@@ -166,13 +178,10 @@ export function UserList({
                       className="form-checkbox h-4 w-4 text-blue-600 dark:bg-gray-700 dark:border-gray-600"
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                      onClick={() => openUserModal(user.id)}
-                    >
+                  <td className="px-6 py-4 whitespace-nowrap text-[#101828] dark:text-gray-200">
+                   
                       {user.first_name} {user.middle_name || ''} {user.last_name}
-                    </button>
+                    
                   </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                       {user.company_email}
@@ -182,17 +191,39 @@ export function UserList({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                       {user.created_at
-                        ? new Date(user.created_at).toLocaleDateString()
-                        : '-'}
+                          ? new Date(user.created_at).toLocaleDateString('en-US', {
+                              day: '2-digit',
+                              month: 'short', 
+                              year: 'numeric'
+                            })
+                          : '-'
+                      }
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                      {user.totp_enabled ? 'Yes' : 'No'}
+                      {user.totp_enabled ? <span className="p-1 bg-[#ECFDF5] rounded border-[1px] border-[#A4F4CF] text-xs text-[#006045]">Yes</span> : <span className="p-1 bg-[#FEF3F2] rounded border-[1px] border-[#FCA5A5] text-xs text-[#991B1B]">No</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                       <div className="relative inline-block text-left">
                         <button
+                          ref={(el) => {
+                            buttonRefs.current[user.id] = el;
+                          }}
                           onClick={(e) => {
                             e.stopPropagation();
+                            
+                            // Calculate if dropdown should open upward
+                            const button = buttonRefs.current[user.id];
+                            if (button) {
+                              const rect = button.getBoundingClientRect();
+                              const spaceBelow = window.innerHeight - rect.bottom;
+                              const dropdownHeight = 150; // Approximate height of dropdown
+                              
+                              setDropdownPosition({
+                                ...dropdownPosition,
+                                [user.id]: spaceBelow < dropdownHeight ? 'top' : 'bottom'
+                              });
+                            }
+                            
                             setSelectedUserId(
                               selectedUserId === user.id ? null : user.id
                             );
@@ -217,11 +248,11 @@ export function UserList({
 
 
                       {selectedUserId === user.id && (
-                        <div className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <div className={`absolute right-0 z-10 ${dropdownPosition[user.id] === 'top' ? 'bottom-full mb-2' : 'mt-2'} w-40 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}>
                           <div className="py-1">
                             <button
                               onClick={() => {
-                                openUserModal(user.id);
+                                setEditingUser(user);
                                 setSelectedUserId(null);
                               }}
                               className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -261,16 +292,20 @@ export function UserList({
     
 
       {/* ----------------------------
-          User Modal
+          Edit User Form
       ---------------------------- */}
-        <UserModal
-          userId={selectedUserId}
-          open={isModalOpen}
-          onClose={closeUserModal}
-          onDelete={onDeleteUser}
-          onResetPassword={onResetPassword}
-          onUpdate={handleUpdateUser}
-        />
+      {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <EditUserForm
+              user={editingUser}
+              onSubmit={handleUpdateUser}
+              onCancel={() => setEditingUser(null)}
+              isLoading={isUpdating}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

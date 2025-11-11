@@ -7,7 +7,7 @@ interface CustomButtonProps {
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   children?: React.ReactNode;
-  name?: string;
+  name?: string | React.ReactNode;
   loading?: boolean;
   onClick?: () => void;
 }

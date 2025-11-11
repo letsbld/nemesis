@@ -81,7 +81,7 @@ export const SideNavBarAdmin = () => {
       <SidebarItems>
         <SidebarItemGroup>
           <div className="flex flex-row items-center mb-1">
-            <img src="/main_logo.svg" alt="Company Logo" className="w-[24px] h-[24px] mx-auto mb-2" />
+            <img src="/nemesis.svg" alt="Company Logo" className="w-[24px] h-[24px] mx-auto mb-2 bg-white rounded-xl" />
             <span className="text-lg font-semibold lowercase text-gray-900 dark:text-white ml-2">
               The Secure Company
             </span>
