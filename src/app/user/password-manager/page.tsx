@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiFetch } from '@/lib/apiFetch';
 
 import OverviewPage from './overview/page';
 import ManagePasswordsPage from './manage/page';
@@ -13,37 +12,6 @@ type Tab = 'overview' | 'manage' | 'create';
 
 export default function PasswordManagerPage() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
-    const [stats, setStats] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchOverviewData = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const data = await apiFetch('/password-generator/user/stats');
-            setStats(data);
-        } catch (err: any) {
-            setError(err.message || 'An unknown error occurred');
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (activeTab === 'overview') {
-            fetchOverviewData();
-        }
-    }, [activeTab, fetchOverviewData]);
-
-    const handleCredentialChange = () => {
-        if (activeTab === 'overview') {
-            fetchOverviewData();
-        }
-        if (activeTab === 'manage') {
-            
-        }
-    };
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: Home },
@@ -81,16 +49,9 @@ export default function PasswordManagerPage() {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        {activeTab === 'overview' && (
-                            <OverviewPage
-                                stats={stats}
-                                isLoading={isLoading}
-                                error={error}
-                                retryFetch={fetchOverviewData}
-                            />
-                        )}
-                        {activeTab === 'manage' && <ManagePasswordsPage onCredentialChange={handleCredentialChange} />}
-                        {activeTab === 'create' && <CreatePasswordPage onCredentialChange={handleCredentialChange} />}
+                        {activeTab === 'overview' && <OverviewPage />}
+                        {activeTab === 'manage' && <ManagePasswordsPage />}
+                        {activeTab === 'create' && <CreatePasswordPage />}
                     </motion.div>
                 </AnimatePresence>
             </div>

@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircle, Trash2, BarChart2, AlertTriangle, Share2, Download } from 'lucide-react';
 import { Commet } from 'react-loading-indicators';
+import { apiFetch } from '@/lib/apiFetch'; // Assuming you have this helper
+import { useRouter } from 'next/navigation'; // Added for refresh
 
 const StatCard = ({ title, value, icon: Icon, iconBgColor }: { title: string; value: any; icon: React.ElementType; iconBgColor: string; }) => (
     <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center gap-4">
@@ -53,9 +55,7 @@ const ActivityItem = ({ action, website, created_at, related_user_name }: { acti
 };
 
 const DonutChart = ({ data }: { data: { name: string, count: number, color: string }[] }) => {
-    const total = data.reduce((sum, item) => sum + item.count, 0);
-
-    if (!data || data.length === 0 || total === 0) {
+    if (!data || data.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full py-8">
                 <div className="relative w-40 h-40">
@@ -70,6 +70,24 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
             </div>
         );
     }
+    
+    const total = data.reduce((sum, item) => sum + item.count, 0);
+    if (total === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full py-8">
+                 <div className="relative w-40 h-40">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="transparent" stroke="#f3f4f6" strokeWidth="10" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <BarChart2 className="text-gray-300" size={40} />
+                    </div>
+                </div>
+                <p className="mt-4 text-sm text-gray-500">No strength data available</p>
+            </div>
+        );
+    }
+
 
     const radius = 60;
     const strokeWidth = 16;
@@ -126,7 +144,36 @@ const DonutChart = ({ data }: { data: { name: string, count: number, color: stri
     );
 };
 
-export default function OverviewPage({ stats, isLoading, error, retryFetch }: { stats: any, isLoading: boolean, error: string | null, retryFetch: () => void }) {
+export default function OverviewPage() {
+    const [stats, setStats] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+
+    const fetchStats = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            // I'm assuming this is your stats endpoint based on other files
+            const data = await apiFetch('/password-generator/user/stats');
+            setStats(data);
+        } catch (err) {
+            setError((err as Error).message || 'Failed to fetch overview data');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
+    const retryFetch = () => {
+        fetchStats();
+        router.refresh(); // Also trigger a hard refresh for any other data
+    };
+    
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-96">

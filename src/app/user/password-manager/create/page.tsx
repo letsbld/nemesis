@@ -5,7 +5,8 @@ import { motion, AnimatePresence, Variants, HTMLMotionProps } from 'framer-motio
 import { Check, CheckCircle, Copy, RefreshCw } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useAuth } from '@/context/AuthContext';
-import { apiFetch } from '@/lib/apiFetch'; 
+import { apiFetch } from '@/lib/apiFetch';
+import { useRouter } from 'next/navigation';
 
 const containerVariants: Variants = { hidden: { opacity: 0, scale: 0.98 }, visible: { opacity: 1, scale: 1, transition: { staggerChildren: 0.08, delayChildren: 0.2 } } };
 const itemVariants: Variants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 20 } } };
@@ -123,7 +124,6 @@ const BuildingStrengthMeter = ({ length, mode }: { length: number, mode: Creatio
   
   useEffect(() => { setFloors(calculateFloors()); }, [length, calculateFloors]);
   
-  // Always show base in manual mode, or if length is sufficient in generator mode
   const showBase = mode === 'manual' || length >= 4; 
   const { label, color } = getStrengthLabel(length);
 
@@ -161,8 +161,9 @@ type PinOptions = { length: number; };
 type Options = { smart: SmartOptions; memorable: MemorableOptions; pin: PinOptions; };
 const defaultOptions: Options = { smart: { length: 16, uppercase: true, lowercase: true, numbers: true, symbols: true }, memorable: { words: 4, separator: '-', capitalize: true }, pin: { length: 6 } };
 
-export default function CreatePasswordPage({ onCredentialChange }: { onCredentialChange: () => void }) {
+export default function CreatePasswordPage() {
     const { user } = useAuth();
+    const router = useRouter();
     const [mode, setMode] = useState<CreationMode>('generator');
     const [credentialType, setCredentialType] = useState<CredentialType>('smart');
     const [options, setOptions] = useState<Options>(defaultOptions);
@@ -231,7 +232,7 @@ export default function CreatePasswordPage({ onCredentialChange }: { onCredentia
             if (mode === 'generator') {
                 generateCredential();
             }
-            onCredentialChange();
+            router.refresh();
         } catch (error) {
             console.error("Save Error:", error);
         } finally {

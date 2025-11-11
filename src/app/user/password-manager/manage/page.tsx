@@ -6,6 +6,7 @@ import { Search, Copy, Check, Trash2, AlertTriangle, Share2, X, Clock, UserPlus,
 import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/apiFetch';
 import { Commet } from 'react-loading-indicators';
+import { useRouter } from 'next/navigation';
 
 type Credential = { id: number; user_id: string; website: string; username: string; password: string; created_at: string; custom_username: string | null; shared_with_user_ids: string[] | null; expires_at: string | null; };
 type VerifiedUser = { id: string; display_name: string; company_email: string; };
@@ -187,7 +188,7 @@ const DeleteConfirmationModal = ({ credential, onClose, onDelete }: {
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mt-4">Are you sure?</h2>
                     <p className="text-sm text-gray-500 mt-2">
-                        Do you really want to delete the password for <strong>{credential.website}</strong>?
+                        Do you really want to delete the password for D<strong>{credential.website}</strong>?
                     </p>
                     <p className="text-sm text-red-600 font-medium mt-2">
                         This action cannot be undone and will be permanently lost.
@@ -212,8 +213,9 @@ const DeleteConfirmationModal = ({ credential, onClose, onDelete }: {
     );
 };
 
-export default function ManagePasswordsPage({ onCredentialChange }: { onCredentialChange?: () => void }) {
+export default function ManagePasswordsPage() {
     const { user } = useAuth();
+    const router = useRouter();
     const [credentials, setCredentials] = useState<Credential[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -243,10 +245,8 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         const now = new Date();
         let filtered = credentials;
 
-        // Filter out expired passwords ONLY for receivers
         filtered = filtered.filter(cred => {
             const isOwner = user?.id === cred.user_id;
-            // If NOT owner AND it's expired, hide it.
             if (!isOwner && cred.expires_at && new Date(cred.expires_at) < now) {
                 return false;
             }
@@ -269,7 +269,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
         try {
             await apiFetch(`/password-generator/user/passwords/${id}`, { method: 'DELETE' });
             setCredentials(prev => prev.filter(c => c.id !== id));
-            if (onCredentialChange) onCredentialChange();
+            router.refresh();
         } catch(err) {
             setApiError((err as Error).message);
             setTimeout(() => setApiError(null), 5000);
@@ -291,7 +291,7 @@ export default function ManagePasswordsPage({ onCredentialChange }: { onCredenti
             headers: customHeaders, 
         });
         fetchCredentials();
-        if (onCredentialChange) onCredentialChange();
+        router.refresh();
     };
 
     if (isLoading) { return (<div className="flex justify-center items-center h-96"><Commet color="#2563eb" size="medium" text="" /></div>); }
