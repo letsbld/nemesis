@@ -25,7 +25,13 @@ export const NavbarPublic = () => {
         <div className="flex justify-between items-center h-16">
           {/* Left: Brand */}
           <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-blue-600 hover:text-blue-700">
-            <span className="dark:text-gray-300">The Secure Company</span>
+            <div className="flex flex-row items-center mb-1">
+            <img src="/nemesis.svg" alt="Company Logo" className="w-[24px] h-[24px] mx-auto mb-2 bg-white rounded-xl" />
+            <span className="text-lg font-semibold lowercase text-gray-900 dark:text-white ml-2">
+              The Secure Company
+            </span>
+
+          </div>
           </Link>
 
           {/* Hamburger for mobile */}
