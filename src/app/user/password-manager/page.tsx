@@ -20,8 +20,8 @@ export default function PasswordManagerPage() {
     ];
     
     return (
-        <div className="flex flex-col bg-gray-50">
-            <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+        <div className="flex flex-col bg-gray-50 dark:bg-[#101828]">
+            <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2332] sticky top-0 z-10">
                 <nav className="flex -mb-px space-x-8 px-8" aria-label="Tabs">
                     {tabs.map((tab) => (
                         <button
@@ -29,8 +29,8 @@ export default function PasswordManagerPage() {
                             onClick={() => setActiveTab(tab.id as Tab)}
                             className={`flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors
                                 ${activeTab === tab.id
-                                    ? 'border-indigo-500 text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                                 }`}
                         >
                             <tab.icon size={16} />

@@ -16,7 +16,7 @@ interface PanelProps extends HTMLMotionProps<'div'> {
     className?: string;
 }
 const Panel = ({ children, className = '', ...props }: PanelProps) => (
-    <motion.div variants={itemVariants} className={`bg-white rounded-2xl shadow-lg border border-gray-200 ${className}`} {...props}>
+    <motion.div variants={itemVariants} className={`bg-white dark:bg-[#1a2332] rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 ${className}`} {...props}>
         {children}
     </motion.div>
 );
@@ -37,7 +37,7 @@ const DecryptingText = ({ targetText }: { targetText: string }) => {
         }, 30);
     },[targetText]);
     useEffect(() => { scramble(); return () => { if(intervalRef.current) clearInterval(intervalRef.current); } }, [targetText, scramble]);
-    return <span className="text-2xl md:text-3xl font-mono tracking-wider break-all text-center text-gray-800">{currentText}</span>;
+    return <span className="text-2xl md:text-3xl font-mono tracking-wider break-all text-center text-gray-800 dark:text-gray-100">{currentText}</span>;
 };
 
 const BaseHouse = () => (
@@ -139,7 +139,7 @@ const BuildingStrengthMeter = ({ length, mode }: { length: number, mode: Creatio
       </div>
       {showBase && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 text-center">
-          <p className="text-gray-500 text-sm font-medium">Password Strength</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Password Strength</p>
           <p className={`text-lg font-bold ${color}`}>{label}</p>
         </motion.div>
       )}
@@ -151,7 +151,7 @@ const SuccessModal = ({ username, website, password, onClose }: { username: stri
     const [isCopied, setIsCopied] = useState(false); const [runConfetti, setRunConfetti] = useState(true);
     useEffect(() => { const timer = setTimeout(() => setRunConfetti(false), 5000); return () => clearTimeout(timer); }, []);
     const copyToClipboard = () => { navigator.clipboard.writeText(password); setIsCopied(true); setTimeout(() => setIsCopied(false), 2500); };
-    return (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>{runConfetti && <Confetti gravity={0.15} numberOfPieces={200} recycle={false} />}<motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-200"><div className="p-8 space-y-6"><div className="text-center"><div className="inline-block p-3 bg-green-100 rounded-full"><CheckCircle className="text-green-500" size={32} /></div><h2 className="text-2xl font-bold text-gray-800 mt-3">Credential Secured</h2><p className="text-gray-500 text-sm">Your new credential has been saved.</p></div><div className="space-y-3 bg-gray-50 border border-gray-200 p-4 rounded-xl"><div className="flex justify-between items-center gap-4"><span className="text-gray-500 text-sm flex-shrink-0">Username</span><span className="font-medium text-gray-700 break-all text-right">{username}</span></div><div className="w-full h-px bg-gray-200"></div><div className="flex justify-between items-center gap-4"><span className="text-gray-500 text-sm flex-shrink-0">Website</span><span className="font-medium text-gray-700 break-all text-right">{website}</span></div></div><div className="bg-gray-100 p-4 rounded-lg flex items-center justify-between gap-4 border border-gray-200"><span className="font-mono text-blue-600 text-lg break-all">{password}</span><motion.button onClick={copyToClipboard} className="p-2 rounded-full text-gray-500 hover:bg-gray-200 flex-shrink-0">{isCopied ? <Check size={20} className="text-green-500" /> : <Copy size={20} />}</motion.button></div><motion.button onClick={onClose} className="w-full mt-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold">Done</motion.button></div></motion.div></motion.div>);
+    return (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>{runConfetti && <Confetti gravity={0.15} numberOfPieces={200} recycle={false} />}<motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="relative bg-white dark:bg-[#1a2332] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700"><div className="p-8 space-y-6"><div className="text-center"><div className="inline-block p-3 bg-green-100 dark:bg-green-900/30 rounded-full"><CheckCircle className="text-green-500" size={32} /></div><h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-3">Credential Secured</h2><p className="text-gray-500 dark:text-gray-400 text-sm">Your new credential has been saved.</p></div><div className="space-y-3 bg-gray-50 dark:bg-[#101828] border border-gray-200 dark:border-gray-700 p-4 rounded-xl"><div className="flex justify-between items-center gap-4"><span className="text-gray-500 dark:text-gray-400 text-sm flex-shrink-0">Username</span><span className="font-medium text-gray-700 dark:text-gray-200 break-all text-right">{username}</span></div><div className="w-full h-px bg-gray-200 dark:bg-gray-700"></div><div className="flex justify-between items-center gap-4"><span className="text-gray-500 dark:text-gray-400 text-sm flex-shrink-0">Website</span><span className="font-medium text-gray-700 dark:text-gray-200 break-all text-right">{website}</span></div></div><div className="bg-gray-100 dark:bg-[#101828] p-4 rounded-lg flex items-center justify-between gap-4 border border-gray-200 dark:border-gray-700"><span className="font-mono text-blue-600 dark:text-blue-400 text-lg break-all">{password}</span><motion.button onClick={copyToClipboard} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0">{isCopied ? <Check size={20} className="text-green-500" /> : <Copy size={20} />}</motion.button></div><motion.button onClick={onClose} className="w-full mt-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg text-white font-semibold">Done</motion.button></div></motion.div></motion.div>);
 };
 
 type CredentialType = 'smart' | 'memorable' | 'pin';
@@ -266,28 +266,28 @@ export default function CreatePasswordPage() {
                 <div className="w-full lg:w-1/2 flex-shrink-0 space-y-6">
                     <Panel className="p-1.5 flex justify-center gap-1">
                         {(['generator', 'manual'] as CreationMode[]).map(m => (
-                            <button key={m} onClick={() => setMode(m)} className="relative w-full px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:text-blue-600">
-                                {mode === m && <motion.div layoutId="active-mode-pill" className="absolute inset-0 bg-blue-100 rounded-lg" />}
+                            <button key={m} onClick={() => setMode(m)} className="relative w-full px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                {mode === m && <motion.div layoutId="active-mode-pill" className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-lg" />}
                                 <span className="relative z-10 capitalize font-semibold">{m}</span>
                             </button>
                         ))}
                     </Panel>
                     <Panel className="p-6">
                         <div className="flex flex-col gap-4">
-                            <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 border border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base" />
-                            <input type="text" value={customUsername} onChange={(e) => setCustomUsername(e.target.value)} placeholder="Custom Username (optional)" className="w-full bg-gray-100 border border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base" />
+                            <input type="text" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Website Name or URL (e.g., Google)" className="w-full bg-gray-100 dark:bg-[#101828] border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 dark:text-gray-100 dark:placeholder:text-gray-500 text-base" />
+                            <input type="text" value={customUsername} onChange={(e) => setCustomUsername(e.target.value)} placeholder="Custom Username (optional)" className="w-full bg-gray-100 dark:bg-[#101828] border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 dark:text-gray-100 dark:placeholder:text-gray-500 text-base" />
                             {mode === 'manual' && (
-                                <input type="text" value={manualPassword} onChange={(e) => setManualPassword(e.target.value)} placeholder="Enter your password" className="w-full bg-gray-100 border border-gray-300 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 text-base font-mono" />
+                                <input type="text" value={manualPassword} onChange={(e) => setManualPassword(e.target.value)} placeholder="Enter your password" className="w-full bg-gray-100 dark:bg-[#101828] border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 focus:ring-blue-500 focus:border-blue-500 dark:text-gray-100 dark:placeholder:text-gray-500 text-base font-mono" />
                             )}
-                            <motion.button onClick={handleSave} disabled={isSaving || !website || (mode === 'manual' ? !manualPassword : !generatedCredential)} className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold disabled:bg-blue-400 disabled:cursor-not-allowed">{isSaving ? 'Saving...' : 'Save Securely'}</motion.button>
+                            <motion.button onClick={handleSave} disabled={isSaving || !website || (mode === 'manual' ? !manualPassword : !generatedCredential)} className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg text-white font-semibold disabled:bg-blue-400 dark:disabled:bg-blue-700 disabled:cursor-not-allowed">{isSaving ? 'Saving...' : 'Save Securely'}</motion.button>
                         </div>
                     </Panel>
                     {mode === 'generator' && (
                         <>
                             <Panel initial="hidden" animate="visible" className="p-1.5 flex justify-center gap-1">
                                 {(['smart', 'memorable', 'pin'] as CredentialType[]).map(type => (
-                                    <button key={type} onClick={() => setCredentialType(type)} className="relative w-full px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:text-blue-600">
-                                        {credentialType === type && <motion.div layoutId="active-pill" className="absolute inset-0 bg-blue-100 rounded-lg" />}
+                                    <button key={type} onClick={() => setCredentialType(type)} className="relative w-full px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                        {credentialType === type && <motion.div layoutId="active-pill" className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-lg" />}
                                         <span className="relative z-10 capitalize font-semibold">{type}</span>
                                     </button>
                                 ))}
@@ -299,8 +299,8 @@ export default function CreatePasswordPage() {
                                     </AnimatePresence>
                                 </div>
                                 <div className="flex items-center gap-4 mt-2">
-                                    <motion.button onClick={generateCredential} className="p-3 rounded-full text-gray-500 hover:text-blue-600 bg-gray-100"><RefreshCw size={18} /></motion.button>
-                                    <motion.button onClick={copyToClipboard} className="p-3 rounded-full text-gray-500 hover:text-blue-600 bg-gray-100">
+                                    <motion.button onClick={generateCredential} className="p-3 rounded-full text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-[#101828]"><RefreshCw size={18} /></motion.button>
+                                    <motion.button onClick={copyToClipboard} className="p-3 rounded-full text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-[#101828]">
                                         {isCopied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
                                     </motion.button>
                                 </div>
@@ -310,16 +310,16 @@ export default function CreatePasswordPage() {
                                     {credentialType === 'smart' && (
                                         <motion.div key="smart" className="space-y-5">
                                             <div className="flex flex-col">
-                                                <label className="flex justify-between text-sm text-gray-500 mb-2"><span>Length</span> <strong>{options.smart.length}</strong></label>
-                                                <input type="range" min="6" max="64" value={options.smart.length} onChange={(e) => handleOptionChange('smart', 'length', parseInt(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg accent-blue-500"/>
+                                                <label className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-2"><span>Length</span> <strong className="dark:text-gray-200">{options.smart.length}</strong></label>
+                                                <input type="range" min="6" max="64" value={options.smart.length} onChange={(e) => handleOptionChange('smart', 'length', parseInt(e.target.value))} className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg accent-blue-500"/>
                                             </div>
                                             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                                 {(['uppercase', 'lowercase', 'numbers', 'symbols'] as (keyof SmartOptions)[]).map(key => (
                                                     <div key={key} onClick={() => handleOptionChange('smart', key, !options.smart[key])} className="flex items-center gap-3 cursor-pointer">
-                                                        <div className={`w-5 h-5 rounded-md border-2 ${options.smart[key] ? 'border-blue-500 bg-blue-500' : 'border-gray-300'} flex items-center justify-center`}>
+                                                        <div className={`w-5 h-5 rounded-md border-2 ${options.smart[key] ? 'border-blue-500 bg-blue-500' : 'border-gray-300 dark:border-gray-600'} flex items-center justify-center`}>
                                                             {options.smart[key] && <Check size={14} className="text-white" />}
                                                         </div>
-                                                        <label className="text-base cursor-pointer select-none">{smartOptionLabels[key as keyof typeof smartOptionLabels]}</label>
+                                                        <label className="text-base cursor-pointer select-none dark:text-gray-200">{smartOptionLabels[key as keyof typeof smartOptionLabels]}</label>
                                                     </div>
                                                 ))}
                                             </div>
@@ -328,22 +328,22 @@ export default function CreatePasswordPage() {
                                     {credentialType === 'memorable' && (
                                         <motion.div key="memorable" className="space-y-5">
                                             <div className="flex flex-col">
-                                                <label className="flex justify-between text-sm text-gray-500 mb-2"><span>Words</span> <strong>{options.memorable.words}</strong></label>
-                                                <input type="range" min="3" max="10" value={options.memorable.words} onChange={(e) => handleOptionChange('memorable', 'words', parseInt(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg accent-blue-500"/>
+                                                <label className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-2"><span>Words</span> <strong className="dark:text-gray-200">{options.memorable.words}</strong></label>
+                                                <input type="range" min="3" max="10" value={options.memorable.words} onChange={(e) => handleOptionChange('memorable', 'words', parseInt(e.target.value))} className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg accent-blue-500"/>
                                             </div>
                                             <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleOptionChange('memorable', 'capitalize', !options.memorable.capitalize)}>
-                                                <div className={`w-5 h-5 rounded-md border-2 ${options.memorable.capitalize ? 'border-blue-500 bg-blue-500' : 'border-gray-300'} flex items-center justify-center`}>
+                                                <div className={`w-5 h-5 rounded-md border-2 ${options.memorable.capitalize ? 'border-blue-500 bg-blue-500' : 'border-gray-300 dark:border-gray-600'} flex items-center justify-center`}>
                                                     {options.memorable.capitalize && <Check size={14} className="text-white" />}
                                                 </div>
-                                                <label className="text-base cursor-pointer select-none">Capitalize</label>
+                                                <label className="text-base cursor-pointer select-none dark:text-gray-200">Capitalize</label>
                                             </div>
                                         </motion.div>
                                     )}
                                     {credentialType === 'pin' && (
                                         <motion.div key="pin" className="space-y-5">
                                             <div className="flex flex-col">
-                                                <label className="flex justify-between text-sm text-gray-500 mb-2"><span>Length</span> <strong>{options.pin.length}</strong></label>
-                                                <input type="range" min="4" max="20" value={options.pin.length} onChange={(e) => handleOptionChange('pin', 'length', parseInt(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg accent-blue-500"/>
+                                                <label className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-2"><span>Length</span> <strong className="dark:text-gray-200">{options.pin.length}</strong></label>
+                                                <input type="range" min="4" max="20" value={options.pin.length} onChange={(e) => handleOptionChange('pin', 'length', parseInt(e.target.value))} className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg accent-blue-500"/>
                                             </div>
                                         </motion.div>
                                     )}

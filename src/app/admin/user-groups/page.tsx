@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { IoGrid } from "react-icons/io5";
+
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { 
@@ -174,18 +176,15 @@ const UserGroupsPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#101828] p-6">
+        <div className="min-h-screen bg-white dark:bg-[#101828]">
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                            <Users className="text-blue-600 dark:text-blue-400" size={32} />
                             User Groups
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mt-2">
-                            Manage and organize user groups
-                        </p>
+                        
                     </div>
                     <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -215,7 +214,7 @@ const UserGroupsPage = () => {
                             onClick={() => setViewMode('grid')}
                             className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                         >
-                            <Grid3x3 size={20} />
+                            <IoGrid size={20} />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
