@@ -1,5 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     createOidcClient,
     deleteOidcClient,
@@ -10,6 +12,7 @@ import {
 type Provider = 'OIDC' | 'SAML2';
 
 export default function SsoManagementPage() {
+    const router = useRouter();
     const [provider, setProvider] = useState<Provider>('OIDC'); // for now we show only OIDC flows
     const [apps, setApps] = useState<OidcClient[]>([]);
     const [loading, setLoading] = useState(false);
@@ -22,6 +25,9 @@ export default function SsoManagementPage() {
     const [postLogoutUris, setPostLogoutUris] = useState('');
     const [scope, setScope] = useState('openid offline');
     const [saving, setSaving] = useState(false);
+    const [createResponse, setCreateResponse] = useState<any | null>(null);
+    const [productionEndpoints, setProductionEndpoints] = useState<any | null>(null);
+    const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const redirectUrisArray = useMemo(
         () =>
@@ -80,7 +86,14 @@ export default function SsoManagementPage() {
                 token_endpoint_auth_method:
                     clientType === 'public' ? 'none' : 'client_secret_basic',
             };
-            await createOidcClient(payload);
+            const res = await createOidcClient(payload);
+            // normalize response: api may return { client: {...} } or the client object directly
+            const created = res?.client ?? res?.data ?? res;
+            const production_endpoints = res?.production_endpoints || {};
+            setCreateResponse(created);
+            setProductionEndpoints(production_endpoints);
+
+            // keep form values cleared so admin can create another if needed
             setClientName('');
             setRedirectUris('');
             setPostLogoutUris('');
@@ -91,6 +104,16 @@ export default function SsoManagementPage() {
             setError(e?.error || e?.message || 'Failed to create application');
         } finally {
             setSaving(false);
+        }
+    }
+
+    async function copyToClipboard(text: string, field: string) {
+        try {
+            await navigator.clipboard.writeText(text || '');
+            setCopiedField(field);
+            setTimeout(() => setCopiedField(null), 2000);
+        } catch (err) {
+            // ignore
         }
     }
 
@@ -247,6 +270,187 @@ export default function SsoManagementPage() {
                         </button>
                     </div>
                 </form>
+
+                {createResponse && (
+                    <div className="mt-4 bg-green-50 border border-green-200 p-4 rounded-md">
+                        <div className="flex items-start gap-2 mb-2">
+                            <div className="w-5 h-5 text-green-600 mt-0.5">✓</div>
+                            <div>
+                                <h3 className="text-sm font-medium text-green-800">
+                                    Application created successfully!
+                                </h3>
+                                <p className="text-xs text-green-700 mt-1">
+                                    Click on the application name or ID below to view details.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2">
+                            <div className="flex items-center justify-between">
+                                <div className="text-xs text-gray-700">Client ID</div>
+                                <div className="flex items-center gap-2">
+                                    <code className="font-mono text-xs text-gray-800">
+                                        {createResponse.client_id || createResponse.id || '-'}
+                                    </code>
+                                    <button
+                                        onClick={() =>
+                                            copyToClipboard(
+                                                createResponse.client_id || createResponse.id || '',
+                                                'client_id'
+                                            )
+                                        }
+                                        className="text-sm text-indigo-600 hover:underline"
+                                    >
+                                        {copiedField === 'client_id' ? 'Copied' : 'Copy'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {createResponse.client_secret && (
+                                <div className="flex items-center justify-between">
+                                    <div className="text-xs text-gray-700">Client Secret</div>
+                                    <div className="flex items-center gap-2">
+                                        <code className="font-mono text-xs text-gray-800">
+                                            {createResponse.client_secret}
+                                        </code>
+                                        <button
+                                            onClick={() =>
+                                                copyToClipboard(
+                                                    createResponse.client_secret,
+                                                    'client_secret'
+                                                )
+                                            }
+                                            className="text-sm text-indigo-600 hover:underline"
+                                        >
+                                            {copiedField === 'client_secret' ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {createResponse.registration_access_token && (
+                                <div className="flex items-center justify-between">
+                                    <div className="text-xs text-gray-700">
+                                        Registration Access Token
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <code className="font-mono text-xs text-gray-800">
+                                            {createResponse.registration_access_token}
+                                        </code>
+                                        <button
+                                            onClick={() =>
+                                                copyToClipboard(
+                                                    createResponse.registration_access_token,
+                                                    'registration_access_token'
+                                                )
+                                            }
+                                            className="text-sm text-indigo-600 hover:underline"
+                                        >
+                                            {copiedField === 'registration_access_token'
+                                                ? 'Copied'
+                                                : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {createResponse.registration_client_uri && (
+                                <div className="flex items-center justify-between">
+                                    <div className="text-xs text-gray-700">
+                                        Registration Client URI
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <a
+                                            className="text-xs text-indigo-600 hover:underline max-w-xs break-all"
+                                            href={createResponse.registration_client_uri}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            {createResponse.registration_client_uri}
+                                        </a>
+                                        <button
+                                            onClick={() =>
+                                                copyToClipboard(
+                                                    createResponse.registration_client_uri,
+                                                    'registration_client_uri'
+                                                )
+                                            }
+                                            className="text-sm text-indigo-600 hover:underline"
+                                        >
+                                            {copiedField === 'registration_client_uri'
+                                                ? 'Copied'
+                                                : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {productionEndpoints && Object.keys(productionEndpoints).length > 0 && (
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                    <div className="text-sm text-blue-800 mb-3 font-semibold flex items-center gap-2">
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm6 2a1 1 0 100-2 1 1 0 000 2z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        Production Endpoints
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {Object.entries(productionEndpoints).map(([k, v]) => (
+                                            <div
+                                                key={k}
+                                                className="bg-white border border-blue-100 rounded-md p-3"
+                                            >
+                                                <div className="text-blue-700 font-medium text-sm mb-2 capitalize">
+                                                    {k.replace(/_/g, ' ')}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <a
+                                                        href={String(v)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="flex-1 text-indigo-600 hover:underline break-all font-mono text-xs bg-gray-50 px-3 py-2 rounded border"
+                                                    >
+                                                        {String(v)}
+                                                    </a>
+                                                    <button
+                                                        onClick={() =>
+                                                            copyToClipboard(
+                                                                String(v),
+                                                                `endpoint_${k}`
+                                                            )
+                                                        }
+                                                        className="px-3 py-2 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded border border-blue-200 transition-colors whitespace-nowrap"
+                                                    >
+                                                        {copiedField === `endpoint_${k}`
+                                                            ? 'Copied!'
+                                                            : 'Copy'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
+                                <details className="text-xs">
+                                    <summary className="cursor-pointer text-sm text-gray-700">
+                                        Full response
+                                    </summary>
+                                    <pre className="mt-2 max-h-48 overflow-auto text-xs bg-white p-2 rounded border">
+                                        {JSON.stringify(createResponse, null, 2)}
+                                    </pre>
+                                </details>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* List */}
@@ -282,10 +486,24 @@ export default function SsoManagementPage() {
                                         className="border-b last:border-0"
                                     >
                                         <td className="py-3 pr-4 text-gray-900">
-                                            {c.client_name || '-'}
+                                            <Link
+                                                href={`/admin/sso-management/${encodeURIComponent(
+                                                    c.client_id || c.id || ''
+                                                )}`}
+                                                className="text-indigo-600 hover:underline"
+                                            >
+                                                {c.client_name || '-'}
+                                            </Link>
                                         </td>
                                         <td className="py-3 pr-4 font-mono text-gray-800 text-xs">
-                                            {c.client_id || c.id}
+                                            <Link
+                                                href={`/admin/sso-management/${encodeURIComponent(
+                                                    c.client_id || c.id || ''
+                                                )}`}
+                                                className="text-indigo-600 hover:underline"
+                                            >
+                                                {c.client_id || c.id}
+                                            </Link>
                                         </td>
                                         <td className="py-3 pr-4">
                                             <span
