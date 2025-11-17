@@ -144,101 +144,58 @@ export default function OidcLogin() {
         }
     }
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="bg-white p-8 rounded-xl shadow-lg">
-                    <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                        <span className="ml-3 text-gray-700 text-lg">Authorizing...</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <div>Authorizing...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
-                <div className="text-center mb-6">
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">Sign in</h3>
-                    <p className="text-gray-600">Enter your credentials to continue</p>
+        <div style={{ maxWidth: 360 }}>
+            <h3>Sign in</h3>
+            {error ? <div style={{ color: 'red' }}>{error}</div> : null}
+            <form onSubmit={onSubmit}>
+                <div>
+                    <label>Username</label>
+                    <input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        autoComplete="username"
+                        required
+                    />
                 </div>
-
-                {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
-                        {error}
+                <div>
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                        required
+                    />
+                </div>
+                {totpRequired && (
+                    <div>
+                        <label>TOTP</label>
+                        <input
+                            inputMode="numeric"
+                            pattern="\d*"
+                            value={totpToken}
+                            onChange={(e) => setTotpToken(e.target.value)}
+                            placeholder="123456"
+                        />
                     </div>
                 )}
-
-                <form onSubmit={onSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Email
-                        </label>
-                        <input
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            autoComplete="email"
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your email"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            autoComplete="current-password"
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your password"
-                        />
-                    </div>
-
-                    {totpRequired && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                TOTP Code
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="\d*"
-                                value={totpToken}
-                                onChange={(e) => setTotpToken(e.target.value)}
-                                placeholder="123456"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
-                            />
-                        </div>
-                    )}
-
-                    <div className="flex flex-col gap-3 pt-4">
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {submitting ? 'Signing in...' : 'Sign in'}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={onPasskey}
-                            disabled={submitting}
-                            className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            Sign in with passkey
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button type="submit" disabled={submitting}>
+                        {submitting ? 'Signing in...' : 'Sign in'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onPasskey}
+                        disabled={submitting}
+                        style={{ padding: '6px 10px', borderRadius: 6 }}
+                    >
+                        Sign in with passkey
+                    </button>
+                </div>
+            </form>
         </div>
     );
 }

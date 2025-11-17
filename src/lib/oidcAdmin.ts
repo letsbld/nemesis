@@ -65,6 +65,13 @@ export async function createOidcClient(payload: OidcClient): Promise<any> {
     });
 }
 
+export async function getOidcClient(id: string): Promise<any> {
+    return apiFetch(`${base}/${encodeURIComponent(id)}`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+}
+
 export async function deleteOidcClient(id: string): Promise<{ success: boolean } | any> {
     return apiFetch(`${base}/${encodeURIComponent(id)}`, {
         method: 'DELETE',
