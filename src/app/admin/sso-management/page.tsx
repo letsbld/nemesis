@@ -384,47 +384,56 @@ export default function SsoManagementPage() {
                                 </div>
                             )}
 
-                            {createResponse.production_endpoints && (
-                                <div className="mt-2">
-                                    <div className="text-xs text-gray-700 mb-2 font-medium">
+                            {productionEndpoints && Object.keys(productionEndpoints).length > 0 && (
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                    <div className="text-sm text-blue-800 mb-3 font-semibold flex items-center gap-2">
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm6 2a1 1 0 100-2 1 1 0 000 2z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
                                         Production Endpoints
                                     </div>
-                                    <div className="grid grid-cols-1 gap-2 text-xs">
-                                        {Object.entries(createResponse.production_endpoints).map(
-                                            ([k, v]) => (
-                                                <div
-                                                    key={k}
-                                                    className="border-l-2 border-gray-200 pl-3"
-                                                >
-                                                    <div className="text-gray-600 font-medium capitalize mb-1">
-                                                        {k.replace(/_/g, ' ')}
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <a
-                                                            href={String(v)}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="text-indigo-600 hover:underline break-all font-mono text-xs bg-gray-50 px-2 py-1 rounded"
-                                                        >
-                                                            {String(v)}
-                                                        </a>
-                                                        <button
-                                                            onClick={() =>
-                                                                copyToClipboard(
-                                                                    String(v),
-                                                                    `endpoint_${k}`
-                                                                )
-                                                            }
-                                                            className="text-sm text-indigo-600 hover:underline whitespace-nowrap"
-                                                        >
-                                                            {copiedField === `endpoint_${k}`
-                                                                ? 'Copied'
-                                                                : 'Copy'}
-                                                        </button>
-                                                    </div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {Object.entries(productionEndpoints).map(([k, v]) => (
+                                            <div
+                                                key={k}
+                                                className="bg-white border border-blue-100 rounded-md p-3"
+                                            >
+                                                <div className="text-blue-700 font-medium text-sm mb-2 capitalize">
+                                                    {k.replace(/_/g, ' ')}
                                                 </div>
-                                            )
-                                        )}
+                                                <div className="flex items-center gap-2">
+                                                    <a
+                                                        href={String(v)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="flex-1 text-indigo-600 hover:underline break-all font-mono text-xs bg-gray-50 px-3 py-2 rounded border"
+                                                    >
+                                                        {String(v)}
+                                                    </a>
+                                                    <button
+                                                        onClick={() =>
+                                                            copyToClipboard(
+                                                                String(v),
+                                                                `endpoint_${k}`
+                                                            )
+                                                        }
+                                                        className="px-3 py-2 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded border border-blue-200 transition-colors whitespace-nowrap"
+                                                    >
+                                                        {copiedField === `endpoint_${k}`
+                                                            ? 'Copied!'
+                                                            : 'Copy'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
