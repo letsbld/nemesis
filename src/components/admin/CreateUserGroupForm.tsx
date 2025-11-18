@@ -1,24 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import CustomButton from '@/components/ui/customButton';
-import { CreateUserGroupData } from '@/types/admin.types';
+import { useState, useEffect } from 'react';
+import { CreateUserGroupData, UserGroupData } from '@/types/admin.types';
+import { X } from 'lucide-react';
 
 interface CreateUserGroupFormProps {
     onSubmit: (groupData: CreateUserGroupData) => void;
     onCancel: () => void;
     isLoading?: boolean;
+    initialData?: UserGroupData | null;
+    mode?: 'create' | 'edit';
 } 
 
 export function CreateUserGroupForm({
     onSubmit,
     onCancel,
     isLoading = false,
+    initialData = null,
+    mode = 'create',
 }: CreateUserGroupFormProps) {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
     });
+
+    useEffect(() => {
+        if (initialData && mode === 'edit') {
+            setFormData({
+                name: initialData.name,
+                description: initialData.description || '',
+            });
+        }
+    }, [initialData, mode]);
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -60,52 +73,71 @@ export function CreateUserGroupForm({
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Create New User Group</h2>
+        <div className="bg-white dark:bg-gray-800">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {mode === 'create' ? 'Create User Group' : 'Edit User Group'}
+                </h2>
+                <button
+                    onClick={onCancel}
+                    type="button"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                    <X size={20} className="text-gray-600 dark:text-gray-400" />
+                </button>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div>
-                    <label className="block text-sm font-medium mb-1">Group Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Group Name *
+                    </label>
                     <input
                         type="text"
                         name="name"
+                        required
                         value={formData.name}
                         onChange={handleChange}
-                        className={`w-full p-2 border rounded-md ${
-                            errors.name ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 ${
+                            errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                         }`}
-                        placeholder="e.g., Engineering, Marketing, HR"
+                        placeholder="Enter group name"
                         disabled={isLoading}
                     />
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Description
+                    </label>
                     <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
-                        rows={3}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Brief description of the group"
+                        rows={4}
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100"
+                        placeholder="Enter group description"
                         disabled={isLoading}
                     />
                 </div>
 
-                <div className="flex gap-4 pt-4">
-                    <CustomButton
-                        name={isLoading ? 'Creating...' : 'Create Group'}
-                        btnType="submit"
-                        style="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                        loading={isLoading}
-                    />
-                    <CustomButton
-                        name="Cancel"
-                        btnType="button"
+                <div className="flex gap-3 pt-4">
+                    <button
+                        type="button"
                         onClick={onCancel}
-                        style="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2"
-                    />
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+                        disabled={isLoading}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:bg-blue-400 dark:disabled:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                        {isLoading ? (mode === 'create' ? 'Creating...' : 'Updating...') : (mode === 'create' ? 'Create Group' : 'Update Group')}
+                    </button>
                 </div>
             </form>
         </div>
