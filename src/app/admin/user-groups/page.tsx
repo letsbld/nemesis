@@ -31,6 +31,7 @@ import { CreateUserGroupForm } from '@/components/admin/CreateUserGroupForm';
 import { Card, Dropdown, DropdownItem } from "flowbite-react";
 
 
+
 const UserGroupsPage = () => {
     const router = useRouter();
     const [groups, setGroups] = useState<UserGroupData[]>([]);
@@ -167,12 +168,7 @@ const UserGroupsPage = () => {
         setSelectedGroup(null);
     };
 
-    const handleViewMembers = (group: UserGroupData) => {
-        const data = apiFetch(`/user-group/${group.id}`);
-        setSelectedGroupForMembers(group);
-        setShowMembersModal(true);
-        <UserGroupMembersList groupId={selectedGroupForMembers?.id || ''} onMemberRemoved={fetchGroups} />
-    };
+   
 
     const closeMembersModal = () => {
         setShowMembersModal(false);
@@ -259,7 +255,7 @@ const UserGroupsPage = () => {
                                         </h3>
                                         <Badge 
                                             className="bg-[#EEF6FF] hover:bg-[#D6E4FF] dark:hover:bg-[#466cdd] border-[#BEDBFF] text-[#1C398E] dark:bg-[#1C398E] dark:border-[#1C398E] dark:text-[#EEF6FF] cursor-pointer" 
-                                            onClick={() => handleViewMembers(group)}
+                                            onClick={() => router.push(`/components/admin/userGroupMembersList?id=${group.id}`)}
                                         >
                                             <span>
                                                 {memberCounts[group.id] || 0} {memberCounts[group.id] === 1 ? 'member' : 'members'}
@@ -385,7 +381,7 @@ const UserGroupsPage = () => {
                         <TableCell className="px-6 py-4">
                             <Badge
                                 color="info"
-                                onClick={() => handleViewMembers(group)}
+                                onClick={() => router.push('/components/admin/userGroupMembersList')}
                                 className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors inline-flex items-center gap-2"
                             >
                 
@@ -441,19 +437,19 @@ const UserGroupsPage = () => {
             )}
 
             {/* Create/Edit Modal */}
-            <Modal
-                show={showCreateModal || showEditModal}
-                onClose={closeModals}
-                size="md"
-            >
-                <CreateUserGroupForm
-                    onSubmit={showCreateModal ? handleCreateGroup : handleUpdateGroup}
-                    onCancel={closeModals}
-                    isLoading={isSubmitting}
-                    initialData={selectedGroup}
-                    mode={showCreateModal ? 'create' : 'edit'}
-                />
-            </Modal>
+            <CreateUserGroupForm
+                onSubmit={showCreateModal ? handleCreateGroup : handleUpdateGroup}
+                onCancel={closeModals}
+                openModal={showCreateModal || showEditModal}
+                setOpenModal={(value) => {
+                    if (!value) {
+                        closeModals();
+                    }
+                }}
+                isLoading={isSubmitting}
+                initialData={selectedGroup}
+                mode={showCreateModal ? 'create' : 'edit'}
+            />
 
             {/* Members List Modal */}
             <Modal
