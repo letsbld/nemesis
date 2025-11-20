@@ -8,22 +8,85 @@ import {
     listOidcClients,
     type OidcClient,
 } from '@/lib/oidcAdmin';
+import { apiFetch } from '@/lib/apiFetch';
 
 type Provider = 'OIDC' | 'SAML2';
 
+type SamlServiceProvider = {
+    id: string;
+    name: string;
+    entityId: string;
+    acsUrl: string;
+    sloUrl?: string;
+    metadataUrl?: string;
+    description?: string;
+    isActive: boolean;
+    attributeMapping?: Record<string, string>;
+    createdAt: string;
+    createdBy?: string;
+};
+
+type Application = OidcClient | SamlServiceProvider;
+
+// SAML API functions
+const createSamlServiceProvider = async (sp: Partial<SamlServiceProvider>, metadataFile?: File) => {
+    const formData = new FormData();
+
+    // Add all SP data to FormData
+    Object.entries(sp).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            if (typeof value === 'object') {
+                formData.append(key, JSON.stringify(value));
+            } else {
+                formData.append(key, String(value));
+            }
+        }
+    });
+
+    // Add metadata file if provided
+    if (metadataFile) {
+        formData.append('metadataFile', metadataFile);
+    }
+
+    return await apiFetch('/saml/admin/sp/register', {
+        method: 'POST',
+        body: formData,
+    });
+};
+
+const listSamlServiceProviders = async (): Promise<SamlServiceProvider[]> => {
+    const data = await apiFetch('/saml/admin/sp/list');
+    return data.serviceProviders || [];
+};
+
+const deleteSamlServiceProvider = async (id: string) => {
+    return await apiFetch(`/saml/admin/sp/${id}`, { method: 'DELETE' });
+};
+
 export default function SsoManagementPage() {
     const router = useRouter();
-    const [provider, setProvider] = useState<Provider>('OIDC'); // for now we show only OIDC flows
-    const [apps, setApps] = useState<OidcClient[]>([]);
+    const [provider, setProvider] = useState<Provider>('OIDC');
+    const [apps, setApps] = useState<Application[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Create form (OIDC only for now)
+    // Create form - OIDC fields
     const [clientName, setClientName] = useState('');
-    const [clientType, setClientType] = useState<'public' | 'confidential'>('public');
+    const [clientType, setClientType] = useState<'public' | 'confidential'>('confidential');
     const [redirectUris, setRedirectUris] = useState('');
     const [postLogoutUris, setPostLogoutUris] = useState('');
-    const [scope, setScope] = useState('openid offline');
+    const [scope, setScope] = useState('openid profile email');
+
+    // Create form - SAML fields
+    const [samlName, setSamlName] = useState('');
+    const [entityId, setEntityId] = useState('');
+    const [acsUrl, setAcsUrl] = useState('');
+    const [sloUrl, setSloUrl] = useState('');
+    const [metadataUrl, setMetadataUrl] = useState('');
+    const [metadataFile, setMetadataFile] = useState<File | null>(null);
+    const [metadataSource, setMetadataSource] = useState<'url' | 'file' | 'manual'>('manual');
+    const [description, setDescription] = useState('');
+
     const [saving, setSaving] = useState(false);
     const [createResponse, setCreateResponse] = useState<any | null>(null);
     const [productionEndpoints, setProductionEndpoints] = useState<any | null>(null);
@@ -50,9 +113,31 @@ export default function SsoManagementPage() {
         setLoading(true);
         setError(null);
         try {
-            // For now provider filter is OIDC
-            const list = await listOidcClients();
-            setApps(list);
+            let allApps: Application[] = [];
+
+            // Load OIDC clients
+            try {
+                const oidcClients = await listOidcClients();
+                allApps = [
+                    ...allApps,
+                    ...oidcClients.map((app) => ({ ...app, type: 'OIDC' as const })),
+                ];
+            } catch (e) {
+                console.error('Failed to load OIDC clients:', e);
+            }
+
+            // Load SAML Service Providers
+            try {
+                const samlSPs = await listSamlServiceProviders();
+                allApps = [
+                    ...allApps,
+                    ...samlSPs.map((app) => ({ ...app, type: 'SAML2' as const })),
+                ];
+            } catch (e) {
+                console.error('Failed to load SAML SPs:', e);
+            }
+
+            setApps(allApps);
         } catch (e: any) {
             setError(e?.error || e?.message || 'Failed to load applications');
         } finally {
@@ -70,35 +155,67 @@ export default function SsoManagementPage() {
         setSaving(true);
         setError(null);
         try {
-            if (provider !== 'OIDC') {
-                // Placeholder: in future, wire SAML creation flow
-                throw new Error('Only OIDC creation is supported for now');
-            }
-            const payload: OidcClient = {
-                client_name: clientName,
-                redirect_uris: redirectUrisArray,
-                post_logout_redirect_uris: postLogoutUrisArray.length
-                    ? postLogoutUrisArray
-                    : undefined,
-                grant_types: ['authorization_code', 'refresh_token'],
-                response_types: ['code', 'id_token'],
-                scope,
-                token_endpoint_auth_method:
-                    clientType === 'public' ? 'none' : 'client_secret_basic',
-            };
-            const res = await createOidcClient(payload);
-            // normalize response: api may return { client: {...} } or the client object directly
-            const created = res?.client ?? res?.data ?? res;
-            const production_endpoints = res?.production_endpoints || {};
-            setCreateResponse(created);
-            setProductionEndpoints(production_endpoints);
+            if (provider === 'OIDC') {
+                const payload: OidcClient = {
+                    client_name: clientName,
+                    redirect_uris: redirectUrisArray,
+                    post_logout_redirect_uris: postLogoutUrisArray.length
+                        ? postLogoutUrisArray
+                        : undefined,
+                    grant_types: ['authorization_code', 'refresh_token'],
+                    response_types: ['code', 'id_token'],
+                    scope,
+                    token_endpoint_auth_method:
+                        clientType === 'public' ? 'none' : 'client_secret_basic',
+                };
+                const res = await createOidcClient(payload);
+                // normalize response: api may return { client: {...} } or the client object directly
+                const created = res?.client ?? res?.data ?? res;
+                const production_endpoints = res?.production_endpoints || {};
+                setCreateResponse(created);
+                setProductionEndpoints(production_endpoints);
 
-            // keep form values cleared so admin can create another if needed
-            setClientName('');
-            setRedirectUris('');
-            setPostLogoutUris('');
-            setScope('openid offline');
-            setClientType('public');
+                // Clear OIDC form fields
+                setClientName('');
+                setRedirectUris('');
+                setPostLogoutUris('');
+                setScope('openid offline');
+                setClientType('public');
+            } else if (provider === 'SAML2') {
+                const payload = {
+                    name: samlName,
+                    // Only include entityId and acsUrl if no metadata is provided
+                    entityId: metadataSource === 'manual' ? entityId : undefined,
+                    acsUrl: metadataSource === 'manual' ? acsUrl : undefined,
+                    sloUrl: sloUrl || undefined,
+                    metadataUrl: metadataSource === 'url' ? metadataUrl : undefined,
+                    description: description || undefined,
+                    isActive: true,
+                    attributeMapping: {
+                        email: 'email',
+                        firstName: 'firstName',
+                        lastName: 'lastName',
+                        role: 'role',
+                    },
+                };
+                const res = await createSamlServiceProvider(
+                    payload,
+                    metadataSource === 'file' && metadataFile ? metadataFile : undefined
+                );
+                setCreateResponse(res.serviceProvider);
+                setProductionEndpoints(res.idpInfo || {});
+
+                // Clear SAML form fields
+                setSamlName('');
+                setEntityId('');
+                setAcsUrl('');
+                setSloUrl('');
+                setMetadataUrl('');
+                setMetadataFile(null);
+                setMetadataSource('manual');
+                setDescription('');
+            }
+
             await refresh();
         } catch (e: any) {
             setError(e?.error || e?.message || 'Failed to create application');
@@ -117,14 +234,21 @@ export default function SsoManagementPage() {
         }
     }
 
-    async function onDelete(id?: string) {
-        if (!id) return;
+    async function onDelete(app: Application) {
+        const appId = app.id || (app as any).client_id;
+        if (!appId) return;
         if (!confirm('Delete this application?')) return;
         try {
-            await deleteOidcClient(id);
+            if ('client_id' in app || 'redirect_uris' in app) {
+                // OIDC client
+                await deleteOidcClient(appId);
+            } else {
+                // SAML Service Provider
+                await deleteSamlServiceProvider(appId);
+            }
             await refresh();
         } catch (e) {
-            // ignore
+            console.error('Failed to delete application:', e);
         }
     }
 
@@ -132,8 +256,8 @@ export default function SsoManagementPage() {
         <div className="p-6 md:p-8 bg-gray-50 min-h-screen text-gray-900">
             <h1 className="text-2xl font-semibold">SSO Applications</h1>
             <p className="text-gray-700 mt-1">
-                Create and manage SSO apps. Provider selection includes SAML 2.0 and OIDC;
-                currently, creation supports OIDC.
+                Create and manage SSO applications. Supports both OIDC and SAML 2.0 Service
+                Providers.
             </p>
 
             {/* Create form */}
@@ -155,19 +279,15 @@ export default function SsoManagementPage() {
                                 />
                                 <span>OIDC</span>
                             </label>
-                            <label
-                                className="inline-flex items-center gap-2 opacity-60 cursor-not-allowed"
-                                title="SAML support coming soon"
-                            >
+                            <label className="inline-flex items-center gap-2">
                                 <input
                                     type="radio"
                                     name="provider"
                                     value="SAML2"
-                                    disabled
                                     checked={provider === 'SAML2'}
                                     onChange={() => setProvider('SAML2')}
                                 />
-                                <span className="text-gray-700">SAML 2.0</span>
+                                <span>SAML 2.0</span>
                             </label>
                         </div>
                     </div>
@@ -184,7 +304,7 @@ export default function SsoManagementPage() {
                                     onChange={(e) => setClientName(e.target.value)}
                                     required
                                     className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
-                                    placeholder="My OIDC App"
+                                    placeholder="Enter your Application Name"
                                 />
                             </div>
 
@@ -249,11 +369,185 @@ export default function SsoManagementPage() {
                                     value={scope}
                                     onChange={(e) => setScope(e.target.value)}
                                     className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
-                                    placeholder="openid offline profile email"
+                                    placeholder="openid profile email"
                                 />
                                 <p className="text-xs text-gray-600 mt-1">
                                     Space-separated scopes. Defaults: openid offline
                                 </p>
+                            </div>
+                        </>
+                    )}
+
+                    {/* SAML fields */}
+                    {provider === 'SAML2' && (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-1">
+                                    Service Provider Name
+                                </label>
+                                <input
+                                    value={samlName}
+                                    onChange={(e) => setSamlName(e.target.value)}
+                                    required
+                                    className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
+                                    placeholder="AWS Production, Salesforce, etc."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-1">
+                                    Configuration Method
+                                </label>
+                                <div className="flex flex-col gap-2">
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="metadataSource"
+                                            value="manual"
+                                            checked={metadataSource === 'manual'}
+                                            onChange={(e) =>
+                                                setMetadataSource(e.target.value as 'manual')
+                                            }
+                                        />
+                                        <span>Manual Configuration</span>
+                                    </label>
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="metadataSource"
+                                            value="url"
+                                            checked={metadataSource === 'url'}
+                                            onChange={(e) =>
+                                                setMetadataSource(e.target.value as 'url')
+                                            }
+                                        />
+                                        <span>Import from Metadata URL</span>
+                                    </label>
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="metadataSource"
+                                            value="file"
+                                            checked={metadataSource === 'file'}
+                                            onChange={(e) =>
+                                                setMetadataSource(e.target.value as 'file')
+                                            }
+                                        />
+                                        <span>Upload Metadata File</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {metadataSource === 'file' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-1">
+                                        Metadata File
+                                    </label>
+                                    <div className="mt-1">
+                                        <input
+                                            type="file"
+                                            accept=".xml,.txt"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                setMetadataFile(file || null);
+                                            }}
+                                            className="block w-full text-sm text-gray-900 border border-gray-200 rounded-md cursor-pointer bg-gray-50 focus:outline-none focus:border-indigo-500"
+                                        />
+                                        {metadataFile && (
+                                            <div className="mt-2 text-sm text-gray-600">
+                                                Selected: {metadataFile.name} (
+                                                {Math.round(metadataFile.size / 1024)} KB)
+                                            </div>
+                                        )}
+                                        <p className="text-xs text-gray-600 mt-1">
+                                            Upload SP metadata XML file. Entity ID and ACS URL will
+                                            be extracted automatically.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {metadataSource === 'url' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-1">
+                                        Metadata URL
+                                    </label>
+                                    <input
+                                        value={metadataUrl}
+                                        onChange={(e) => setMetadataUrl(e.target.value)}
+                                        required
+                                        className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
+                                        placeholder="https://signin.aws.amazon.com/static/saml-metadata.xml"
+                                    />
+                                    <p className="text-xs text-gray-600 mt-1">
+                                        Entity ID and ACS URL will be extracted from the metadata
+                                        automatically.
+                                    </p>
+                                </div>
+                            )}
+
+                            {metadataSource === 'manual' && (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-1">
+                                            Entity ID
+                                        </label>
+                                        <input
+                                            value={entityId}
+                                            onChange={(e) => setEntityId(e.target.value)}
+                                            required
+                                            className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
+                                            placeholder="urn:amazon:webservices, https://saml.salesforce.com"
+                                        />
+                                        <p className="text-xs text-gray-600 mt-1">
+                                            Unique identifier provided by the Service Provider
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-1">
+                                            ACS URL (Assertion Consumer Service)
+                                        </label>
+                                        <input
+                                            value={acsUrl}
+                                            onChange={(e) => setAcsUrl(e.target.value)}
+                                            required
+                                            className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
+                                            placeholder="https://signin.aws.amazon.com/saml"
+                                        />
+                                        <p className="text-xs text-gray-600 mt-1">
+                                            URL where SAML responses will be sent
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-1">
+                                    SLO URL (Single Logout) - Optional
+                                </label>
+                                <input
+                                    value={sloUrl}
+                                    onChange={(e) => setSloUrl(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
+                                    placeholder="https://signin.aws.amazon.com/saml/logout"
+                                />
+                                <p className="text-xs text-gray-600 mt-1">
+                                    Optional logout URL. Can be provided manually or extracted from
+                                    metadata.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900 mb-1">
+                                    Description - Optional
+                                </label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full min-h-20 px-3 py-2 rounded-md border border-gray-200 text-gray-900 placeholder-gray-500"
+                                    placeholder="Production AWS account for company SSO"
+                                />
                             </div>
                         </>
                     )}
@@ -286,7 +580,9 @@ export default function SsoManagementPage() {
                         </div>
                         <div className="grid grid-cols-1 gap-2">
                             <div className="flex items-center justify-between">
-                                <div className="text-xs text-gray-700">Client ID</div>
+                                <div className="text-xs text-gray-700">
+                                    {provider === 'OIDC' ? 'Client ID' : 'Service Provider ID'}
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <code className="font-mono text-xs text-gray-800">
                                         {createResponse.client_id || createResponse.id || '-'}
@@ -304,6 +600,47 @@ export default function SsoManagementPage() {
                                     </button>
                                 </div>
                             </div>
+
+                            {provider === 'SAML2' && createResponse.entityId && (
+                                <div className="flex items-center justify-between">
+                                    <div className="text-xs text-gray-700">Entity ID</div>
+                                    <div className="flex items-center gap-2">
+                                        <code className="font-mono text-xs text-gray-800">
+                                            {createResponse.entityId}
+                                        </code>
+                                        <button
+                                            onClick={() =>
+                                                copyToClipboard(
+                                                    createResponse.entityId,
+                                                    'entity_id'
+                                                )
+                                            }
+                                            className="text-sm text-indigo-600 hover:underline"
+                                        >
+                                            {copiedField === 'entity_id' ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {provider === 'SAML2' && createResponse.acsUrl && (
+                                <div className="flex items-center justify-between">
+                                    <div className="text-xs text-gray-700">ACS URL</div>
+                                    <div className="flex items-center gap-2">
+                                        <code className="font-mono text-xs text-gray-800 break-all">
+                                            {createResponse.acsUrl}
+                                        </code>
+                                        <button
+                                            onClick={() =>
+                                                copyToClipboard(createResponse.acsUrl, 'acs_url')
+                                            }
+                                            className="text-sm text-indigo-600 hover:underline"
+                                        >
+                                            {copiedField === 'acs_url' ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {createResponse.client_secret && (
                                 <div className="flex items-center justify-between">
@@ -398,7 +735,9 @@ export default function SsoManagementPage() {
                                                 clipRule="evenodd"
                                             />
                                         </svg>
-                                        Production Endpoints
+                                        {provider === 'OIDC'
+                                            ? 'Production Endpoints'
+                                            : 'IdP Information for SP Configuration'}
                                     </div>
                                     <div className="grid grid-cols-1 gap-3">
                                         {Object.entries(productionEndpoints).map(([k, v]) => (
@@ -438,6 +777,23 @@ export default function SsoManagementPage() {
                                 </div>
                             )}
 
+                            {provider === 'SAML2' && createResponse.metadataFile && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded border">
+                                    <div className="text-xs font-medium text-gray-700 mb-1">
+                                        Metadata File
+                                    </div>
+                                    <div className="text-xs text-gray-600">
+                                        📁 {createResponse.metadataFile.originalName} (
+                                        {Math.round(createResponse.metadataFile.size / 1024)} KB)
+                                        <br />
+                                        Uploaded:{' '}
+                                        {new Date(
+                                            createResponse.metadataFile.uploadedAt
+                                        ).toLocaleString()}
+                                    </div>
+                                </div>
+                            )}
+
                             <div>
                                 <details className="text-xs">
                                     <summary className="cursor-pointer text-sm text-gray-700">
@@ -471,76 +827,118 @@ export default function SsoManagementPage() {
                             <thead>
                                 <tr className="text-left text-gray-700 border-b">
                                     <th className="py-2 pr-4 font-medium">Name</th>
-                                    <th className="py-2 pr-4 font-medium">Client ID</th>
+                                    <th className="py-2 pr-4 font-medium">Provider</th>
+                                    <th className="py-2 pr-4 font-medium">ID/Entity</th>
                                     <th className="py-2 pr-4 font-medium">Type</th>
-                                    <th className="py-2 pr-4 font-medium">Redirect URIs</th>
-                                    <th className="py-2 pr-4 font-medium">Scopes</th>
+                                    <th className="py-2 pr-4 font-medium">Endpoints</th>
                                     <th className="py-2 pr-4 font-medium">Created</th>
                                     <th className="py-2 pr-4 font-medium">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {apps.map((c) => (
-                                    <tr
-                                        key={c.id || c.client_id}
-                                        className="border-b last:border-0"
-                                    >
-                                        <td className="py-3 pr-4 text-gray-900">
-                                            <Link
-                                                href={`/admin/sso-management/${encodeURIComponent(
-                                                    c.client_id || c.id || ''
-                                                )}`}
-                                                className="text-indigo-600 hover:underline"
-                                            >
-                                                {c.client_name || '-'}
-                                            </Link>
-                                        </td>
-                                        <td className="py-3 pr-4 font-mono text-gray-800 text-xs">
-                                            <Link
-                                                href={`/admin/sso-management/${encodeURIComponent(
-                                                    c.client_id || c.id || ''
-                                                )}`}
-                                                className="text-indigo-600 hover:underline"
-                                            >
-                                                {c.client_id || c.id}
-                                            </Link>
-                                        </td>
-                                        <td className="py-3 pr-4">
-                                            <span
-                                                className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                                                    c.token_endpoint_auth_method === 'none'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : 'bg-purple-100 text-purple-800'
-                                                }`}
-                                            >
-                                                {c.token_endpoint_auth_method === 'none'
-                                                    ? 'Public'
-                                                    : 'Confidential'}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 pr-4 max-w-xs">
-                                            <div className="text-gray-700 break-all text-xs">
-                                                {(c.redirect_uris || []).join(', ') || '-'}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 pr-4 text-gray-700 text-xs max-w-xs">
-                                            {c.scope || '-'}
-                                        </td>
-                                        <td className="py-3 pr-4 text-gray-600 text-xs">
-                                            {c.created_at
-                                                ? new Date(c.created_at).toLocaleDateString()
-                                                : '-'}
-                                        </td>
-                                        <td className="py-3 pr-4">
-                                            <button
-                                                onClick={() => onDelete(c.id || c.client_id || '')}
-                                                className="text-sm text-red-600 hover:underline"
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {apps.map((app) => {
+                                    const isOidc = 'client_id' in app || 'redirect_uris' in app;
+                                    const isSaml = 'entityId' in app || 'acsUrl' in app;
+                                    const appId = isOidc
+                                        ? (app as any).client_id || app.id
+                                        : app.id;
+                                    const appName = isOidc
+                                        ? (app as any).client_name
+                                        : (app as any).name;
+
+                                    return (
+                                        <tr key={appId} className="border-b last:border-0">
+                                            <td className="py-3 pr-4 text-gray-900">
+                                                <Link
+                                                    href={`/admin/sso-management/${encodeURIComponent(
+                                                        appId || ''
+                                                    )}`}
+                                                    className="text-indigo-600 hover:underline"
+                                                >
+                                                    {appName || '-'}
+                                                </Link>
+                                            </td>
+                                            <td className="py-3 pr-4">
+                                                <span
+                                                    className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                                        isOidc
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-orange-100 text-orange-800'
+                                                    }`}
+                                                >
+                                                    {isOidc ? 'OIDC' : 'SAML 2.0'}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 pr-4 font-mono text-gray-800 text-xs">
+                                                <Link
+                                                    href={`/admin/sso-management/${encodeURIComponent(
+                                                        appId || ''
+                                                    )}`}
+                                                    className="text-indigo-600 hover:underline break-all"
+                                                >
+                                                    {isOidc ? appId : (app as any).entityId}
+                                                </Link>
+                                            </td>
+                                            <td className="py-3 pr-4">
+                                                {isOidc && (
+                                                    <span
+                                                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                                            (app as any)
+                                                                .token_endpoint_auth_method ===
+                                                            'none'
+                                                                ? 'bg-blue-100 text-blue-800'
+                                                                : 'bg-purple-100 text-purple-800'
+                                                        }`}
+                                                    >
+                                                        {(app as any).token_endpoint_auth_method ===
+                                                        'none'
+                                                            ? 'Public'
+                                                            : 'Confidential'}
+                                                    </span>
+                                                )}
+                                                {isSaml && (
+                                                    <span
+                                                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                                            (app as any).isActive
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-gray-100 text-gray-800'
+                                                        }`}
+                                                    >
+                                                        {(app as any).isActive
+                                                            ? 'Active'
+                                                            : 'Inactive'}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="py-3 pr-4 max-w-xs">
+                                                <div className="text-gray-700 break-all text-xs">
+                                                    {isOidc &&
+                                                        ((app as any).redirect_uris || []).join(
+                                                            ', '
+                                                        )}
+                                                    {isSaml && (app as any).acsUrl}
+                                                    {!isOidc && !isSaml && '-'}
+                                                </div>
+                                            </td>
+                                            <td className="py-3 pr-4 text-gray-600 text-xs">
+                                                {(app as any).created_at || (app as any).createdAt
+                                                    ? new Date(
+                                                          (app as any).created_at ||
+                                                              (app as any).createdAt
+                                                      ).toLocaleDateString()
+                                                    : '-'}
+                                            </td>
+                                            <td className="py-3 pr-4">
+                                                <button
+                                                    onClick={() => onDelete(app)}
+                                                    className="text-sm text-red-600 hover:underline"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
