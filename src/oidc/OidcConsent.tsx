@@ -20,32 +20,60 @@ export default function OidcConsent() {
     const consent_challenge = useQueryParam('consent_challenge');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [processingMessage, setProcessingMessage] = useState('Processing consent…');
 
     useEffect(() => {
         let cancelled = false;
+        let timeoutId: NodeJS.Timeout;
+
         async function run() {
             if (!consent_challenge) {
                 setError('Missing consent_challenge');
                 setLoading(false);
                 return;
             }
+
+            // Set a longer processing message after 3 seconds
+            timeoutId = setTimeout(() => {
+                if (!cancelled) {
+                    setProcessingMessage('Still processing consent, please wait…');
+                }
+            }, 3000);
+
             try {
                 const data = await getConsent(consent_challenge);
                 if (data?.redirect_to && !cancelled) {
-                    // Immediate redirect, no delay
-                    window.location.assign(data.redirect_to);
+                    clearTimeout(timeoutId);
+                    setProcessingMessage('Redirecting…');
+                    // Small delay to show the "Redirecting" message
+                    setTimeout(() => {
+                        if (!cancelled) {
+                            window.location.assign(data.redirect_to);
+                        }
+                    }, 300);
                     return;
                 }
-                setError('Missing redirect_to');
+                if (!cancelled) {
+                    clearTimeout(timeoutId);
+                    setError('Missing redirect_to in consent response');
+                }
             } catch (e: any) {
-                setError(e?.data?.error || e?.message || 'Consent failed');
+                if (!cancelled) {
+                    clearTimeout(timeoutId);
+                    const errorMsg =
+                        e?.data?.error || e?.error || e?.message || 'Consent processing failed';
+                    setError(errorMsg);
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
         }
+
         run();
+
         return () => {
             cancelled = true;
+            if (timeoutId) clearTimeout(timeoutId);
         };
     }, [consent_challenge]);
 
@@ -56,7 +84,7 @@ export default function OidcConsent() {
                     <div className="flex items-center justify-center space-x-3">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
                         <span className="text-lg font-medium text-gray-700">
-                            Processing consent…
+                            {processingMessage}
                         </span>
                     </div>
                 </div>
