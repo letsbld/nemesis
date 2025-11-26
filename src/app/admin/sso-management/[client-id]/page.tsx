@@ -1,5 +1,8 @@
 'use client';
 
+// Cloudflare Pages requires edge runtime for all dynamic routes
+export const runtime = 'edge';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
