@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack --port 3030",
     "build": "next build",
+    "cf:build": "next build && next-on-pages",
     "start": "next start --port 3030",
     "lint": "next lint"
   },
@@ -50,6 +51,7 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.11.0",
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -59,6 +61,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^3.88.0"
   }
 }
