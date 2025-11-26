@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
-import withFlowbiteReact from "flowbite-react/plugin/nextjs";
+const withFlowbiteReact = require('flowbite-react/plugin/nextjs');
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
     /* config options here */
     eslint: {
         ignoreDuringBuilds: true,
@@ -16,4 +16,5 @@ const nextConfig: NextConfig = {
     },
 };
 
-export default withFlowbiteReact(nextConfig);
+module.exports = withFlowbiteReact(nextConfig);
+

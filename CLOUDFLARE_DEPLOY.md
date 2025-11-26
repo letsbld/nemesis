@@ -20,10 +20,14 @@ In your Cloudflare Workers/Pages dashboard, you need to update the following bui
 ```
 Build command: pnpm run cf:build
 Deploy command: npx wrangler pages deploy
-Root directory: /
+Root directory: / (or leave empty - this is the repository root)
 Build token: [your token]
 Environment variables: [configure as needed]
 ```
+
+**IMPORTANT:** If your repository root is the `nemesis` folder (i.e., `letsbld/nemesis`), then:
+- **Root directory:** `/` or leave it **empty**
+- **DO NOT** set it to `/nemesis` - that will cause "root directory not found" error
 
 ## What `cf:build` does:
 
