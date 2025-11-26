@@ -4,12 +4,14 @@ import './globals.css';
 import { Providers } from './providers';
 import { AuthProvider } from '@/context/AuthContext';
 import { LayoutContent } from './LayoutContent';
-import { ThemeInit } from '../../.flowbite-react/init'; // ✅ Flowbite config initializer
+import { ThemeInit } from '../../.flowbite-react/init';
 
 const poppins = Poppins({
   weight: ['400', '700'],
   variable: '--font-poppins',
   subsets: ['latin'],
+  display: 'swap',
+  fallback: ['system-ui', 'arial'],
 });
 
 export const metadata: Metadata = {
