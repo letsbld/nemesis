@@ -1,4 +1,4 @@
-name = "nemesis"
+name = "dlpfrontend"
 main = ".vercel/output/static/_worker.js/index.js"
 compatibility_date = "2024-11-26"
 compatibility_flags = ["nodejs_compat"]
