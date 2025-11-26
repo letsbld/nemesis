@@ -1,5 +1,7 @@
 import UserDetailView from './UserDetailView';
 
+export const runtime = 'edge';
+
 export default async function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
     const { userId } = await params;
 
