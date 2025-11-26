@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Cloudflare Workers requires Edge Runtime
-export const runtime = 'experimental-edge';
+export const runtime = 'edge';
 
 // NOTE: Next.js middleware runs on the server and cannot access localStorage.
 // If JWT is only stored in localStorage, authentication must be handled on the client.
