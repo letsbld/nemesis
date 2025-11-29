@@ -20,11 +20,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
-COPY nemesis/ .
-
-# Copy the .env file from deployment folder to the project root
-# Next.js will automatically read .env files from the project root during build
-COPY ${ENV_FILE_PATH} .env
+COPY . .
 
 # Build the application
 RUN pnpm build
