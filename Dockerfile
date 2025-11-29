@@ -13,6 +13,9 @@ RUN npm install -g pnpm
 # Accept build argument for .env file path
 ARG ENV_FILE_PATH=deployment/.env
 
+# Set Next.js public environment variables for build time
+ENV NEXT_PUBLIC_API_BASE_URL=https://api.sandy.lol
+
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
