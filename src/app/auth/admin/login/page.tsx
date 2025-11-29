@@ -8,7 +8,11 @@ export default function AdminLoginPage() {
     const router = useRouter();
 
     const handleGoogleLogin = () => {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!apiBase) {
+            console.error('NEXT_PUBLIC_API_BASE_URL is not set. Please configure it in your .env file.');
+            return;
+        }
         window.location.href = `${apiBase}/api/auth/admin/login/google`;
     };
 
