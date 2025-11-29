@@ -10,6 +10,8 @@ const poppins = Poppins({
   weight: ['400', '700'],
   variable: '--font-poppins',
   subsets: ['latin'],
+  display: 'swap', // Use fallback font while loading
+  fallback: ['system-ui', 'arial'], // Fallback fonts if Google Fonts fail
 });
 
 export const metadata: Metadata = {

@@ -21,6 +21,13 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build the application
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Build the application
+# Note: Font loading errors are non-fatal and will use fallback fonts
+# Flowbite class generation warnings are also non-fatal
 RUN pnpm build
 
 # Production image
