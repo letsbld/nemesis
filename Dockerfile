@@ -10,6 +10,8 @@ RUN apk add --no-cache python3 make g++ libc6-compat
 # Install pnpm globally
 RUN npm install -g pnpm 
 
+# Accept build argument for .env file path
+ARG ENV_FILE_PATH=deployment/.env
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
@@ -18,16 +20,13 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
-COPY . .
+COPY nemesis/ .
+
+# Copy the .env file from deployment folder to the project root
+# Next.js will automatically read .env files from the project root during build
+COPY ${ENV_FILE_PATH} .env
 
 # Build the application
-# Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
-# Build the application
-# Note: Font loading errors are non-fatal and will use fallback fonts
-# Flowbite class generation warnings are also non-fatal
 RUN pnpm build
 
 # Production image

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack --port 3030",
     "build": "next build",
     "start": "next start --port 3030",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "node scripts/patch-flowbite.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
