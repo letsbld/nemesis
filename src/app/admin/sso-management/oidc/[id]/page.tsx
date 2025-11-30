@@ -19,7 +19,7 @@ type ClientDetailsResponse = {
 export default function ClientDetailsPage() {
     const params = useParams();
     const router = useRouter();
-    const clientId = params['client-id'] as string;
+    const clientId = params['id'] as string;
 
     const [client, setClient] = useState<OidcClient | null>(null);
     const [productionEndpoints, setProductionEndpoints] = useState<any>(null);
