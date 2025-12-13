@@ -2,7 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaUser, FaKey, FaLaptop, FaFolderOpen, FaCertificate } from 'react-icons/fa';
+import { FaUser, FaKey, FaLaptop, FaFolderOpen, FaCertificate, FaShareAlt } from 'react-icons/fa';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { PiCertificateBold } from "react-icons/pi";
@@ -25,6 +25,11 @@ export const SideNavBarUser = () => {
             isActive('/user/applications') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
           }`}>
             <FaFolderOpen className="w-5 h-5" /> <span>Applications</span>
+          </Link>
+          <Link href="/filesharing" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/filesharing') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+          }`}>
+            <FaShareAlt className="w-5 h-5" /> <span>File Sharing</span>
           </Link>
           <Link href="/user/device" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
             isActive('/user/device') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'

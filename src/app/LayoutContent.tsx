@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { Navbar } from '@/components/Navbar';
 import { SearchProvider } from '@/context/SearchContext';
 
-const PROTECTED_PATHS = ['/admin', '/user'];
+const PROTECTED_PATHS = ['/admin', '/user', '/filesharing'];
 
 export function LayoutContent({
   children,

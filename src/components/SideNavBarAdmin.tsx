@@ -31,6 +31,7 @@ import {
   HiCog,
   HiUsers,
   HiShieldCheck,
+  HiCloudUpload,
 } from 'react-icons/hi';
 import { useAuth } from '@/context/AuthContext';
 
@@ -125,6 +126,21 @@ export const SideNavBarAdmin = () => {
             }
           >
             Inbox
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/filesharing')}
+            icon={() =>
+              loadingItem === '/filesharing' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiCloudUpload className="h-5 w-5" />
+              )
+            }
+            active={pathname === '/filesharing' || pathname.startsWith('/filesharing/')}
+          >
+            File Sharing
           </SidebarItem>
 
           {/* Device Management Section */}
