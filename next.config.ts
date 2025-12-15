@@ -1,11 +1,2 @@
-import type { NextConfig } from "next";
-import withFlowbiteReact from "flowbite-react/plugin/nextjs";
-
-const nextConfig: NextConfig = {
-    /* config options here */
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
-};
-
-export default withFlowbiteReact(nextConfig);
+// This file is kept only to guide editors; Next.js 14 does not load .ts configs.
+// See next.config.mjs for the actual configuration used at runtime.
