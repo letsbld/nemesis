@@ -31,6 +31,7 @@ import {
   HiCog,
   HiUsers,
   HiShieldCheck,
+  HiCloud,
 } from 'react-icons/hi';
 import { useAuth } from '@/context/AuthContext';
 
@@ -301,6 +302,24 @@ export const SideNavBarAdmin = () => {
             }
           >
             SSO Management
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/scim-connections')}
+            icon={() =>
+              loadingItem === '/admin/scim-connections' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiCloud className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/scim-connections' ||
+              pathname.startsWith('/admin/scim-connections/')
+            }
+          >
+            SCIM Connections
           </SidebarItem>
 
           <SidebarItem
