@@ -253,7 +253,7 @@ export default function ScimConnectionsPage() {
                     <form onSubmit={handleSave} className="space-y-4">
                         <div>
                             <div className="mb-2 block">
-                                <Label htmlFor="name" value="Connection Name" />
+                                <Label htmlFor="name">Connection Name</Label>
                             </div>
                             <TextInput
                                 id="name"
@@ -266,7 +266,7 @@ export default function ScimConnectionsPage() {
 
                         <div>
                             <div className="mb-2 block">
-                                <Label htmlFor="url" value="SCIM Base URL" />
+                                <Label htmlFor="url">SCIM Base URL</Label>
                             </div>
                             <TextInput
                                 id="url"
@@ -280,7 +280,7 @@ export default function ScimConnectionsPage() {
 
                         <div>
                             <div className="mb-2 block">
-                                <Label htmlFor="header" value="Authorization Header Name" />
+                                <Label htmlFor="header">Authorization Header Name</Label>
                             </div>
                             <TextInput
                                 id="header"
@@ -293,7 +293,7 @@ export default function ScimConnectionsPage() {
 
                         <div>
                             <div className="mb-2 block">
-                                <Label htmlFor="token" value={editingId ? "Auth Token (Leave blank to keep unchanged)" : "Auth Token"} />
+                                <Label htmlFor="token">{editingId ? "Auth Token (Leave blank to keep unchanged)" : "Auth Token"}</Label>
                             </div>
                             <TextInput
                                 id="token"
@@ -321,7 +321,7 @@ export default function ScimConnectionsPage() {
                     </form>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="blue" onClick={handleSave} isProcessing={modalLoading} disabled={modalLoading}>
+                    <Button color="blue" onClick={handleSave} disabled={modalLoading}>
                         {editingId ? 'Update' : 'Create'}
                     </Button>
                     <Button color="gray" onClick={handleTest} disabled={modalLoading || !formData.scim_base_url}>
