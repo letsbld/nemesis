@@ -372,7 +372,7 @@ function UploadPanel({ token }: { token: string | null }) {
             
             <div className="space-y-4">
               {/* Share Code */}
-              <div>
+              <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Share Code
                 </label>
@@ -392,11 +392,26 @@ function UploadPanel({ token }: { token: string | null }) {
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {result.password 
-                    ? 'Click the share code or button to copy both share code and password'
-                    : 'Share this code with others to allow them to download the file'}
-                </p>
+                <div className="flex flex-wrap gap-2 items-center text-sm text-gray-500 dark:text-gray-400">
+                  <span>
+                    {result.password 
+                      ? 'Click the share code or button to copy both share code and password.'
+                      : 'Share this code with others to allow them to download the file.'}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                      const password = result.password || '';
+                      const shareLink = `${origin}/filesharing?code=${result.shareCode}&password=${encodeURIComponent(password)}`;
+                      handleCopy(shareLink);
+                      toast.success('Share link copied (includes password).');
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Copy className="h-4 w-4" />
+                    COPY LINK
+                  </button>
+                </div>
               </div>
 
               {/* Password Display */}
@@ -465,17 +480,8 @@ function UploadPanel({ token }: { token: string | null }) {
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Share Options</h3>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a
-                  href={`/filesharing?code=${result.shareCode}&password=${encodeURIComponent(result.password)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
-                >
-                  <Download className="h-4 w-4" />
-                  Open download link
-                </a>
-                
+              {/* Main Copy Link Button - Big and Bold */}
+              <div className="mb-4">
                 <button
                   onClick={() => {
                     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -484,11 +490,60 @@ function UploadPanel({ token }: { token: string | null }) {
                     handleCopy(shareLink);
                     toast.success('Link copied! Share this link - the password is included in the URL.');
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy Link
+                  <Copy className="h-6 w-6" />
+                  COPY SHARE LINK
                 </button>
+              </div>
+              
+              {/* Share to Teams and Slack */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <button
+                  onClick={() => {
+                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                    const password = result.password || '';
+                    const shareLink = `${origin}/filesharing?code=${result.shareCode}&password=${encodeURIComponent(password)}`;
+                    const teamsUrl = `https://teams.microsoft.com/share?href=${encodeURIComponent(shareLink)}&referrer=${encodeURIComponent(window.location.origin)}`;
+                    window.open(teamsUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-[#6264A7] hover:bg-[#505172] text-white text-sm font-semibold transition-colors"
+                >
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.5 4.5h-15A1.5 1.5 0 003 6v12a1.5 1.5 0 001.5 1.5h15a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5zm-10.5 9H6v-3h3v3zm4.5 0h-3v-3h3v3zm4.5 0h-3v-3h3v3z"/>
+                  </svg>
+                  Share to Teams
+                </button>
+                
+                <button
+                  onClick={() => {
+                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                    const password = result.password || '';
+                    const shareLink = `${origin}/filesharing?code=${result.shareCode}&password=${encodeURIComponent(password)}`;
+                    // Slack doesn't have a direct share URL, so we copy to clipboard
+                    // Users can paste it in Slack manually or use Slack's /share command
+                    handleCopy(shareLink);
+                    toast.success('Link copied! Paste it in your Slack channel or use /share command.');
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-[#4A154B] hover:bg-[#3d1140] text-white text-sm font-semibold transition-colors"
+                >
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M5.042 15.165a2.528 2.528 0 01-2.52 2.523A2.528 2.528 0 010 15.165a2.527 2.527 0 012.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 012.521-2.52 2.527 2.527 0 012.521 2.52v6.313A2.528 2.528 0 018.834 24a2.528 2.528 0 01-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 01-2.521-2.52A2.528 2.528 0 018.834 0a2.528 2.528 0 012.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 012.521 2.521 2.528 2.528 0 01-2.521 2.521H2.522A2.528 2.528 0 010 8.834a2.528 2.528 0 012.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 012.522-2.521A2.528 2.528 0 0124 8.834a2.528 2.528 0 01-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 01-2.523 2.521 2.527 2.527 0 01-2.52-2.521V2.522A2.527 2.527 0 0115.165 0a2.528 2.528 0 012.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 012.523 2.522A2.528 2.528 0 0124 18.956a2.528 2.528 0 01-2.522-2.52h-2.523v2.52zM15.165 17.688a2.528 2.528 0 01-2.523-2.522 2.528 2.528 0 012.523-2.521h6.312A2.528 2.528 0 0124 15.166a2.528 2.528 0 01-2.522 2.522h-6.313z"/>
+                  </svg>
+                  Share to Slack
+                </button>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a
+                  href={`/filesharing?code=${result.shareCode}&password=${encodeURIComponent(result.password)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  <Download className="h-4 w-4" />
+                  Open download link
+                </a>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                 The link includes the password in the URL. When the recipient opens the link, the password will be automatically filled. Share only this link with authorized recipients.
@@ -538,6 +593,8 @@ function DownloadPanel({ token }: { token: string | null }) {
   const [downloading, setDownloading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const fetchingRef = useRef(false);
+  const [availableFiles, setAvailableFiles] = useState<any[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
 
   const normalizedCode = useMemo(() => shareCode.trim().toUpperCase(), [shareCode]);
 
@@ -593,6 +650,25 @@ function DownloadPanel({ token }: { token: string | null }) {
     return false;
   };
 
+  // Fetch available files for the user
+  const fetchAvailableFiles = async () => {
+    if (!token) return;
+    setLoadingFiles(true);
+    try {
+      const res = await fetch(`${FILE_SHARING_BASE}/api/files/recipient`, {
+        headers: authHeaders(token),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAvailableFiles(data.files || []);
+      }
+    } catch (err: any) {
+      console.error('Failed to load available files:', err);
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
   // Auto-populate from URL parameters on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -621,7 +697,12 @@ function DownloadPanel({ token }: { token: string | null }) {
         fetchInfo(codeParam.toUpperCase());
       }, 100);
     }
-  }, []);
+
+    // Load available files if user is authenticated
+    if (token) {
+      fetchAvailableFiles();
+    }
+  }, [token]);
 
   const fetchInfo = async (codeToUse?: string) => {
     const code = codeToUse || normalizedCode;
@@ -638,14 +719,32 @@ function DownloadPanel({ token }: { token: string | null }) {
         headers: authHeaders(token),
       });
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Invalid share code');
+      if (!res.ok) {
+        // Don't show error toast for 400/404 if code came from URL - user might not have entered it
+        const isFromUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('code');
+        if (!isFromUrl || (res.status !== 400 && res.status !== 404)) {
+          toast.error(data.error || 'Failed to load file information');
+        }
+        setInfo(null);
+        return;
+      }
+      if (!data.success) {
+        setInfo(null);
+        toast.error(data.error || 'Invalid share code');
+        return;
       }
       setInfo(data.fileInfo as FileInfo);
-      toast.success('File information retrieved');
+      // Only show success if user manually clicked "Get Info"
+      if (!codeToUse) {
+        toast.success('File information retrieved');
+      }
     } catch (err: any) {
       setInfo(null);
-      toast.error(err?.message || 'Failed to load info');
+      // Only show error if it's a network error, not a 400/404
+      if (err?.message && !err.message.includes('400') && !err.message.includes('404')) {
+        toast.error(err?.message || 'Failed to load info');
+      }
+      console.error('Error fetching file info:', err);
     } finally {
       setLoadingInfo(false);
       fetchingRef.current = false;
@@ -695,8 +794,94 @@ function DownloadPanel({ token }: { token: string | null }) {
 
   const isExpired = info?.expiryTime && new Date() > new Date(info.expiryTime);
 
+  const handleFileSelect = (file: any) => {
+    setShareCode(file.shareCode);
+    if (file.password) {
+      setPassword(file.password);
+    }
+    fetchInfo(file.shareCode);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Available Files Section */}
+      {token && (
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Files Available for Download</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {availableFiles.length > 0 
+                  ? 'Click on a file to auto-fill the share code and password'
+                  : 'No files are currently available for download'}
+              </p>
+            </div>
+            <button
+              onClick={fetchAvailableFiles}
+              disabled={loadingFiles}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${loadingFiles ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+          {loadingFiles ? (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
+              Loading files...
+            </div>
+          ) : availableFiles.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {availableFiles.map((file) => (
+                <div
+                  key={file.id}
+                  onClick={() => handleFileSelect(file)}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    file.canDownload
+                      ? 'border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-md bg-white dark:bg-gray-800'
+                      : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 opacity-60 cursor-not-allowed'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <FileIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    {file.canDownload ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white text-sm mb-1 truncate">
+                    {file.originalFilename}
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    From: {file.sharerName}
+                  </p>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                    <div>Size: {formatBytes(file.fileSize)}</div>
+                    <div>Expires: {formatDate(file.expiryTime)}</div>
+                    {file.downloadsRemaining !== null && (
+                      <div>Downloads left: {file.downloadsRemaining}</div>
+                    )}
+                  </div>
+                  {!file.canDownload && (
+                    <div className="mt-2 text-xs text-red-600 dark:text-red-400">
+                      {file.isExpired ? 'Expired' : file.downloadsExceeded ? 'Max downloads reached' : 'Unavailable'}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FileIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No files have been shared with you yet
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -840,6 +1025,246 @@ function DownloadPanel({ token }: { token: string | null }) {
           <li>Click "Get Info" to view file details (optional, auto-loaded if using a link)</li>
           <li>Click "Download File" to save to your device</li>
         </ol>
+      </div>
+    </div>
+  );
+}
+
+function RecipientPanel({ token }: { token: string | null }) {
+  const [files, setFiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const fetchFiles = async () => {
+    if (!token) {
+      console.warn('[RecipientPanel] No token available, cannot fetch files');
+      toast.error('Please log in to view files shared with you');
+      return;
+    }
+    setLoading(true);
+    try {
+      const headers = authHeaders(token);
+      console.log('[RecipientPanel] Fetching files with token:', { 
+        hasToken: !!token, 
+        tokenLength: token?.length,
+        hasAuthHeader: !!headers.Authorization 
+      });
+      
+      const res = await fetch(`${FILE_SHARING_BASE}/api/files/recipient`, {
+        headers,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          console.error('[RecipientPanel] 401 Unauthorized:', data);
+          throw new Error(data.error || data.message || 'Authentication required. Please log in again.');
+        }
+        throw new Error(data.error || 'Failed to load files');
+      }
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to load files');
+      }
+      setFiles(data.files || []);
+    } catch (err: any) {
+      setFiles([]);
+      const errorMsg = err?.message || 'Failed to load shared files';
+      toast.error(errorMsg);
+      console.error('[RecipientPanel] Error fetching recipient files:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchFiles();
+    }
+  }, [token]);
+
+  const handleCopyLink = async (file: any, index: number) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const password = file.password || '';
+    const shareLink = `${origin}/filesharing?code=${file.shareCode}&password=${encodeURIComponent(password)}`;
+    
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 2000);
+      toast.success('Share link copied!');
+    } catch {
+      toast.error('Copy failed');
+    }
+  };
+
+  const handleDownload = async (file: any) => {
+    if (!file.canDownload) {
+      toast.error('This file cannot be downloaded (expired or max downloads reached)');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${FILE_SHARING_BASE}/api/files/download`, {
+        method: 'POST',
+        headers: authHeaders(token, { 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          shareCode: file.shareCode,
+          password: file.password || undefined
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Download failed');
+      }
+
+      const blob = await res.blob();
+      if (blob.size === 0) throw new Error('Empty file');
+
+      const disposition = res.headers.get('content-disposition') || '';
+      const match = disposition.match(/filename="?(.+?)"?$/i);
+      const filename = match ? decodeURIComponent(match[1]) : file.originalFilename || `${file.shareCode}.bin`;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Download started');
+      
+      // Refresh file list to update download counts
+      setTimeout(() => fetchFiles(), 1000);
+    } catch (err: any) {
+      toast.error(err?.message || 'Download failed');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Files Shared With Me</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            View and download files that have been shared with you
+          </p>
+        </div>
+        <button
+          onClick={fetchFiles}
+          disabled={loading}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        {loading ? (
+          <div className="p-6 text-sm text-gray-500">Loading files…</div>
+        ) : files.length === 0 ? (
+          <div className="text-center py-12">
+            <FileIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No files shared with you</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Files shared with you will appear here
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200 dark:divide-gray-800">
+            {files.map((file, index) => (
+              <div key={file.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <FileIcon className="h-8 w-8 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{file.originalFilename}</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Shared by: {file.sharerName} {file.sharerEmail && `(${file.sharerEmail})`}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Size:</span>
+                        <span className="ml-2 text-gray-900 dark:text-white">{formatBytes(file.fileSize)}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Expires:</span>
+                        <span className="ml-2 text-gray-900 dark:text-white">{formatDate(file.expiryTime)}</span>
+                      </div>
+                      {file.downloadsRemaining !== null && (
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Downloads left:</span>
+                          <span className="ml-2 text-gray-900 dark:text-white">{file.downloadsRemaining}</span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                        <span className={`ml-2 ${file.canDownload ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {file.isExpired ? 'Expired' : file.downloadsExceeded ? 'Max reached' : 'Available'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Share Code and Password */}
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Share Code:</span>
+                        <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono">
+                          {file.shareCode}
+                        </code>
+                        {file.password && (
+                          <>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200 ml-4">Password:</span>
+                            <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono">
+                              {file.password}
+                            </code>
+                          </>
+                        )}
+                        {!file.password && file.hasPassword && (
+                          <span className="text-xs text-amber-600 dark:text-amber-400 ml-2">
+                            (Password required - contact sender)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleCopyLink(file, index)}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                    >
+                      {copiedIndex === index ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          Copy Link
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDownload(file)}
+                      disabled={!file.canDownload}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1059,7 +1484,7 @@ function ManagePanel({ token }: { token: string | null }) {
 
 export default function FileSharingPage() {
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState<'upload' | 'download' | 'manage'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'download' | 'recipient' | 'manage'>('upload');
 
   // Auto-switch to download tab if URL has code parameter
   useEffect(() => {
@@ -1097,13 +1522,14 @@ export default function FileSharingPage() {
           {[
             { key: 'upload', label: 'Upload', icon: <Upload className="h-4 w-4" /> },
             { key: 'download', label: 'Download', icon: <Download className="h-4 w-4" /> },
+            { key: 'recipient', label: 'Files Shared With Me', icon: <Users className="h-4 w-4" /> },
             ...(isAdmin
               ? [{ key: 'manage', label: 'Manage (admin)', icon: <ShieldCheck className="h-4 w-4" /> }]
               : []),
           ].map(tab => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as 'upload' | 'download' | 'manage')}
+              onClick={() => setActiveTab(tab.key as 'upload' | 'download' | 'recipient' | 'manage')}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border ${
                 activeTab === tab.key
                   ? 'bg-blue-600 text-white border-blue-600'
@@ -1118,6 +1544,7 @@ export default function FileSharingPage() {
 
         {activeTab === 'upload' && <UploadPanel token={token} />}
         {activeTab === 'download' && <DownloadPanel token={token} />}
+        {activeTab === 'recipient' && <RecipientPanel token={token} />}
         {activeTab === 'manage' && isAdmin && <ManagePanel token={token} />}
       </div>
     </PrivateRoute>
