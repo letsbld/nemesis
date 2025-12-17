@@ -772,9 +772,24 @@ function DownloadPanel({ token }: { token: string | null }) {
       const blob = await res.blob();
       if (blob.size === 0) throw new Error('Empty file');
 
+      // Extract filename from Content-Disposition header
       const disposition = res.headers.get('content-disposition') || '';
-      const match = disposition.match(/filename="?(.+?)"?$/i);
-      const filename = match ? decodeURIComponent(match[1]) : `${normalizedCode}.bin`;
+      const contentType = res.headers.get('content-type') || '';
+      let filename = `${normalizedCode}.bin`;
+      
+      console.log('[DOWNLOAD] Content-Type:', contentType);
+      console.log('[DOWNLOAD] Content-Disposition:', disposition);
+      console.log('[DOWNLOAD] Default filename:', filename);
+      
+      // Try to extract filename from Content-Disposition
+      // Handles: attachment; filename="file.pdf" or attachment; filename=file.pdf
+      const filenameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1].replace(/['"]/g, '').trim();
+        console.log('[DOWNLOAD] Extracted filename:', filename);
+      } else {
+        console.log('[DOWNLOAD] Could not extract filename, using default');
+      }
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -1120,9 +1135,24 @@ function RecipientPanel({ token }: { token: string | null }) {
       const blob = await res.blob();
       if (blob.size === 0) throw new Error('Empty file');
 
+      // Extract filename from Content-Disposition header
       const disposition = res.headers.get('content-disposition') || '';
-      const match = disposition.match(/filename="?(.+?)"?$/i);
-      const filename = match ? decodeURIComponent(match[1]) : file.originalFilename || `${file.shareCode}.bin`;
+      const contentType = res.headers.get('content-type') || '';
+      let filename = file.originalFilename || `${file.shareCode}.bin`;
+      
+      console.log('[DOWNLOAD] Content-Type:', contentType);
+      console.log('[DOWNLOAD] Content-Disposition:', disposition);
+      console.log('[DOWNLOAD] Default filename:', filename);
+      
+      // Try to extract filename from Content-Disposition
+      // Handles: attachment; filename="file.pdf" or attachment; filename=file.pdf
+      const filenameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1].replace(/['"]/g, '').trim();
+        console.log('[DOWNLOAD] Extracted filename:', filename);
+      } else {
+        console.log('[DOWNLOAD] Could not extract filename, using default');
+      }
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
