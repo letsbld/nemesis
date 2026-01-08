@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -11,7 +10,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { PiCertificateBold } from 'react-icons/pi';
-import{HiLockClosed} from 'react-icons/hi';
+import{HiLockClosed, HiShieldExclamation} from 'react-icons/hi';
 import {
   Sidebar,
   SidebarItem,
@@ -33,8 +32,10 @@ import {
   HiShieldCheck,
   HiCloudUpload,
   HiCloud,
+  HiServer,
 } from 'react-icons/hi';
 import { useAuth } from '@/context/AuthContext';
+import { Agent } from 'http';
 
 const customTheme = {
   root: {
@@ -355,6 +356,26 @@ export const SideNavBarAdmin = () => {
           >
             Security Certificate
           </SidebarItem>
+
+
+        <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/system-management')}
+            icon={() =>
+              loadingItem === '/admin/system-management' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiServer className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/system-management' ||
+              pathname.startsWith('/admin/system-management')
+            }
+          >
+            Agents
+          </SidebarItem>
+
         </SidebarItemGroup>
 
         <SidebarItemGroup>
