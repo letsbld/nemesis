@@ -6,6 +6,7 @@ import { FaUser, FaKey, FaLaptop, FaFolderOpen, FaCertificate, FaShareAlt } from
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { PiCertificateBold } from "react-icons/pi";
+import { FaGlobe } from 'react-icons/fa';
 
 
 export const SideNavBarUser = () => {
@@ -55,6 +56,11 @@ export const SideNavBarUser = () => {
             isActive('/user/certificate') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
           }`}>
             <PiCertificateBold className="w-5 h-5" /> <span>Security Certificate</span>
+          </Link>
+          <Link href="/user/browser-sessions" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/user/browser-sessions') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+          }`}>
+            <FaGlobe className="w-5 h-5" /> <span>Browser Sessions</span>
           </Link>
         </div>
       </div>
