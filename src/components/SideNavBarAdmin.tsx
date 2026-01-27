@@ -7,7 +7,8 @@ import {
   LayoutGrid,
   BookUser,
   ChevronsUpDown,
-  Inbox
+  Inbox,
+  Globe
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { PiCertificateBold } from 'react-icons/pi';
@@ -354,6 +355,24 @@ export const SideNavBarAdmin = () => {
             }
           >
             Security Certificate
+          </SidebarItem>
+
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/browser-sessions')}
+            icon={() =>
+              loadingItem === '/admin/browser-sessions' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <Globe className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/browser-sessions' ||
+              pathname.startsWith('/admin/browser-sessions/')
+            }
+          >
+            Browser Sessions
           </SidebarItem>
         </SidebarItemGroup>
 
