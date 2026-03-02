@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { PiCertificateBold } from "react-icons/pi";
 import { FaGlobe } from 'react-icons/fa';
+import { HiOutlineServer } from 'react-icons/hi';
 
 
 export const SideNavBarUser = () => {
@@ -31,6 +32,11 @@ export const SideNavBarUser = () => {
             isActive('/filesharing') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
           }`}>
             <FaShareAlt className="w-5 h-5" /> <span>File Sharing</span>
+          </Link>
+          <Link href="/user/file-storage" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/user/file-storage') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+          }`}>
+            <HiOutlineServer className="w-5 h-5" /> <span>File Storage</span>
           </Link>
           <Link href="/user/device" className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
             isActive('/user/device') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
