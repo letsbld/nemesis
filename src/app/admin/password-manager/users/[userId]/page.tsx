@@ -9,3 +9,5 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
         </div>
     );
 }
+
+export const runtime = 'edge';

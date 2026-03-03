@@ -321,3 +321,5 @@ const EditDevicePage = () => {
 };
 
 export default EditDevicePage;
+
+export const runtime = 'edge';

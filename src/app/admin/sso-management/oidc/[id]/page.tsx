@@ -489,3 +489,4 @@ export default function ClientDetailsPage() {
         </div>
     );
 }
+export const runtime = 'edge';

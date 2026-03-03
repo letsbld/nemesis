@@ -378,3 +378,4 @@ export default function SamlServiceProviderDetailsPage() {
         </div>
     );
 }
+export const runtime = 'edge';
