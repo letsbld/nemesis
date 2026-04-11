@@ -15,7 +15,6 @@ const getOsIcon = (osName: string = '') => {
     return <FaDesktop className="text-gray-500" />;
 };
 
-// Update: onDelete is just a trigger to refresh, no args needed
 export default function AgentsTable({ agents, onDelete }: { agents: Agent[], onDelete?: () => void }) {
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -30,23 +29,30 @@ export default function AgentsTable({ agents, onDelete }: { agents: Agent[], onD
     const handleDelete = async () => {
         if (!selectedAgent) return;
         setIsDeleting(selectedAgent.id);
+        
         try {
             await TentyService.deleteAgent(selectedAgent.id);
-            // Just call the callback to refresh data, don't pass ID
-            if (onDelete) onDelete(); 
-            else router.refresh(); 
-        } catch (error) {
-            alert("Failed to delete agent. It might be unreachable.");
-        } finally {
+            
+            setTimeout(() => {
+                if (onDelete) onDelete(); 
+                else window.location.reload(); // Hard reload fallback
+                
+                setIsDeleting(null);
+                setModalOpen(false);
+                setSelectedAgent(null);
+            }, 1000);
+            
+        } catch (error: any) {
+            const msg = error.response?.data?.error || "Failed to delete agent. It might be unreachable.";
+            alert(msg);
+            
             setIsDeleting(null);
             setModalOpen(false);
             setSelectedAgent(null);
         }
-    };
-
+    };  
     return (
         <div className="relative">
-            {/* DELETE MODAL */}
             {modalOpen && selectedAgent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700">
@@ -70,7 +76,6 @@ export default function AgentsTable({ agents, onDelete }: { agents: Agent[], onD
                 </div>
             )}
 
-            {/* TABLE */}
             <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 dark:bg-gray-800/80 text-gray-500 font-semibold uppercase text-xs">
@@ -103,7 +108,6 @@ export default function AgentsTable({ agents, onDelete }: { agents: Agent[], onD
                                     <td className="px-6 py-4 font-mono text-gray-500 text-xs">{agent.ip}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3">
-                                            {/* UPDATED VIEW BUTTON */}
                                             <Link 
                                                 href={`/admin/system-management/agent/${agent.id}`} 
                                                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800"

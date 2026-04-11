@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { PiCertificateBold } from 'react-icons/pi';
-import{HiLockClosed, HiShieldExclamation} from 'react-icons/hi';
+import{HiLockClosed, HiOutlineTerminal, HiShieldExclamation} from 'react-icons/hi';
 import {
   Sidebar,
   SidebarItem,
@@ -373,9 +373,26 @@ export const SideNavBarAdmin = () => {
               pathname.startsWith('/admin/system-management')
             }
           >
-            Agents
+            Agent information
           </SidebarItem>
 
+          <SidebarItem
+            href="#"
+            onClick={() => handleNavigation('/admin/system-management/remote-access')}
+            icon={() =>
+              loadingItem === '/admin/system-management/remote-access' ? (
+                <Spinner size="sm" color="info" />
+              ) : (
+                <HiServer className="h-5 w-5" />
+              )
+            }
+            active={
+              pathname === '/admin/system-management/remote-access' ||
+              pathname.startsWith('/admin/system-management/remote-access')
+            }
+          >
+            Agent control
+          </SidebarItem>
         </SidebarItemGroup>
 
         <SidebarItemGroup>

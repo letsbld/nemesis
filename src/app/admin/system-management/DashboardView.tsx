@@ -2,13 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { TentyService, Agent } from './lib/api';
-
-// Components
-import { Card, Spinner, MetricCard } from './components/ui/SystemUI';
+import { Spinner, MetricCard } from './components/ui/SystemUI';
 import AgentsTable from './components/AgentsTable';
 import { InstallModal } from './components/InstallModal';
-
-// Icons
 import { FaServer, FaDesktop, FaNetworkWired, FaPlus, FaSync, FaExclamationTriangle } from 'react-icons/fa';
 
 export default function DashboardView() {
@@ -17,7 +13,6 @@ export default function DashboardView() {
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
 
-    // Fetch Data
     const fetchData = async () => {
         setLoading(true);
         setError(null);
@@ -25,7 +20,6 @@ export default function DashboardView() {
             const data = await TentyService.getAllAgents();
             setAgents(data || []);
         } catch (err: any) {
-            console.error("Fleet Load Error:", err);
             if (err.response?.status === 401) {
                 setError("Authentication Failed. Please check if you are logged in as Admin.");
             } else if (err.response?.status === 503) {
@@ -42,7 +36,6 @@ export default function DashboardView() {
         fetchData();
     }, []);
 
-    // Metrics
     const totalAgents = agents.length;
     const activeAgents = agents.filter(a => a.status === 'active').length;
     const disconnected = totalAgents - activeAgents;
@@ -51,8 +44,6 @@ export default function DashboardView() {
 
     return (
         <div className="p-8 space-y-8 animate-fade-in min-h-screen bg-gray-50 dark:bg-gray-900">
-            
-            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">System Management</h1>
@@ -75,7 +66,6 @@ export default function DashboardView() {
                 </div>
             </div>
 
-            {/* Error Banner */}
             {error && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-xl flex items-center gap-3 text-red-700 dark:text-red-400">
                     <FaExclamationTriangle className="text-xl flex-shrink-0" />
@@ -86,20 +76,14 @@ export default function DashboardView() {
                 </div>
             )}
 
-            {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <MetricCard title="Total Agents" value={totalAgents} Icon={FaServer} />
                 <MetricCard title="Active Systems" value={activeAgents} Icon={FaNetworkWired} />
                 <MetricCard title="Offline / Disconnected" value={disconnected} Icon={FaDesktop} />
             </div>
 
-            {/* Main Table */}
-            <AgentsTable 
-                agents={agents} 
-                onDelete={fetchData} // FIX: Don't double delete, just refresh
-            />
+            <AgentsTable agents={agents} onDelete={fetchData} />
 
-            {/* Installer Modal */}
             {showModal && <InstallModal onClose={() => setShowModal(false)} />}
         </div>
     );

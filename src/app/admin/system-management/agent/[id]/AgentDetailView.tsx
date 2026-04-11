@@ -4,12 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { TentyService } from '../../lib/api';
-
-// Components
 import { Card, Spinner } from '../../components/ui/SystemUI';
 import SoftwareTable from '../../components/SoftwareTable';
-
-// Icons
 import { FaArrowLeft, FaMicrochip, FaMemory, FaNetworkWired, FaExclamationTriangle, FaTrash, FaDesktop, FaServer } from 'react-icons/fa';
 
 export default function AgentDetailView({ agentId }: { agentId: string }) {
@@ -17,8 +13,6 @@ export default function AgentDetailView({ agentId }: { agentId: string }) {
     const [details, setDetails] = useState<any | null>(null);
     const [software, setSoftware] = useState<any>({ packages: [], updates: [] });
     const [loading, setLoading] = useState(true);
-    
-    // Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -40,12 +34,10 @@ export default function AgentDetailView({ agentId }: { agentId: string }) {
         if (agentId) load();
     }, [agentId]);
 
-    // --- HANDLER: DELETE ---
     const handleDelete = async () => {
         setIsDeleting(true);
         try {
             await TentyService.deleteAgent(agentId);
-            // Wait 500ms then force redirect to fleet
             setTimeout(() => {
                 router.replace('/admin/system-management');
             }, 500);
@@ -77,8 +69,6 @@ export default function AgentDetailView({ agentId }: { agentId: string }) {
 
     return (
         <div className="p-8 space-y-6 animate-fade-in pb-20 relative">
-            
-            {/* --- DELETE MODAL --- */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700">
@@ -103,18 +93,15 @@ export default function AgentDetailView({ agentId }: { agentId: string }) {
                 </div>
             )}
 
-            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/system-management" className="p-3 bg-white dark:bg-[#1a2332] border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
                         <FaArrowLeft className="text-gray-500" />
                     </Link>
                     <div>
-                        {/* 1. ASSIGNED NAME (Big) */}
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             {details.summary?.name || 'Unnamed Agent'}
                         </h1>
-                        {/* 2. PC NAME & OS (Small) */}
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-1">
                             <span className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">
                                 <FaDesktop size={12} /> {details.summary?.hostname}
@@ -132,7 +119,6 @@ export default function AgentDetailView({ agentId }: { agentId: string }) {
                 </button>
             </div>
 
-            {/* Hardware Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="relative overflow-hidden">
                     <div className="absolute right-0 top-0 p-4 opacity-5 pointer-events-none"><FaMicrochip size={100} /></div>

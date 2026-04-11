@@ -6,14 +6,13 @@ import { Card } from './ui/SystemUI';
 import { FaBoxOpen, FaSearch, FaFolderOpen, FaCalendarAlt } from 'react-icons/fa';
 
 interface SoftwareItem {
-    name: string;
-    version: string;
+    name?: string;
+    version?: string;
     vendor?: string;
     install_time?: string;
     location?: string;
 }
 
-// Helper to make dates readable
 const formatDate = (dateStr?: string) => {
     if (!dateStr || dateStr.trim() === '') return 'Unknown Date';
     try {
@@ -25,17 +24,20 @@ const formatDate = (dateStr?: string) => {
     }
 };
 
-export default function SoftwareTable({ packages }: { packages: SoftwareItem[] }) {
+export default function SoftwareTable({ packages }: { packages: any }) {
     const [search, setSearch] = useState('');
 
-    const filtered = packages.filter(item => 
-        item.name.toLowerCase().includes(search.toLowerCase()) || 
-        (item.vendor && item.vendor.toLowerCase().includes(search.toLowerCase()))
-    );
+    const safePackages: SoftwareItem[] = Array.isArray(packages) ? packages : [];
+
+    const filtered = safePackages.filter(item => {
+        const name = String(item?.name || '').toLowerCase();
+        const vendor = String(item?.vendor || '').toLowerCase();
+        const q = search.toLowerCase().trim();
+        return name.includes(q) || vendor.includes(q);
+    });
 
     return (
         <Card className="p-0 overflow-hidden flex flex-col h-[600px]">
-            {/* Header - Single View, No Tabs */}
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400">
@@ -43,7 +45,7 @@ export default function SoftwareTable({ packages }: { packages: SoftwareItem[] }
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-900 dark:text-white">Installed Packages</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{packages.length} items found</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{safePackages.length} items found</p>
                     </div>
                 </div>
                 
@@ -54,7 +56,6 @@ export default function SoftwareTable({ packages }: { packages: SoftwareItem[] }
                 </div>
             </div>
 
-            {/* List */}
             <div className="flex-1 overflow-auto">
                 <table className="w-full text-left text-sm">
                     <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10 text-gray-500 font-semibold border-b border-gray-200 dark:border-gray-700">
@@ -77,23 +78,19 @@ export default function SoftwareTable({ packages }: { packages: SoftwareItem[] }
                                     animate={{ opacity: 1 }} 
                                     className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
                                 >
-                                    <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-100">{item.name}</td>
-                                    
+                                    <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-100">{item.name || 'Unknown'}</td>
                                     <td className="px-6 py-3">
                                         <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs font-mono text-gray-600 dark:text-gray-400">
-                                            {item.version}
+                                            {item.version || '-'}
                                         </span>
                                     </td>
-
                                     <td className="px-6 py-3 text-gray-500 text-xs whitespace-nowrap">
                                         <div className="flex items-center gap-2">
                                             {item.install_time && item.install_time.trim() !== '' && <FaCalendarAlt className="opacity-50" />}
                                             {formatDate(item.install_time)}
                                         </div>
                                     </td>
-
                                     <td className="px-6 py-3 text-gray-500">{item.vendor || '-'}</td>
-                                    
                                     <td className="px-6 py-3 text-gray-400 text-xs truncate max-w-[200px]" title={item.location || ''}>
                                         <div className="flex items-center gap-2">
                                             {item.location && item.location !== '-' && <FaFolderOpen className="opacity-50" />}

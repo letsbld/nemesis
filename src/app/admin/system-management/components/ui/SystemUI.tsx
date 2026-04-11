@@ -1,6 +1,5 @@
 import React from 'react';
 
-// --- 1. CARD COMPONENT ---
 export function Card({ children, className = '' }: { children: React.ReactNode; className?: string; }) {
     return (
         <div className={`bg-white dark:bg-[#1a2332] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
@@ -9,7 +8,6 @@ export function Card({ children, className = '' }: { children: React.ReactNode; 
     );
 }
 
-// --- 2. SPINNER COMPONENT ---
 export function Spinner() {
     return (
         <div className="flex justify-center items-center p-8">
@@ -18,7 +16,6 @@ export function Spinner() {
     );
 }
 
-// --- 3. METRIC CARD COMPONENT ---
 export function MetricCard({ title, value, Icon }: { title: string; value: any; Icon: React.ElementType; }) {
     return (
         <div className="bg-white dark:bg-[#1a2332] p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center gap-4 transition-all hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-600">
